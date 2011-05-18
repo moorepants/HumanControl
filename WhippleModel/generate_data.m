@@ -19,7 +19,7 @@ par = par_text_to_struct(pathToParFile);
 % calculate the A, B, C, and D matrices
 [A, B, C, D] = whipple_pull_force_abcd(par, speed)
 initialConditions = [0, 0, 0, 0, 0, 0, 0, 0, ...
-                     0.5, -speed / par.rR, 0];
+                     0.0, -speed / par.rR, 0];
 outputs = {'xP',
            'yP',
            'psi',
@@ -62,50 +62,51 @@ end
 options = simset('SrcWorkspace', 'current');
 sim('WhippleModel.mdl', [], options)
 
-yQ = y(:, 2) + par.w .* y(:, 3) - par.c .* y(:, 7) .* cos(par.lambda)
-
 figure(1)
-plot(t, yQ, t, y(:, 18))
-
-figure(2)
 % plot the wheel contact points
-subplot(5, 1, 1)
-plot(t, y(:, 1), ...
-     t, y(:, 2), ...
-     t, y(:, 17), ...
-     t, y(:, 18))
-xlim([0, 5])
-legend(outputs{[1, 2, 17, 18]})
+subplot(6, 1, 1)
+plot(y(:, 1), y(:, 2), ...
+     y(:, 17) + par.w, y(:, 18), ...
+     y(:, 1), yc)
+%xlim([0, 5])
+legend({'Rear Wheel', 'Front Wheel', 'Path'})
 
-subplot(5, 1, 2)
+subplot(6, 1, 2)
 plot(t, y(:, 3), ...
      t, y(:, 4), ...
      t, y(:, 5), ...
-     t, y(:, 6), ...
-     t, y(:, 7), ...
-     t, y(:, 8))
-xlim([0, 5])
-legend(outputs{[3, 4, 5, 6, 7, 8]})
+     t, y(:, 7),)
+%xlim([0, 5])
+legend(outputs{[3, 4, 5, 7]})
 
-subplot(5, 1, 3)
+subplot(6, 1, 3)
+plot(t, y(:, 6), ...
+     t, y(:, 8))
+%xlim([0, 5])
+legend(outputs{[6, 8]})
+
+subplot(6, 1, 4)
 plot(t, y(:, 9), ...
      t, y(:, 10))
-xlim([0, 5])
+%xlim([0, 5])
 legend(outputs{[9, 10]})
 
-subplot(5, 1, 4)
+subplot(6, 1, 5)
 plot(t, y(:, 11), ...
      t, y(:, 12), ...
      t, y(:, 13), ...
      t, y(:, 15))
-xlim([0, 5])
+%xlim([0, 5])
 legend(outputs{[11, 12, 13, 15]})
 
-subplot(5, 1, 5)
+subplot(6, 1, 6)
 plot(t, y(:, 14), ...
      t, y(:, 16))
-xlim([0, 5])
+%xlim([0, 5])
 legend(outputs{[14, 16]})
+
+figure(2)
+plot(t, u)
 
 function [kDelta, kPhiDot, kPhi, kPsi, kY] = load_gains(path, speed)
 % Returns the gains from a file for a particular speed.

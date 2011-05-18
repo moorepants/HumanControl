@@ -14,7 +14,7 @@ Model {
       Name		      "Out2"
     }
     ParameterArgumentNames  ""
-    ComputedModelVersion    "1.138"
+    ComputedModelVersion    "1.139"
     NumModelReferences	    0
     NumTestPointedSignals   0
   }
@@ -33,9 +33,9 @@ Model {
   ModifiedByFormat	  "%<Auto>"
   LastModifiedBy	  "moorepants"
   ModifiedDateFormat	  "%<Auto>"
-  LastModifiedDate	  "Tue May 17 17:37:14 2011"
-  RTWModifiedTimeStamp	  227554603
-  ModelVersionFormat	  "1.%<AutoIncrement:138>"
+  LastModifiedDate	  "Tue May 17 18:05:12 2011"
+  RTWModifiedTimeStamp	  227556287
+  ModelVersionFormat	  "1.%<AutoIncrement:139>"
   ConfigurationManager	  "None"
   SampleTimeColors	  off
   SampleTimeAnnotations	  off
@@ -1375,7 +1375,7 @@ Model {
       Name		      "To Workspace1"
       SID		      55
       Ports		      [1]
-      Position		      [1515, 450, 1575, 480]
+      Position		      [1515, 800, 1575, 830]
       BlockMirror	      on
       VariableName	      "y"
       MaxDataPoints	      "inf"
@@ -1399,7 +1399,7 @@ Model {
       Name		      "To Workspace2"
       SID		      56
       Ports		      [1]
-      Position		      [1435, 505, 1495, 535]
+      Position		      [1440, 740, 1500, 770]
       BlockMirror	      on
       VariableName	      "u"
       MaxDataPoints	      "inf"
@@ -1472,7 +1472,7 @@ Model {
       SrcPort		      1
       Points		      [5, 0]
       Branch {
-	Points			[1, 1; 0, -126]
+	Points			[1, 1; 0, 109]
 	DstBlock		"To Workspace2"
 	DstPort			1
       }
@@ -1486,7 +1486,7 @@ Model {
       SrcPort		      1
       Points		      [15, 0]
       Branch {
-	Points			[0, -180]
+	Points			[0, 170]
 	DstBlock		"To Workspace1"
 	DstPort			1
       }
@@ -1606,35 +1606,35 @@ Model {
     Line {
       SrcBlock		      "Feedback Variables"
       SrcPort		      1
-      Points		      [20, 0; 0, -155; -505, 0]
+      Points		      [20, 0; 0, -39; -504, 0]
       DstBlock		      "Sum6"
       DstPort		      1
     }
     Line {
       SrcBlock		      "Feedback Variables"
       SrcPort		      2
-      Points		      [40, 1; 0, -226; -694, 0]
+      Points		      [40, 1; 0, -116; -694, 0]
       DstBlock		      "Sum"
       DstPort		      1
     }
     Line {
       SrcBlock		      "Feedback Variables"
       SrcPort		      3
-      Points		      [60, 1; 0, -296; -860, 0]
+      Points		      [60, 1; 0, -190; -860, 0]
       DstBlock		      "Sum1"
       DstPort		      1
     }
     Line {
       SrcBlock		      "Feedback Variables"
       SrcPort		      4
-      Points		      [86, 1; 0, -366; -1040, 0]
+      Points		      [86, 1; 0, -260; -1040, 0]
       DstBlock		      "Sum3"
       DstPort		      1
     }
     Line {
       SrcBlock		      "Feedback Variables"
       SrcPort		      5
-      Points		      [110, 0; 0, -435; -1220, 0]
+      Points		      [110, 0; 0, -335; -1220, 0]
       DstBlock		      "Sum4"
       DstPort		      1
     }
