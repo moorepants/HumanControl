@@ -62,51 +62,71 @@ end
 options = simset('SrcWorkspace', 'current');
 sim('WhippleModel.mdl', [], options)
 
-figure(1)
-% plot the wheel contact points
-subplot(6, 1, 1)
-plot(y(:, 1), y(:, 2), ...
-     y(:, 17) + par.w, y(:, 18), ...
-     y(:, 1), yc)
-%xlim([0, 5])
-legend({'Rear Wheel', 'Front Wheel', 'Path'})
-
-subplot(6, 1, 2)
-plot(t, y(:, 3), ...
-     t, y(:, 4), ...
-     t, y(:, 5), ...
-     t, y(:, 7),)
-%xlim([0, 5])
-legend(outputs{[3, 4, 5, 7]})
-
-subplot(6, 1, 3)
-plot(t, y(:, 6), ...
-     t, y(:, 8))
-%xlim([0, 5])
-legend(outputs{[6, 8]})
-
-subplot(6, 1, 4)
-plot(t, y(:, 9), ...
-     t, y(:, 10))
-%xlim([0, 5])
-legend(outputs{[9, 10]})
-
-subplot(6, 1, 5)
-plot(t, y(:, 11), ...
-     t, y(:, 12), ...
-     t, y(:, 13), ...
-     t, y(:, 15))
-%xlim([0, 5])
-legend(outputs{[11, 12, 13, 15]})
-
-subplot(6, 1, 6)
-plot(t, y(:, 14), ...
-     t, y(:, 16))
-%xlim([0, 5])
-legend(outputs{[14, 16]})
+outputPlot = plot_outputs(t, y)
 
 figure(2)
 plot(t, u)
+
+function outputPlot = plot_outputs(t, y)
+% Returns a plot of the model outputs.
+%
+% Parameters
+% ----------
+% t : matrix, size(n, 1)
+%   The time vector.
+% y : matrix, size(n, 18)
+%
+% Returns
+% -------
+% outputPlot : figure
+%   Plot of the outputs versus time.
+
+outputs = {'$x_P$',
+           '$y_P$',
+           '$\psi$',
+           '$\phi$',
+           '$\theta_P$',
+           '$\theta_R$',
+           '$\delta$',
+           '$\theta_F$',
+           '$\dot{x}_P$',
+           '$\dot{y}_P$',
+           '$\dot{\psi}$',
+           '$\dot{\phi}$',
+           '$\dot{\theta}_P$',
+           '$\dot{\theta}_R$',
+           '$\dot{\delta}$',
+           '$\dot{\theta}_F$',
+           '$x_Q$',
+           '$y_Q$'}
+
+outputPlot = figure()
+% plot the wheel contact points
+subplot(6, 1, 1)
+plot(y(:, 1), y(:, 2), ...
+     y(:, 17), y(:, 18))
+legend({'Rear Wheel', 'Front Wheel'})
+
+plt.angles = [3, 4, 5, 7]
+plt.wheelAngles = [6, 8]
+plt.contactRates = [9, 10]
+plt.rates = [11, 12, 13, 15]
+plt.wheelRates = [14, 16]
+
+pltFields = fieldnames(plt)
+numPlots = length(pltFields)
+
+for i = 1:numPlots
+    subplot(numPlots + 1, 1, i + 1)
+    hold all
+    numbers = plt.(pltFields{i});
+    for j = 1:length(numbers)
+        plot(t, y(:, numbers(j)))
+    end
+    hold off
+    leg = legend(outputs{plt.(pltFields{i})});
+    %set(leg, 'interpreter', 'latex')
+end
 
 function [kDelta, kPhiDot, kPhi, kPsi, kY] = load_gains(path, speed)
 % Returns the gains from a file for a particular speed.

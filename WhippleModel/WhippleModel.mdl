@@ -14,7 +14,7 @@ Model {
       Name		      "Out2"
     }
     ParameterArgumentNames  ""
-    ComputedModelVersion    "1.139"
+    ComputedModelVersion    "1.141"
     NumModelReferences	    0
     NumTestPointedSignals   0
   }
@@ -33,9 +33,9 @@ Model {
   ModifiedByFormat	  "%<Auto>"
   LastModifiedBy	  "moorepants"
   ModifiedDateFormat	  "%<Auto>"
-  LastModifiedDate	  "Tue May 17 18:05:12 2011"
-  RTWModifiedTimeStamp	  227556287
-  ModelVersionFormat	  "1.%<AutoIncrement:139>"
+  LastModifiedDate	  "Tue May 17 18:40:00 2011"
+  RTWModifiedTimeStamp	  227558395
+  ModelVersionFormat	  "1.%<AutoIncrement:141>"
   ConfigurationManager	  "None"
   SampleTimeColors	  off
   SampleTimeAnnotations	  off
@@ -817,7 +817,7 @@ Model {
       MaskHideContents	      off
       System {
 	Name			"Feedback Variables"
-	Location		[1674, 169, 2013, 791]
+	Location		[1634, 169, 1973, 791]
 	Open			off
 	ModelBrowserVisibility	off
 	ModelBrowserWidth	200
@@ -937,91 +937,91 @@ Model {
 	}
 	Annotation {
 	  Name			  "x_P"
-	  Position		  [132, 43]
+	  Position		  [142, 38]
 	  Interpreter		  "tex"
 	}
 	Annotation {
 	  Name			  "y_P"
-	  Position		  [129, 73]
+	  Position		  [144, 68]
 	  Interpreter		  "tex"
 	}
 	Annotation {
 	  Name			  "\\psi"
-	  Position		  [134, 99]
+	  Position		  [144, 99]
 	  Interpreter		  "tex"
 	}
 	Annotation {
 	  Name			  "\\phi"
-	  Position		  [133, 128]
+	  Position		  [143, 128]
 	  Interpreter		  "tex"
 	}
 	Annotation {
 	  Name			  "\\theta_P"
-	  Position		  [121, 158]
+	  Position		  [146, 158]
 	  Interpreter		  "tex"
 	}
 	Annotation {
 	  Name			  "\\theta_R"
-	  Position		  [123, 194]
+	  Position		  [148, 189]
 	  Interpreter		  "tex"
 	}
 	Annotation {
 	  Name			  "\\delta"
-	  Position		  [130, 219]
+	  Position		  [150, 219]
 	  Interpreter		  "tex"
 	}
 	Annotation {
 	  Name			  "\\theta_F"
-	  Position		  [122, 249]
+	  Position		  [147, 249]
 	  Interpreter		  "tex"
 	}
 	Annotation {
 	  Name			  "\\dot{x}_P"
-	  Position		  [118, 279]
+	  Position		  [133, 279]
 	  Interpreter		  "tex"
 	}
 	Annotation {
 	  Name			  "\\dot{y}_P"
-	  Position		  [119, 308]
+	  Position		  [134, 308]
 	}
 	Annotation {
 	  Name			  "\\dot{\\psi}"
-	  Position		  [122, 339]
+	  Position		  [132, 339]
 	  Interpreter		  "tex"
 	}
 	Annotation {
 	  Name			  "\\dot{\\phi}"
-	  Position		  [117, 367]
+	  Position		  [132, 367]
 	  Interpreter		  "tex"
 	}
 	Annotation {
 	  Name			  "\\dot{\\theta}_P"
-	  Position		  [109, 399]
+	  Position		  [124, 399]
 	  Interpreter		  "tex"
 	}
 	Annotation {
 	  Name			  "\\dot{\\theta}_R"
-	  Position		  [110, 428]
+	  Position		  [125, 428]
 	  Interpreter		  "tex"
 	}
 	Annotation {
 	  Name			  "\\dot{\\delta}"
-	  Position		  [111, 456]
+	  Position		  [131, 456]
 	  Interpreter		  "tex"
 	}
 	Annotation {
 	  Name			  "\\dot{\\theta}_F"
-	  Position		  [109, 489]
+	  Position		  [124, 489]
 	  Interpreter		  "tex"
 	}
 	Annotation {
 	  Name			  "x_Q"
-	  Position		  [130, 520]
+	  Position		  [145, 520]
 	  Interpreter		  "tex"
 	}
 	Annotation {
 	  Name			  "y_Q"
-	  Position		  [134, 545]
+	  Position		  [144, 545]
 	  Interpreter		  "tex"
 	}
       }
@@ -1042,10 +1042,22 @@ Model {
       SaturateOnIntegerOverflow	off
     }
     Block {
+      BlockType		      ToWorkspace
+      Name		      "Inputs"
+      SID		      56
+      Ports		      [1]
+      Position		      [1440, 735, 1500, 765]
+      BlockMirror	      on
+      VariableName	      "u"
+      MaxDataPoints	      "inf"
+      SampleTime	      "-1"
+      SaveFormat	      "Array"
+    }
+    Block {
       BlockType		      Gain
       Name		      "K_\\delta"
       SID		      13
-      Position		      [1400, 628, 1475, 662]
+      Position		      [1405, 628, 1480, 662]
       Gain		      "kDelta"
       ParameterDataTypeMode   "Inherit via internal rule"
       ParameterDataType	      "sfix(16)"
@@ -1159,6 +1171,18 @@ Model {
       Position		      [1305, 622, 1380, 668]
       Numerator		      "neuroNum"
       Denominator	      "neuroDen"
+    }
+    Block {
+      BlockType		      ToWorkspace
+      Name		      "Outputs"
+      SID		      55
+      Ports		      [1]
+      Position		      [1565, 735, 1625, 765]
+      BlockMirror	      on
+      VariableName	      "y"
+      MaxDataPoints	      "inf"
+      SampleTime	      "-1"
+      SaveFormat	      "Array"
     }
     Block {
       BlockType		      Reference
@@ -1372,36 +1396,12 @@ Model {
     }
     Block {
       BlockType		      ToWorkspace
-      Name		      "To Workspace1"
-      SID		      55
-      Ports		      [1]
-      Position		      [1515, 800, 1575, 830]
-      BlockMirror	      on
-      VariableName	      "y"
-      MaxDataPoints	      "inf"
-      SampleTime	      "-1"
-      SaveFormat	      "Array"
-    }
-    Block {
-      BlockType		      ToWorkspace
       Name		      "To Workspace12"
       SID		      37
       Ports		      [1]
       Position		      [390, 545, 450, 575]
       NamePlacement	      "alternate"
       VariableName	      "yc"
-      MaxDataPoints	      "inf"
-      SampleTime	      "-1"
-      SaveFormat	      "Array"
-    }
-    Block {
-      BlockType		      ToWorkspace
-      Name		      "To Workspace2"
-      SID		      56
-      Ports		      [1]
-      Position		      [1440, 740, 1500, 770]
-      BlockMirror	      on
-      VariableName	      "u"
       MaxDataPoints	      "inf"
       SampleTime	      "-1"
       SaveFormat	      "Array"
@@ -1472,8 +1472,8 @@ Model {
       SrcPort		      1
       Points		      [5, 0]
       Branch {
-	Points			[1, 1; 0, 109]
-	DstBlock		"To Workspace2"
+	Points			[1, 1; 0, 104]
+	DstBlock		"Inputs"
 	DstPort			1
       }
       Branch {
@@ -1486,8 +1486,8 @@ Model {
       SrcPort		      1
       Points		      [15, 0]
       Branch {
-	Points			[0, 170]
-	DstBlock		"To Workspace1"
+	Points			[0, 105]
+	DstBlock		"Outputs"
 	DstPort			1
       }
       Branch {
