@@ -34,7 +34,8 @@ modelPar.gain = gain;
 % load the bicycle parameters
 pathToParFile = ['parameters' filesep bike 'Par.txt'];
 par = par_text_to_struct(pathToParFile);
-display(sprintf('Parameters for the %s bicycle and rider have been loaded.', bike))
+str = 'Parameters for the %s bicycle and rider have been loaded.';
+display(sprintf(str, bike))
 
 % calculate the A, B, C, and D matrices of the bicycle model
 display(sprintf('Calculating the A, B, C, D matrices for %1.2f m/s', speed))
@@ -83,7 +84,7 @@ loopNames = {'Delta', 'PhiDot', 'Phi', 'Psi', 'Y'};
 % get the transfer functions for the closed loops
 for i = 1:length(loopNames)
     str = 'Finding the closed loop transfer function of the %s loop.';
-    display(sprintf(s, loopNames{i}))
+    display(sprintf(str, loopNames{i}))
     modelPar.loopNumber = i;
     update_model_variables(modelPar);
     [num, den] = linmod('WhippleModel');
@@ -92,7 +93,7 @@ end
 
 % get the transfer functions for the open loops
 for i = 1:length(loopNames)
-    str = 'Finding the open loop transfer function of the %s loop.'
+    str = 'Finding the open loop transfer function of the %s loop.';
     display(sprintf(str, loopNames{i}));
     modelPar.loopNumber = i;
     % open the appropriate loop
