@@ -11,7 +11,22 @@ function data = generate_data(bike, speed, gain, basicPlots)
 %   A general gain multiplier for the model.
 % basicPlots : boolean
 %   If 1 basic plots will be shown, if 0 no plots will be shown.
+%
+% Returns
+% -------
+% data : structure
+%   Complete data output from the model. Includes:
+%   - speed : float, speed of bicycle
+%   - par : structure, bicycle parameters
+%   - modelPar : structure, model input parameters
+%   - closedLoops : structure, closed loop transfer functions
+%   - openLoops : structure, open loop transfer functions
+%   - time : vector (n, 1), time
+%   - command : matrix (n, 5), commanded control
+%   - inputs : matrix (n, 3), inputs to the bicycle system
+%   - outputs : matrix (n, 18), outputs of the bicycle system
 
+% this is for the latex expressions in the simulink model that can't compute
 warning off
 
 modelPar.gain = gain;
@@ -67,7 +82,8 @@ loopNames = {'Delta', 'PhiDot', 'Phi', 'Psi', 'Y'};
 
 % get the transfer functions for the closed loops
 for i = 1:length(loopNames)
-    display(sprintf('Finding the closed loop transfer function of the %s loop.', loopNames{i}))
+    str = 'Finding the closed loop transfer function of the %s loop.';
+    display(sprintf(s, loopNames{i}))
     modelPar.loopNumber = i;
     update_model_variables(modelPar);
     [num, den] = linmod('WhippleModel');
@@ -76,7 +92,8 @@ end
 
 % get the transfer functions for the open loops
 for i = 1:length(loopNames)
-    display(sprintf('Finding the open loop transfer function of the %s loop.', loopNames{i}));
+    str = 'Finding the open loop transfer function of the %s loop.'
+    display(sprintf(str, loopNames{i}));
     modelPar.loopNumber = i;
     % open the appropriate loop
     modelPar.closed = closedTable(i + 1, :);
