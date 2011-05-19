@@ -53,6 +53,14 @@ modelPar.initialConditions = [0, 0, 0, 0, 0, 0, 0, 0, ...
 modelPar.neuroNum = 900;
 modelPar.neuroDen = [1, 2 * .707 * 30, 900];
 
+% handling qualities metric filter
+modelPar.handlingFilterNum = 400;
+modelPar.handlingFilterDen = [1, 40, 400];
+
+% path filter
+modelPar.pathFilterNum = (2.4 * gain)^2;
+modelPar.pathFilterDen = [1, 2 * 2.4 * gain  (2.4*gain)^2];
+
 % preview time delay
 modelPar.timeDelay = 2.75;
 
@@ -70,14 +78,15 @@ catch
     modelPar.kY = 0.0;
 end
 
-% make a truth table for opening the loops
-% zeros on the diagonal
-closedTable = ones(5) - eye(5);
-% add the default state of all closed loops
-closedTable = [ones(1, 5); closedTable];
+% make a truth table for perturbing the loops
+% the first row is default setup
+perturbTable = [zeros(1, 5); eye(5)];
+closedTable = ~perturbTable;
 
 % set closed to the default, all loops closed
+modelPar.perturb = perturbTable(1, :);
 modelPar.closed = closedTable(1, :);
+modelPar.isHandling = 0;
 
 loopNames = {'Delta', 'PhiDot', 'Phi', 'Psi', 'Y'};
 
@@ -85,8 +94,9 @@ loopNames = {'Delta', 'PhiDot', 'Phi', 'Psi', 'Y'};
 for i = 1:length(loopNames)
     str = 'Finding the closed loop transfer function of the %s loop.';
     display(sprintf(str, loopNames{i}))
-    modelPar.loopNumber = i;
-    update_model_variables(modelPar);
+    modelPar.loopNumber = i
+    modelPar.perturb = perturbTable(i + 1, :)
+    update_model_variables(modelPar)
     [num, den] = linmod('WhippleModel');
     closedLoops.(loopNames{i}) = [num; den];
 end
@@ -97,15 +107,28 @@ for i = 1:length(loopNames)
     display(sprintf(str, loopNames{i}));
     modelPar.loopNumber = i;
     % open the appropriate loop
-    modelPar.closed = closedTable(i + 1, :);
+    modelPar.perturb = perturbTable(i + 1, :)
+    modelPar.closed = closedTable(i + 1, :)
     update_model_variables(modelPar);
     [num, den] = linmod('WhippleModel');
     openLoops.(loopNames{i}) = [num; den];
 end
 
+% get the handling quality metric
+display('Finding the handling quality metric.')
+modelPar.isHandling = 1;
+modelPar.loopNumber = 3;
+modelPar.closed = [0, 0, 1, 1, 1];
+modelPar.perturb = [0, 0, 1, 0, 0]
+update_model_variables(modelPar);
+[num, den] = linmod('WhippleModel');
+handlingMetric = [num; den];
+
 % close all the loops and simulate
 modelPar.loopNumber = 0;
+modelPar.isHandling = 0;
 modelPar.closed = closedTable(1, :);
+modelPar.perturb = perturbTable(1, :);
 update_model_variables(modelPar)
 display('Simulating the tracking task')
 sim('WhippleModel.mdl')
@@ -117,6 +140,7 @@ data.par = par;
 data.modelPar = modelPar;
 data.closedLoops = closedLoops;
 data.openLoops = openLoops;
+data.handlingMetric = handlingMetric;
 data.time = t;
 data.command = command;
 data.inputs = u;
@@ -148,6 +172,12 @@ if basicPlots
     end
     legend(loopNames)
     hold off
+
+    figure(3)
+    num = handlingMetric(1, :);
+    den = handlingMetric(2, :);
+    [mag, phase, freq] = bode(tf(num, den));
+    plot(freq, 20 * log10(mag(1, :)'))
 
     outputPlot = plot_outputs(t, y);
 
