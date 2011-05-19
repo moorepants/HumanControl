@@ -12,60 +12,102 @@ function generate_data(bike, speed, gain)
 
 warning off
 
+modelPar.gain = gain;
+
 % load the bicycle parameters
 pathToParFile = ['parameters' filesep bike 'Par.txt'];
 par = par_text_to_struct(pathToParFile);
 
-% calculate the A, B, C, and D matrices
-[A, B, C, D] = whipple_pull_force_abcd(par, speed)
-initialConditions = [0, 0, 0, 0, 0, 0, 0, 0, ...
-                     0.0, -speed / par.rR, 0];
-outputs = {'xP',
-           'yP',
-           'psi',
-           'phi',
-           'thetaP',
-           'thetaR',
-           'delta',
-           'thetaF',
-           'xPdot',
-           'yPdot',
-           'psidot',
-           'phidot',
-           'thetaPdot',
-           'thetaRdot',
-           'deltadot',
-           'thetaFdot',
-           'xQ',
-           'yQ'}
+% calculate the A, B, C, and D matrices of the bicycle model
+[modelPar.A, modelPar.B, modelPar.C, modelPar.D] = ...
+    whipple_pull_force_abcd(par, speed);
+
+% more thought on the initial conditions of the front and rear wheels is needed
+modelPar.initialConditions = [0, 0, 0, 0, 0, 0, 0, 0, ...
+                              0.0, -speed / par.rR, 0];
 
 % human neuromuscular system
-neuroNum = 900;
-neuroDen = [1, 2 * .707 * 30, 900];
+modelPar.neuroNum = 900;
+modelPar.neuroDen = [1, 2 * .707 * 30, 900];
 
 % preview time delay
-timeDelay = 2.75
+modelPar.timeDelay = 2.75;
 
 % load the gains
 try
     pathToGainFile = ['gains' filesep bike 'Gains.txt'];
-    [kDelta, kPhiDot, kPhi, kPsi, kY] = load_gains(pathToGainFile, speed)
+    [modelPar.kDelta, modelPar.kPhiDot, modelPar.kPhi, ...
+     modelPar.kPsi, modelPar.kY] = load_gains(pathToGainFile, speed);
 catch
-    display('No Gains found, all set to unity')
-    kDelta = 0.0;
-    kPhiDot = 0.0;
-    kPhi = 0.0;
-    kPsi = 0.0;
-    kY = 0.0;
+    display('No Gains found, all set to zero. No feedbacmodelPar.k.')
+    modelPar.kDelta = 0.0;
+    modelPar.kPhiDot = 0.0;
+    modelPar.kPhi = 0.0;
+    modelPar.kPsi = 0.0;
+    modelPar.kY = 0.0;
 end
 
-options = simset('SrcWorkspace', 'current');
-sim('WhippleModel.mdl', [], options)
+% zeros on the diagonal
+closedTable = ones(5) - eye(5);
+% add the default state of all closed loops
+closedTable = [ones(1, 5); closedTable];
+% set closed to the default, all loops closed
+modelPar.closed = closedTable(1, :);
 
-outputPlot = plot_outputs(t, y)
+loopNames = {'Delta', 'PhiDot', 'Phi', 'Psi', 'Y'};
+
+figure(1)
+% go through each loop and plot the bode plot for the closed loops
+hold all
+for i = 1:5
+    modelPar.loopNumber = i;
+    update_model_variables(modelPar);
+    [num, den] = linmod('WhippleModel');
+    closedLoop = tf(num, den);
+    bode(closedLoop, {0.1, 20.0})
+end
+legend(loopNames)
+hold off
 
 figure(2)
+% go through each loop and plot the bode plot
+hold all
+for i = 1:5
+    modelPar.loopNumber = i;
+    % open the appropriate loop
+    modelPar.closed = closedTable(i + 1, :);
+    update_model_variables(modelPar);
+    [num, den] = linmod('WhippleModel');
+    closedLoop = tf(num, den);
+    bode(closedLoop, {0.1, 20.0})
+end
+legend(loopNames)
+hold off
+
+modelPar.loopNumber = 0;
+modelPar.closed = closedTable(1, :);
+update_model_variables(modelPar)
+sim('WhippleModel.mdl')
+outputPlot = plot_outputs(t, y);
+
+figure()
 plot(t, u)
+
+function update_model_variables(modelPar)
+% Puts all the variables needed for the simulink model in to the base
+% workspace. This is a hack because linmod has no way to operate inside a
+% function.
+%
+% Parameters
+% ----------
+% modelPar : structure
+%   A structure that contains a field for each unknown variable in the simulink
+%   model.
+
+modelParNames = fieldnames(modelPar);
+for i = 1:length(modelParNames)
+    assignin('base', modelParNames{i}, modelPar.(modelParNames{i}))
+end
 
 function outputPlot = plot_outputs(t, y)
 % Returns a plot of the model outputs.
@@ -98,23 +140,23 @@ outputs = {'$x_P$',
            '$\dot{\delta}$',
            '$\dot{\theta}_F$',
            '$x_Q$',
-           '$y_Q$'}
+           '$y_Q$'};
 
-outputPlot = figure()
+outputPlot = figure();
 % plot the wheel contact points
 subplot(6, 1, 1)
 plot(y(:, 1), y(:, 2), ...
      y(:, 17), y(:, 18))
 legend({'Rear Wheel', 'Front Wheel'})
 
-plt.angles = [3, 4, 5, 7]
-plt.wheelAngles = [6, 8]
-plt.contactRates = [9, 10]
-plt.rates = [11, 12, 13, 15]
-plt.wheelRates = [14, 16]
+plt.angles = [3, 4, 5, 7];
+plt.wheelAngles = [6, 8];
+plt.contactRates = [9, 10];
+plt.rates = [11, 12, 13, 15];
+plt.wheelRates = [14, 16];
 
-pltFields = fieldnames(plt)
-numPlots = length(pltFields)
+pltFields = fieldnames(plt);
+numPlots = length(pltFields);
 
 for i = 1:numPlots
     subplot(numPlots + 1, 1, i + 1)

@@ -5,16 +5,16 @@ Model {
   GraphicalInterface {
     NumRootInports	    1
     Inport {
-      Name		      "In1"
+      Name		      "Closed Loop Input"
     }
     NumRootOutports	    1
     Outport {
       BusObject		      ""
       BusOutputAsStruct	      "off"
-      Name		      "Out2"
+      Name		      "Closed Loop Output"
     }
     ParameterArgumentNames  ""
-    ComputedModelVersion    "1.141"
+    ComputedModelVersion    "1.159"
     NumModelReferences	    0
     NumTestPointedSignals   0
   }
@@ -33,9 +33,9 @@ Model {
   ModifiedByFormat	  "%<Auto>"
   LastModifiedBy	  "moorepants"
   ModifiedDateFormat	  "%<Auto>"
-  LastModifiedDate	  "Tue May 17 18:40:00 2011"
-  RTWModifiedTimeStamp	  227558395
-  ModelVersionFormat	  "1.%<AutoIncrement:141>"
+  LastModifiedDate	  "Wed May 18 16:15:44 2011"
+  RTWModifiedTimeStamp	  227636120
+  ModelVersionFormat	  "1.%<AutoIncrement:159>"
   ConfigurationManager	  "None"
   SampleTimeColors	  off
   SampleTimeAnnotations	  off
@@ -644,6 +644,24 @@ Model {
       Interpolate	      on
     }
     Block {
+      BlockType		      MultiPortSwitch
+      DataPortOrder	      "One-based contiguous"
+      Inputs		      "3"
+      DataPortIndices	      "{1,2,3}"
+      InputSameDT	      on
+      OutMin		      "[]"
+      OutMax		      "[]"
+      OutDataTypeMode	      "Inherit via internal rule"
+      OutDataType	      "fixdt(1,16,0)"
+      OutScaling	      "[]"
+      OutDataTypeStr	      "Inherit: Inherit via internal rule"
+      LockScale		      off
+      RndMeth		      "Floor"
+      SaturateOnIntegerOverflow	on
+      SampleTime	      "-1"
+      AllowDiffInputSizes     off
+    }
+    Block {
       BlockType		      Mux
       Inputs		      "4"
       DisplayOption	      "none"
@@ -723,6 +741,24 @@ Model {
       SampleTime	      "-1"
     }
     Block {
+      BlockType		      Switch
+      Criteria		      "u2 >= Threshold"
+      Threshold		      "0"
+      InputSameDT	      on
+      OutMin		      "[]"
+      OutMax		      "[]"
+      OutDataTypeMode	      "Inherit via internal rule"
+      OutDataType	      "fixdt(1,16,0)"
+      OutScaling	      "[]"
+      OutDataTypeStr	      "Inherit: Inherit via internal rule"
+      LockScale		      off
+      RndMeth		      "Floor"
+      SaturateOnIntegerOverflow	on
+      ZeroCross		      on
+      SampleTime	      "-1"
+      AllowDiffInputSizes     off
+    }
+    Block {
       BlockType		      ToWorkspace
       VariableName	      "simulink_output"
       MaxDataPoints	      "1000"
@@ -750,7 +786,7 @@ Model {
   }
   System {
     Name		    "WhippleModel"
-    Location		    [1366, 51, 3046, 1049]
+    Location		    [1369, 51, 3049, 1047]
     Open		    on
     ModelBrowserVisibility  off
     ModelBrowserWidth	    200
@@ -762,23 +798,23 @@ Model {
     TiledPaperMargins	    [0.500000, 0.500000, 0.500000, 0.500000]
     TiledPageScale	    1
     ShowPageBoundaries	    off
-    ZoomFactor		    "90"
+    ZoomFactor		    "125"
     ReportName		    "simulink-default.rpt"
-    SIDHighWatermark	    66
+    SIDHighWatermark	    111
     Block {
       BlockType		      Inport
-      Name		      "In1"
-      SID		      1
-      Position		      [270, 413, 300, 427]
+      Name		      "Closed Loop Input"
+      SID		      67
+      Position		      [670, 513, 700, 527]
       IconDisplay	      "Port number"
-      OutDataType	      "sfix(16)"
+      OutDataType	      "fixdt(1, 16)"
       OutScaling	      "2^0"
     }
     Block {
       BlockType		      StateSpace
       Name		      "Bicycle"
       SID		      24
-      Position		      [1565, 628, 1625, 662]
+      Position		      [2030, 628, 2090, 662]
       A			      "A"
       B			      "B"
       C			      "C"
@@ -796,9 +832,27 @@ Model {
       BlockType		      Constant
       Name		      "Constant"
       SID		      6
-      Position		      [475, 665, 505, 695]
+      Position		      [550, 710, 580, 740]
       Value		      "0"
       OutDataType	      "sfix(16)"
+      OutScaling	      "2^0"
+    }
+    Block {
+      BlockType		      Constant
+      Name		      "Constant1"
+      SID		      71
+      Position		      [2320, 659, 2410, 691]
+      Value		      "loopNumber"
+      OutDataType	      "fixdt(1, 16)"
+      OutScaling	      "2^0"
+    }
+    Block {
+      BlockType		      Constant
+      Name		      "Constant2"
+      SID		      79
+      Position		      [640, 574, 730, 606]
+      Value		      "loopNumber"
+      OutDataType	      "fixdt(1, 16)"
       OutScaling	      "2^0"
     }
     Block {
@@ -806,7 +860,7 @@ Model {
       Name		      "Feedback Variables"
       SID		      57
       Ports		      [1, 5]
-      Position		      [1675, 549, 1725, 741]
+      Position		      [2140, 549, 2190, 741]
       LibraryVersion	      "1.216"
       MinAlgLoopOccurrences   off
       PropExecContextOutsideSubsystem off
@@ -817,7 +871,7 @@ Model {
       MaskHideContents	      off
       System {
 	Name			"Feedback Variables"
-	Location		[1634, 169, 1973, 791]
+	Location		[1474, 169, 1813, 791]
 	Open			off
 	ModelBrowserVisibility	off
 	ModelBrowserWidth	200
@@ -852,18 +906,18 @@ Model {
 	}
 	Block {
 	  BlockType		  Outport
-	  Name			  "\\delta"
-	  SID			  59
-	  Position		  [240, 208, 270, 222]
+	  Name			  "y_Q"
+	  SID			  64
+	  Position		  [240, 538, 270, 552]
 	  IconDisplay		  "Port number"
 	  OutDataType		  "fixdt(1, 16)"
 	  OutScaling		  "2^0"
 	}
 	Block {
 	  BlockType		  Outport
-	  Name			  "\\dot{\\phi}"
-	  SID			  61
-	  Position		  [240, 358, 270, 372]
+	  Name			  "\\psi"
+	  SID			  63
+	  Position		  [240, 88, 270, 102]
 	  Port			  "2"
 	  IconDisplay		  "Port number"
 	  OutDataType		  "fixdt(1, 16)"
@@ -881,9 +935,9 @@ Model {
 	}
 	Block {
 	  BlockType		  Outport
-	  Name			  "\\psi"
-	  SID			  63
-	  Position		  [240, 88, 270, 102]
+	  Name			  "\\dot{\\phi}"
+	  SID			  61
+	  Position		  [240, 358, 270, 372]
 	  Port			  "4"
 	  IconDisplay		  "Port number"
 	  OutDataType		  "fixdt(1, 16)"
@@ -891,9 +945,9 @@ Model {
 	}
 	Block {
 	  BlockType		  Outport
-	  Name			  "y_Q"
-	  SID			  64
-	  Position		  [240, 538, 270, 552]
+	  Name			  "\\delta"
+	  SID			  59
+	  Position		  [240, 208, 270, 222]
 	  Port			  "5"
 	  IconDisplay		  "Port number"
 	  OutDataType		  "fixdt(1, 16)"
@@ -1028,9 +1082,94 @@ Model {
     }
     Block {
       BlockType		      Gain
+      Name		      "Gain"
+      SID		      107
+      Position		      [1805, 799, 1880, 841]
+      BlockMirror	      on
+      Gain		      "closed(1)"
+      ParameterDataTypeMode   "Inherit via internal rule"
+      ParameterDataType	      "fixdt(1, 16)"
+      ParameterScaling	      "2^0"
+      ParamDataTypeStr	      "Inherit: Inherit via internal rule"
+      OutDataTypeMode	      "Inherit via internal rule"
+      OutDataType	      "fixdt(1, 16)"
+      OutScaling	      "2^0"
+      OutDataTypeStr	      "Inherit: Inherit via internal rule"
+      SaturateOnIntegerOverflow	off
+    }
+    Block {
+      BlockType		      Gain
+      Name		      "Gain1"
+      SID		      108
+      Position		      [1555, 859, 1630, 901]
+      BlockMirror	      on
+      Gain		      "closed(2)"
+      ParameterDataTypeMode   "Inherit via internal rule"
+      ParameterDataType	      "fixdt(1, 16)"
+      ParameterScaling	      "2^0"
+      ParamDataTypeStr	      "Inherit: Inherit via internal rule"
+      OutDataTypeMode	      "Inherit via internal rule"
+      OutDataType	      "fixdt(1, 16)"
+      OutScaling	      "2^0"
+      OutDataTypeStr	      "Inherit: Inherit via internal rule"
+      SaturateOnIntegerOverflow	off
+    }
+    Block {
+      BlockType		      Gain
+      Name		      "Gain2"
+      SID		      109
+      Position		      [1360, 914, 1435, 956]
+      BlockMirror	      on
+      Gain		      "closed(3)"
+      ParameterDataTypeMode   "Inherit via internal rule"
+      ParameterDataType	      "fixdt(1, 16)"
+      ParameterScaling	      "2^0"
+      ParamDataTypeStr	      "Inherit: Inherit via internal rule"
+      OutDataTypeMode	      "Inherit via internal rule"
+      OutDataType	      "fixdt(1, 16)"
+      OutScaling	      "2^0"
+      OutDataTypeStr	      "Inherit: Inherit via internal rule"
+      SaturateOnIntegerOverflow	off
+    }
+    Block {
+      BlockType		      Gain
+      Name		      "Gain3"
+      SID		      110
+      Position		      [1120, 974, 1195, 1016]
+      BlockMirror	      on
+      Gain		      "closed(4)"
+      ParameterDataTypeMode   "Inherit via internal rule"
+      ParameterDataType	      "fixdt(1, 16)"
+      ParameterScaling	      "2^0"
+      ParamDataTypeStr	      "Inherit: Inherit via internal rule"
+      OutDataTypeMode	      "Inherit via internal rule"
+      OutDataType	      "fixdt(1, 16)"
+      OutScaling	      "2^0"
+      OutDataTypeStr	      "Inherit: Inherit via internal rule"
+      SaturateOnIntegerOverflow	off
+    }
+    Block {
+      BlockType		      Gain
+      Name		      "Gain4"
+      SID		      111
+      Position		      [910, 1039, 985, 1081]
+      BlockMirror	      on
+      Gain		      "closed(5)"
+      ParameterDataTypeMode   "Inherit via internal rule"
+      ParameterDataType	      "fixdt(1, 16)"
+      ParameterScaling	      "2^0"
+      ParamDataTypeStr	      "Inherit: Inherit via internal rule"
+      OutDataTypeMode	      "Inherit via internal rule"
+      OutDataType	      "fixdt(1, 16)"
+      OutScaling	      "2^0"
+      OutDataTypeStr	      "Inherit: Inherit via internal rule"
+      SaturateOnIntegerOverflow	off
+    }
+    Block {
+      BlockType		      Gain
       Name		      "Gain8"
       SID		      15
-      Position		      [415, 645, 450, 675]
+      Position		      [490, 690, 525, 720]
       ParameterDataTypeMode   "Inherit via internal rule"
       ParameterDataType	      "sfix(16)"
       ParameterScaling	      "2^0"
@@ -1046,7 +1185,7 @@ Model {
       Name		      "Inputs"
       SID		      56
       Ports		      [1]
-      Position		      [1440, 735, 1500, 765]
+      Position		      [1905, 735, 1965, 765]
       BlockMirror	      on
       VariableName	      "u"
       MaxDataPoints	      "inf"
@@ -1057,7 +1196,7 @@ Model {
       BlockType		      Gain
       Name		      "K_\\delta"
       SID		      13
-      Position		      [1405, 628, 1480, 662]
+      Position		      [1775, 628, 1850, 662]
       Gain		      "kDelta"
       ParameterDataTypeMode   "Inherit via internal rule"
       ParameterDataType	      "sfix(16)"
@@ -1073,7 +1212,7 @@ Model {
       BlockType		      Gain
       Name		      "K_\\dot{\\phi}"
       SID		      10
-      Position		      [1145, 632, 1220, 668]
+      Position		      [1565, 637, 1640, 673]
       Gain		      "kPhiDot"
       ParameterDataTypeMode   "Inherit via internal rule"
       ParameterDataType	      "sfix(16)"
@@ -1089,7 +1228,7 @@ Model {
       BlockType		      Gain
       Name		      "K_\\phi"
       SID		      4
-      Position		      [1000, 635, 1055, 675]
+      Position		      [1360, 645, 1415, 685]
       Gain		      "kPhi"
       ParameterDataTypeMode   "Inherit via internal rule"
       ParameterDataType	      "sfix(16)"
@@ -1105,7 +1244,7 @@ Model {
       BlockType		      Gain
       Name		      "K_\\psi"
       SID		      3
-      Position		      [845, 642, 910, 678]
+      Position		      [1150, 653, 1220, 697]
       Gain		      "kPsi"
       ParameterDataTypeMode   "Inherit via internal rule"
       ParameterDataType	      "sfix(16)"
@@ -1121,7 +1260,7 @@ Model {
       BlockType		      Gain
       Name		      "K_y"
       SID		      2
-      Position		      [700, 648, 755, 682]
+      Position		      [930, 668, 985, 702]
       Gain		      "kY"
       ParameterDataTypeMode   "Inherit via internal rule"
       ParameterDataType	      "sfix(16)"
@@ -1138,7 +1277,7 @@ Model {
       Name		      "Manual Switch1"
       SID		      17
       Ports		      [2, 1]
-      Position		      [550, 652, 580, 688]
+      Position		      [625, 697, 655, 733]
       LibraryVersion	      "1.216"
       SourceBlock	      "simulink/Signal\nRouting/Manual Switch"
       SourceType	      "Manual Switch"
@@ -1155,11 +1294,25 @@ Model {
       varsize		      off
     }
     Block {
+      BlockType		      MultiPortSwitch
+      Name		      "Multiport\nSwitch"
+      SID		      70
+      Ports		      [7, 1]
+      Position		      [2445, 668, 2490, 832]
+      DataPortOrder	      "Zero-based contiguous"
+      Inputs		      "6"
+      zeroidx		      on
+      InputSameDT	      off
+      OutDataType	      "fixdt(1, 16)"
+      OutScaling	      "2^0"
+      SaturateOnIntegerOverflow	off
+    }
+    Block {
       BlockType		      Mux
       Name		      "Mux1"
       SID		      19
       Ports		      [3, 1]
-      Position		      [1530, 574, 1535, 716]
+      Position		      [1995, 574, 2000, 716]
       ShowName		      off
       Inputs		      "3"
       DisplayOption	      "bar"
@@ -1168,7 +1321,7 @@ Model {
       BlockType		      TransferFcn
       Name		      "Neuromuscular"
       SID		      45
-      Position		      [1305, 622, 1380, 668]
+      Position		      [1875, 622, 1950, 668]
       Numerator		      "neuroNum"
       Denominator	      "neuroDen"
     }
@@ -1177,7 +1330,7 @@ Model {
       Name		      "Outputs"
       SID		      55
       Ports		      [1]
-      Position		      [1565, 735, 1625, 765]
+      Position		      [2030, 735, 2090, 765]
       BlockMirror	      on
       VariableName	      "y"
       MaxDataPoints	      "inf"
@@ -1189,7 +1342,7 @@ Model {
       Name		      "Ramp"
       SID		      20
       Ports		      [0, 1]
-      Position		      [155, 615, 185, 645]
+      Position		      [230, 660, 260, 690]
       DropShadow	      on
       ShowName		      off
       LibraryVersion	      "1.216"
@@ -1216,7 +1369,7 @@ Model {
       Name		      "Ramp1"
       SID		      21
       Ports		      [0, 1]
-      Position		      [115, 635, 145, 665]
+      Position		      [190, 680, 220, 710]
       DropShadow	      on
       ShowName		      off
       LibraryVersion	      "1.216"
@@ -1243,7 +1396,7 @@ Model {
       Name		      "Ramp2"
       SID		      22
       Ports		      [0, 1]
-      Position		      [155, 655, 185, 685]
+      Position		      [230, 700, 260, 730]
       DropShadow	      on
       ShowName		      off
       LibraryVersion	      "1.216"
@@ -1270,7 +1423,7 @@ Model {
       Name		      "Ramp3"
       SID		      23
       Ports		      [0, 1]
-      Position		      [115, 675, 145, 705]
+      Position		      [190, 720, 220, 750]
       DropShadow	      on
       ShowName		      off
       LibraryVersion	      "1.216"
@@ -1297,9 +1450,9 @@ Model {
       Name		      "Sum"
       SID		      26
       Ports		      [2, 1]
-      Position		      [1090, 640, 1110, 660]
+      Position		      [1510, 645, 1530, 665]
       ShowName		      off
-      Inputs		      "-+"
+      Inputs		      "+-"
       InputSameDT	      off
       OutDataTypeMode	      "Inherit via internal rule"
       OutDataType	      "sfix(16)"
@@ -1312,9 +1465,9 @@ Model {
       Name		      "Sum1"
       SID		      27
       Ports		      [2, 1]
-      Position		      [945, 645, 965, 665]
+      Position		      [1310, 655, 1330, 675]
       ShowName		      off
-      Inputs		      "-+"
+      Inputs		      "+-"
       InputSameDT	      off
       OutDataTypeMode	      "Inherit via internal rule"
       OutDataType	      "sfix(16)"
@@ -1327,9 +1480,9 @@ Model {
       Name		      "Sum3"
       SID		      29
       Ports		      [2, 1]
-      Position		      [790, 650, 810, 670]
+      Position		      [1095, 665, 1115, 685]
       ShowName		      off
-      Inputs		      "-+"
+      Inputs		      "+-"
       InputSameDT	      off
       OutDataTypeMode	      "Inherit via internal rule"
       OutDataType	      "sfix(16)"
@@ -1342,9 +1495,9 @@ Model {
       Name		      "Sum4"
       SID		      30
       Ports		      [2, 1]
-      Position		      [635, 655, 655, 675]
+      Position		      [880, 675, 900, 695]
       ShowName		      off
-      Inputs		      "-+"
+      Inputs		      "+-"
       InputSameDT	      off
       OutDataTypeMode	      "Inherit via internal rule"
       OutDataType	      "sfix(16)"
@@ -1357,7 +1510,7 @@ Model {
       Name		      "Sum5"
       SID		      31
       Ports		      [4, 1]
-      Position		      [220, 617, 245, 703]
+      Position		      [295, 662, 320, 748]
       DropShadow	      on
       ShowName		      off
       Inputs		      "++++"
@@ -1373,14 +1526,69 @@ Model {
       Name		      "Sum6"
       SID		      32
       Ports		      [2, 1]
-      Position		      [1260, 635, 1280, 655]
+      Position		      [1725, 635, 1745, 655]
       ShowName		      off
-      Inputs		      "-+"
+      Inputs		      "+-"
       InputSameDT	      off
       OutDataTypeMode	      "Inherit via internal rule"
       OutDataType	      "sfix(16)"
       OutScaling	      "2^0"
       OutDataTypeStr	      "Inherit: Inherit via internal rule"
+      SaturateOnIntegerOverflow	off
+    }
+    Block {
+      BlockType		      Switch
+      Name		      "Switch 1"
+      SID		      72
+      Position		      [1665, 614, 1695, 666]
+      Threshold		      "1"
+      InputSameDT	      off
+      OutDataType	      "fixdt(1, 16)"
+      OutScaling	      "2^0"
+      SaturateOnIntegerOverflow	off
+    }
+    Block {
+      BlockType		      Switch
+      Name		      "Switch 2"
+      SID		      73
+      Position		      [1450, 624, 1480, 676]
+      Threshold		      "2"
+      InputSameDT	      off
+      OutDataType	      "fixdt(1, 16)"
+      OutScaling	      "2^0"
+      SaturateOnIntegerOverflow	off
+    }
+    Block {
+      BlockType		      Switch
+      Name		      "Switch 3"
+      SID		      74
+      Position		      [1250, 634, 1280, 686]
+      Threshold		      "3"
+      InputSameDT	      off
+      OutDataType	      "fixdt(1, 16)"
+      OutScaling	      "2^0"
+      SaturateOnIntegerOverflow	off
+    }
+    Block {
+      BlockType		      Switch
+      Name		      "Switch 4"
+      SID		      75
+      Position		      [1020, 644, 1050, 696]
+      Threshold		      "4"
+      InputSameDT	      off
+      OutDataType	      "fixdt(1, 16)"
+      OutScaling	      "2^0"
+      SaturateOnIntegerOverflow	off
+    }
+    Block {
+      BlockType		      Switch
+      Name		      "Switch 5"
+      SID		      76
+      Position		      [805, 664, 835, 716]
+      Threshold		      "5"
+      InputSameDT	      off
+      OutDataType	      "fixdt(1, 16)"
+      OutScaling	      "2^0"
       SaturateOnIntegerOverflow	off
     }
     Block {
@@ -1399,7 +1607,7 @@ Model {
       Name		      "To Workspace12"
       SID		      37
       Ports		      [1]
-      Position		      [390, 545, 450, 575]
+      Position		      [465, 590, 525, 620]
       NamePlacement	      "alternate"
       VariableName	      "yc"
       MaxDataPoints	      "inf"
@@ -1410,7 +1618,7 @@ Model {
       BlockType		      TransferFcn
       Name		      "Transfer Fcn1"
       SID		      46
-      Position		      [300, 641, 375, 679]
+      Position		      [375, 686, 450, 724]
       DropShadow	      on
       ShowName		      off
       FontName		      "Arial"
@@ -1423,14 +1631,14 @@ Model {
       BlockType		      TransportDelay
       Name		      "Transport\nDelay1"
       SID		      51
-      Position		      [315, 545, 345, 575]
+      Position		      [390, 590, 420, 620]
       DelayTime		      "timeDelay"
     }
     Block {
       BlockType		      Outport
-      Name		      "Out2"
+      Name		      "Closed Loop Output"
       SID		      52
-      Position		      [345, 413, 375, 427]
+      Position		      [2545, 748, 2575, 762]
       IconDisplay	      "Port number"
       OutDataType	      "sfix(16)"
       OutScaling	      "2^0"
@@ -1520,21 +1728,9 @@ Model {
       DstPort		      4
     }
     Line {
-      SrcBlock		      "Neuromuscular"
-      SrcPort		      1
-      DstBlock		      "K_\\delta"
-      DstPort		      1
-    }
-    Line {
       SrcBlock		      "Transfer Fcn1"
       SrcPort		      1
       DstBlock		      "Gain8"
-      DstPort		      1
-    }
-    Line {
-      SrcBlock		      "Sum6"
-      SrcPort		      1
-      DstBlock		      "Neuromuscular"
       DstPort		      1
     }
     Line {
@@ -1542,24 +1738,6 @@ Model {
       SrcPort		      1
       DstBlock		      "To Workspace12"
       DstPort		      1
-    }
-    Line {
-      SrcBlock		      "K_\\psi"
-      SrcPort		      1
-      DstBlock		      "Sum1"
-      DstPort		      2
-    }
-    Line {
-      SrcBlock		      "K_\\dot{\\phi}"
-      SrcPort		      1
-      DstBlock		      "Sum6"
-      DstPort		      2
-    }
-    Line {
-      SrcBlock		      "K_\\phi"
-      SrcPort		      1
-      DstBlock		      "Sum"
-      DstPort		      2
     }
     Line {
       SrcBlock		      "Sum1"
@@ -1580,84 +1758,308 @@ Model {
       DstPort		      1
     }
     Line {
-      SrcBlock		      "K_y"
-      SrcPort		      1
-      DstBlock		      "Sum3"
-      DstPort		      2
-    }
-    Line {
-      SrcBlock		      "Manual Switch1"
-      SrcPort		      1
-      DstBlock		      "Sum4"
-      DstPort		      2
-    }
-    Line {
       SrcBlock		      "Gain8"
       SrcPort		      1
       DstBlock		      "Manual Switch1"
       DstPort		      1
     }
     Line {
+      SrcBlock		      "Constant1"
+      SrcPort		      1
+      DstBlock		      "Multiport\nSwitch"
+      DstPort		      1
+    }
+    Line {
+      SrcBlock		      "Multiport\nSwitch"
+      SrcPort		      1
+      DstBlock		      "Closed Loop Output"
+      DstPort		      1
+    }
+    Line {
+      SrcBlock		      "Sum6"
+      SrcPort		      1
+      DstBlock		      "K_\\delta"
+      DstPort		      1
+    }
+    Line {
       SrcBlock		      "K_\\delta"
+      SrcPort		      1
+      DstBlock		      "Neuromuscular"
+      DstPort		      1
+    }
+    Line {
+      SrcBlock		      "Neuromuscular"
       SrcPort		      1
       DstBlock		      "Mux1"
       DstPort		      2
     }
     Line {
-      SrcBlock		      "Feedback Variables"
+      SrcBlock		      "K_\\dot{\\phi}"
       SrcPort		      1
-      Points		      [20, 0; 0, -39; -504, 0]
+      DstBlock		      "Switch 1"
+      DstPort		      3
+    }
+    Line {
+      SrcBlock		      "K_\\phi"
+      SrcPort		      1
+      DstBlock		      "Switch 2"
+      DstPort		      3
+    }
+    Line {
+      SrcBlock		      "K_\\psi"
+      SrcPort		      1
+      DstBlock		      "Switch 3"
+      DstPort		      3
+    }
+    Line {
+      SrcBlock		      "K_y"
+      SrcPort		      1
+      DstBlock		      "Switch 4"
+      DstPort		      3
+    }
+    Line {
+      SrcBlock		      "Switch 1"
+      SrcPort		      1
       DstBlock		      "Sum6"
       DstPort		      1
     }
     Line {
-      SrcBlock		      "Feedback Variables"
-      SrcPort		      2
-      Points		      [40, 1; 0, -116; -694, 0]
+      SrcBlock		      "Switch 2"
+      SrcPort		      1
       DstBlock		      "Sum"
       DstPort		      1
     }
     Line {
-      SrcBlock		      "Feedback Variables"
-      SrcPort		      3
-      Points		      [60, 1; 0, -190; -860, 0]
+      SrcBlock		      "Switch 3"
+      SrcPort		      1
       DstBlock		      "Sum1"
       DstPort		      1
     }
     Line {
-      SrcBlock		      "Feedback Variables"
-      SrcPort		      4
-      Points		      [86, 1; 0, -260; -1040, 0]
+      SrcBlock		      "Switch 4"
+      SrcPort		      1
       DstBlock		      "Sum3"
       DstPort		      1
     }
     Line {
       SrcBlock		      "Feedback Variables"
       SrcPort		      5
-      Points		      [110, 0; 0, -335; -1220, 0]
+      Points		      [35, 0]
+      Branch {
+	Points			[0, 95]
+	DstBlock		"Gain"
+	DstPort			1
+      }
+      Branch {
+	DstBlock		"Multiport\nSwitch"
+	DstPort			3
+      }
+    }
+    Line {
+      SrcBlock		      "Constant2"
+      SrcPort		      1
+      Points		      [35, 0]
+      Branch {
+	Points			[225, 0]
+	Branch {
+	  Points		  [225, 0]
+	  Branch {
+	    Points		    [190, 0]
+	    Branch {
+	      Points		      [220, 0; 0, 50]
+	      DstBlock		      "Switch 1"
+	      DstPort		      2
+	    }
+	    Branch {
+	      Points		      [0, 60]
+	      DstBlock		      "Switch 2"
+	      DstPort		      2
+	    }
+	  }
+	  Branch {
+	    Points		    [0, 70]
+	    DstBlock		    "Switch 3"
+	    DstPort		    2
+	  }
+	}
+	Branch {
+	  Points		  [0, 80]
+	  DstBlock		  "Switch 4"
+	  DstPort		  2
+	}
+      }
+      Branch {
+	Points			[0, 100]
+	DstBlock		"Switch 5"
+	DstPort			2
+      }
+    }
+    Line {
+      SrcBlock		      "Closed Loop Input"
+      SrcPort		      1
+      Points		      [75, 0]
+      Branch {
+	Points			[0, 155]
+	DstBlock		"Switch 5"
+	DstPort			1
+      }
+      Branch {
+	Points			[230, 0]
+	Branch {
+	  Points		  [225, 0]
+	  Branch {
+	    Points		    [190, 0]
+	    Branch {
+	      Points		      [225, 0]
+	      DstBlock		      "Switch 1"
+	      DstPort		      1
+	    }
+	    Branch {
+	      Points		      [0, 115]
+	      DstBlock		      "Switch 2"
+	      DstPort		      1
+	    }
+	  }
+	  Branch {
+	    DstBlock		    "Switch 3"
+	    DstPort		    1
+	  }
+	}
+	Branch {
+	  Points		  [-5, 0]
+	  DstBlock		  "Switch 4"
+	  DstPort		  1
+	}
+      }
+    }
+    Line {
+      SrcBlock		      "Manual Switch1"
+      SrcPort		      1
+      Points		      [70, 0; 0, -10]
+      DstBlock		      "Switch 5"
+      DstPort		      3
+    }
+    Line {
+      SrcBlock		      "Switch 5"
+      SrcPort		      1
+      Points		      [10, 0; 0, -10]
       DstBlock		      "Sum4"
       DstPort		      1
     }
-    Annotation {
-      Position		      [413, 532]
+    Line {
+      SrcBlock		      "Feedback Variables"
+      SrcPort		      1
+      Points		      [105, 0; 0, 260]
+      Branch {
+	Points			[0, 235]
+	DstBlock		"Gain4"
+	DstPort			1
+      }
+      Branch {
+	DstBlock		"Multiport\nSwitch"
+	DstPort			7
+      }
+    }
+    Line {
+      SrcBlock		      "Gain"
+      SrcPort		      1
+      Points		      [-94, 1; 0, -171]
+      DstBlock		      "Sum6"
+      DstPort		      2
+    }
+    Line {
+      SrcBlock		      "Gain3"
+      SrcPort		      1
+      Points		      [-45, 0; 0, -315]
+      DstBlock		      "Sum3"
+      DstPort		      2
+    }
+    Line {
+      SrcBlock		      "Gain2"
+      SrcPort		      1
+      Points		      [-65, 1; 0, -266]
+      DstBlock		      "Sum1"
+      DstPort		      2
+    }
+    Line {
+      SrcBlock		      "Feedback Variables"
+      SrcPort		      3
+      Points		      [70, 0; 0, 130]
+      Branch {
+	Points			[0, 160]
+	DstBlock		"Gain2"
+	DstPort			1
+      }
+      Branch {
+	DstBlock		"Multiport\nSwitch"
+	DstPort			5
+      }
+    }
+    Line {
+      SrcBlock		      "Feedback Variables"
+      SrcPort		      2
+      Points		      [85, 0; 0, 195]
+      Branch {
+	Points			[0, 195]
+	DstBlock		"Gain3"
+	DstPort			1
+      }
+      Branch {
+	DstBlock		"Multiport\nSwitch"
+	DstPort			6
+      }
+    }
+    Line {
+      SrcBlock		      "Feedback Variables"
+      SrcPort		      4
+      Points		      [50, 0; 0, 65]
+      Branch {
+	Points			[0, 130]
+	DstBlock		"Gain1"
+	DstPort			1
+      }
+      Branch {
+	DstBlock		"Multiport\nSwitch"
+	DstPort			4
+      }
+    }
+    Line {
+      SrcBlock		      "Gain4"
+      SrcPort		      1
+      Points		      [-50, 0; 0, -370]
+      DstBlock		      "Sum4"
+      DstPort		      2
+    }
+    Line {
+      SrcBlock		      "Gain1"
+      SrcPort		      1
+      Points		      [-60, 0; 0, -220]
+      DstBlock		      "Sum"
+      DstPort		      2
     }
     Annotation {
-      Position		      [113, 715]
+      Position		      [423, 392]
+    }
+    Annotation {
+      Position		      [123, 575]
     }
     Annotation {
       Name		      "T_\\phi"
-      Position		      [1507, 589]
+      Position		      [1972, 589]
     }
     Annotation {
       Name		      "T_\\delta"
-      Position		      [1507, 627]
+      Position		      [1972, 627]
     }
     Annotation {
       Name		      "F"
-      Position		      [1518, 677]
+      Position		      [1983, 677]
     }
     Annotation {
-      Position		      [1229, 820]
+      Position		      [686, 948]
+    }
+    Annotation {
+      Position		      [1494, 788]
     }
   }
 }
