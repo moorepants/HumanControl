@@ -14,7 +14,7 @@ Model {
       Name		      "Closed Loop Output"
     }
     ParameterArgumentNames  ""
-    ComputedModelVersion    "1.159"
+    ComputedModelVersion    "1.160"
     NumModelReferences	    0
     NumTestPointedSignals   0
   }
@@ -33,9 +33,9 @@ Model {
   ModifiedByFormat	  "%<Auto>"
   LastModifiedBy	  "moorepants"
   ModifiedDateFormat	  "%<Auto>"
-  LastModifiedDate	  "Wed May 18 16:15:44 2011"
-  RTWModifiedTimeStamp	  227636120
-  ModelVersionFormat	  "1.%<AutoIncrement:159>"
+  LastModifiedDate	  "Wed May 18 17:36:05 2011"
+  RTWModifiedTimeStamp	  227640943
+  ModelVersionFormat	  "1.%<AutoIncrement:160>"
   ConfigurationManager	  "None"
   SampleTimeColors	  off
   SampleTimeAnnotations	  off
@@ -800,7 +800,7 @@ Model {
     ShowPageBoundaries	    off
     ZoomFactor		    "125"
     ReportName		    "simulink-default.rpt"
-    SIDHighWatermark	    111
+    SIDHighWatermark	    113
     Block {
       BlockType		      Inport
       Name		      "Closed Loop Input"
@@ -827,6 +827,18 @@ Model {
       SID		      5
       Position		      [330, 290, 350, 310]
       Decimation	      "10"
+    }
+    Block {
+      BlockType		      ToWorkspace
+      Name		      "Command Signals"
+      SID		      113
+      Ports		      [1]
+      Position		      [655, 390, 715, 420]
+      BlockMirror	      on
+      VariableName	      "command"
+      MaxDataPoints	      "inf"
+      SampleTime	      "-1"
+      SaveFormat	      "Array"
     }
     Block {
       BlockType		      Constant
@@ -1306,6 +1318,17 @@ Model {
       OutDataType	      "fixdt(1, 16)"
       OutScaling	      "2^0"
       SaturateOnIntegerOverflow	off
+    }
+    Block {
+      BlockType		      Mux
+      Name		      "Mux"
+      SID		      112
+      Ports		      [5, 1]
+      Position		      [755, 331, 760, 479]
+      BlockMirror	      on
+      ShowName		      off
+      Inputs		      "5"
+      DisplayOption	      "bar"
     }
     Block {
       BlockType		      Mux
@@ -1820,26 +1843,58 @@ Model {
     Line {
       SrcBlock		      "Switch 1"
       SrcPort		      1
-      DstBlock		      "Sum6"
-      DstPort		      1
+      Points		      [5, 0]
+      Branch {
+	DstBlock		"Sum6"
+	DstPort			1
+      }
+      Branch {
+	Points			[0, -295]
+	DstBlock		"Mux"
+	DstPort			1
+      }
     }
     Line {
       SrcBlock		      "Switch 2"
       SrcPort		      1
-      DstBlock		      "Sum"
-      DstPort		      1
+      Points		      [5, 0]
+      Branch {
+	DstBlock		"Sum"
+	DstPort			1
+      }
+      Branch {
+	Points			[0, -275]
+	DstBlock		"Mux"
+	DstPort			2
+      }
     }
     Line {
       SrcBlock		      "Switch 3"
       SrcPort		      1
-      DstBlock		      "Sum1"
-      DstPort		      1
+      Points		      [5, 0]
+      Branch {
+	DstBlock		"Sum1"
+	DstPort			1
+      }
+      Branch {
+	Points			[0, -255]
+	DstBlock		"Mux"
+	DstPort			3
+      }
     }
     Line {
       SrcBlock		      "Switch 4"
       SrcPort		      1
-      DstBlock		      "Sum3"
-      DstPort		      1
+      Points		      [15, 0]
+      Branch {
+	DstBlock		"Sum3"
+	DstPort			1
+      }
+      Branch {
+	Points			[0, -235]
+	DstBlock		"Mux"
+	DstPort			4
+      }
     }
     Line {
       SrcBlock		      "Feedback Variables"
@@ -1942,9 +1997,16 @@ Model {
     Line {
       SrcBlock		      "Switch 5"
       SrcPort		      1
-      Points		      [10, 0; 0, -10]
-      DstBlock		      "Sum4"
-      DstPort		      1
+      Points		      [10, 0; 0, -10; 10, 0]
+      Branch {
+	DstBlock		"Sum4"
+	DstPort			1
+      }
+      Branch {
+	Points			[0, -215]
+	DstBlock		"Mux"
+	DstPort			5
+      }
     }
     Line {
       SrcBlock		      "Feedback Variables"
@@ -2036,6 +2098,12 @@ Model {
       Points		      [-60, 0; 0, -220]
       DstBlock		      "Sum"
       DstPort		      2
+    }
+    Line {
+      SrcBlock		      "Mux"
+      SrcPort		      1
+      DstBlock		      "Command Signals"
+      DstPort		      1
     }
     Annotation {
       Position		      [423, 392]

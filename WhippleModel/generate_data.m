@@ -1,4 +1,4 @@
-function generate_data(bike, speed, gain)
+function data = generate_data(bike, speed, gain, basicPlots)
 % Generates data files for the human operator control model.
 %
 % Parameters
@@ -9,6 +9,8 @@ function generate_data(bike, speed, gain)
 %   The speed of the bicycle.
 % gain : float
 %   A general gain multiplier for the model.
+% basicPlots : boolean
+%   If 1 basic plots will be shown, if 0 no plots will be shown.
 
 warning off
 
@@ -17,10 +19,15 @@ modelPar.gain = gain;
 % load the bicycle parameters
 pathToParFile = ['parameters' filesep bike 'Par.txt'];
 par = par_text_to_struct(pathToParFile);
+display(sprintf('Parameters for the %s bicycle and rider have been loaded.', bike))
 
 % calculate the A, B, C, and D matrices of the bicycle model
+display(sprintf('Calculating the A, B, C, D matrices for %1.2f m/s', speed))
+tic
 [modelPar.A, modelPar.B, modelPar.C, modelPar.D] = ...
     whipple_pull_force_abcd(par, speed);
+elapsedTime = toc;
+display(sprintf('A, B, C, D calculated in %1.4f seconds.', elapsedTime))
 
 % more thought on the initial conditions of the front and rear wheels is needed
 modelPar.initialConditions = [0, 0, 0, 0, 0, 0, 0, 0, ...
@@ -39,7 +46,7 @@ try
     [modelPar.kDelta, modelPar.kPhiDot, modelPar.kPhi, ...
      modelPar.kPsi, modelPar.kY] = load_gains(pathToGainFile, speed);
 catch
-    display('No Gains found, all set to zero. No feedbacmodelPar.k.')
+    display('No Gains found, all set to zero. No feedback.')
     modelPar.kDelta = 0.0;
     modelPar.kPhiDot = 0.0;
     modelPar.kPhi = 0.0;
@@ -47,51 +54,89 @@ catch
     modelPar.kY = 0.0;
 end
 
+% make a truth table for opening the loops
 % zeros on the diagonal
 closedTable = ones(5) - eye(5);
 % add the default state of all closed loops
 closedTable = [ones(1, 5); closedTable];
+
 % set closed to the default, all loops closed
 modelPar.closed = closedTable(1, :);
 
 loopNames = {'Delta', 'PhiDot', 'Phi', 'Psi', 'Y'};
 
-figure(1)
-% go through each loop and plot the bode plot for the closed loops
-hold all
-for i = 1:5
+% get the transfer functions for the closed loops
+for i = 1:length(loopNames)
+    display(sprintf('Finding the closed loop transfer function of the %s loop.', loopNames{i}))
     modelPar.loopNumber = i;
     update_model_variables(modelPar);
     [num, den] = linmod('WhippleModel');
-    closedLoop = tf(num, den);
-    bode(closedLoop, {0.1, 20.0})
+    closedLoops.(loopNames{i}) = [num; den];
 end
-legend(loopNames)
-hold off
 
-figure(2)
-% go through each loop and plot the bode plot
-hold all
-for i = 1:5
+% get the transfer functions for the open loops
+for i = 1:length(loopNames)
+    display(sprintf('Finding the open loop transfer function of the %s loop.', loopNames{i}));
     modelPar.loopNumber = i;
     % open the appropriate loop
     modelPar.closed = closedTable(i + 1, :);
     update_model_variables(modelPar);
     [num, den] = linmod('WhippleModel');
-    closedLoop = tf(num, den);
-    bode(closedLoop, {0.1, 20.0})
+    openLoops.(loopNames{i}) = [num; den];
 end
-legend(loopNames)
-hold off
 
+% close all the loops and simulate
 modelPar.loopNumber = 0;
 modelPar.closed = closedTable(1, :);
 update_model_variables(modelPar)
+display('Simulating the tracking task')
 sim('WhippleModel.mdl')
-outputPlot = plot_outputs(t, y);
+display('Simulation finished')
 
-figure()
-plot(t, u)
+% write data for export
+data.speed = speed;
+data.par = par;
+data.modelPar = modelPar;
+data.closedLoops = closedLoops;
+data.openLoops = openLoops;
+data.time = t;
+data.command = command;
+data.inputs = u;
+data.outputs = y;
+
+% plot
+if basicPlots
+    display('Making basic plots.')
+    figure(1)
+    % go through each loop and plot the bode plot for the closed loops
+    hold all
+    for i = 1:length(loopNames)
+        nd = closedLoops.(loopNames{i});
+        num = nd(1, :);
+        den = nd(2, :);
+        bode(tf(num, den), {0.1, 20.0})
+    end
+    legend(loopNames)
+    hold off
+
+    figure(2)
+    % go through each loop and plot the bode plot
+    hold all
+    for i = 1:length(loopNames)
+        nd = openLoops.(loopNames{i});
+        num = nd(1, :);
+        den = nd(2, :);
+        bode(tf(num, den), {0.1, 20.0})
+    end
+    legend(loopNames)
+    hold off
+
+    outputPlot = plot_outputs(t, y);
+
+    figure()
+    plot(t, u)
+    display('Plotting finished.')
+end
 
 function update_model_variables(modelPar)
 % Puts all the variables needed for the simulink model in to the base
