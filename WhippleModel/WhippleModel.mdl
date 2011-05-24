@@ -5,7 +5,7 @@ Model {
   GraphicalInterface {
     NumRootInports	    1
     Inport {
-      Name		      "Closed Loop Input"
+      Name		      "Perturbation Input"
     }
     NumRootOutports	    1
     Outport {
@@ -14,7 +14,7 @@ Model {
       Name		      "Closed Loop Output"
     }
     ParameterArgumentNames  ""
-    ComputedModelVersion    "1.183"
+    ComputedModelVersion    "1.186"
     NumModelReferences	    0
     NumTestPointedSignals   0
   }
@@ -33,9 +33,9 @@ Model {
   ModifiedByFormat	  "%<Auto>"
   LastModifiedBy	  "moorepants"
   ModifiedDateFormat	  "%<Auto>"
-  LastModifiedDate	  "Mon May 23 18:08:40 2011"
-  RTWModifiedTimeStamp	  228074913
-  ModelVersionFormat	  "1.%<AutoIncrement:183>"
+  LastModifiedDate	  "Mon May 23 22:06:16 2011"
+  RTWModifiedTimeStamp	  228089172
+  ModelVersionFormat	  "1.%<AutoIncrement:186>"
   ConfigurationManager	  "None"
   SampleTimeColors	  off
   SampleTimeAnnotations	  off
@@ -786,7 +786,7 @@ Model {
   }
   System {
     Name		    "WhippleModel"
-    Location		    [1366, 51, 3046, 1049]
+    Location		    [3, 75, 1369, 743]
     Open		    on
     ModelBrowserVisibility  off
     ModelBrowserWidth	    200
@@ -798,12 +798,12 @@ Model {
     TiledPaperMargins	    [0.500000, 0.500000, 0.500000, 0.500000]
     TiledPageScale	    1
     ShowPageBoundaries	    off
-    ZoomFactor		    "102"
+    ZoomFactor		    "82"
     ReportName		    "simulink-default.rpt"
     SIDHighWatermark	    130
     Block {
       BlockType		      Inport
-      Name		      "Closed Loop Input"
+      Name		      "Perturbation Input"
       SID		      67
       Position		      [305, 268, 335, 282]
       IconDisplay	      "Port number"
@@ -864,34 +864,6 @@ Model {
       SID		      127
       Position		      [735, 359, 805, 391]
       Value		      "perturb(4)"
-      OutDataType	      "fixdt(1, 16)"
-      OutScaling	      "2^0"
-    }
-    Block {
-      BlockType		      Constant
-      Name		      "Constant3"
-      SID		      122
-      Position		      [380, 219, 470, 251]
-      Value		      "isHandling"
-      OutDataType	      "fixdt(1, 16)"
-      OutScaling	      "2^0"
-    }
-    Block {
-      BlockType		      Constant
-      Name		      "Constant4"
-      SID		      123
-      Position		      [1420, 539, 1510, 571]
-      BlockMirror	      on
-      Value		      "isHandling"
-      OutDataType	      "fixdt(1, 16)"
-      OutScaling	      "2^0"
-    }
-    Block {
-      BlockType		      Constant
-      Name		      "Constant5"
-      SID		      124
-      Position		      [2250, 704, 2340, 736]
-      Value		      "isHandling"
       OutDataType	      "fixdt(1, 16)"
       OutScaling	      "2^0"
     }
@@ -1283,6 +1255,68 @@ Model {
       SaturateOnIntegerOverflow	off
     }
     Block {
+      BlockType		      Constant
+      Name		      "HQ Metric Control 1"
+      SID		      122
+      Position		      [380, 219, 470, 251]
+      Value		      "isHandling"
+      OutDataType	      "fixdt(1, 16)"
+      OutScaling	      "2^0"
+    }
+    Block {
+      BlockType		      Constant
+      Name		      "HQ Metric Control 2"
+      SID		      123
+      Position		      [1420, 539, 1510, 571]
+      BlockMirror	      on
+      Value		      "isHandling"
+      OutDataType	      "fixdt(1, 16)"
+      OutScaling	      "2^0"
+    }
+    Block {
+      BlockType		      Constant
+      Name		      "HQ Metric Control 3"
+      SID		      124
+      Position		      [2250, 704, 2340, 736]
+      Value		      "isHandling"
+      OutDataType	      "fixdt(1, 16)"
+      OutScaling	      "2^0"
+    }
+    Block {
+      BlockType		      Switch
+      Name		      "HQ Metric Switch 1"
+      SID		      115
+      Position		      [540, 224, 575, 286]
+      Criteria		      "u2 ~= 0"
+      InputSameDT	      off
+      OutDataType	      "fixdt(1, 16)"
+      OutScaling	      "2^0"
+      SaturateOnIntegerOverflow	off
+    }
+    Block {
+      BlockType		      Switch
+      Name		      "HQ Metric Switch 2"
+      SID		      121
+      Position		      [1345, 584, 1375, 636]
+      BlockMirror	      on
+      Criteria		      "u2 ~= 0"
+      InputSameDT	      off
+      OutDataType	      "fixdt(1, 16)"
+      OutScaling	      "2^0"
+      SaturateOnIntegerOverflow	off
+    }
+    Block {
+      BlockType		      Switch
+      Name		      "HQ Metric Switch 3"
+      SID		      125
+      Position		      [2415, 644, 2445, 696]
+      Criteria		      "u2 ~= 0"
+      InputSameDT	      off
+      OutDataType	      "fixdt(1, 16)"
+      OutScaling	      "2^0"
+      SaturateOnIntegerOverflow	off
+    }
+    Block {
       BlockType		      TransferFcn
       Name		      "Handling Qualities Filter"
       SID		      114
@@ -1383,20 +1417,6 @@ Model {
       SaturateOnIntegerOverflow	off
     }
     Block {
-      BlockType		      MultiPortSwitch
-      Name		      "Multiport\nSwitch"
-      SID		      70
-      Ports		      [7, 1]
-      Position		      [2285, 409, 2330, 611]
-      DataPortOrder	      "Zero-based contiguous"
-      Inputs		      "6"
-      zeroidx		      on
-      InputSameDT	      off
-      OutDataType	      "fixdt(1, 16)"
-      OutScaling	      "2^0"
-      SaturateOnIntegerOverflow	off
-    }
-    Block {
       BlockType		      Mux
       Name		      "Mux"
       SID		      112
@@ -1438,11 +1458,30 @@ Model {
       SaveFormat	      "Array"
     }
     Block {
+      BlockType		      ToWorkspace
+      Name		      "Path"
+      SID		      37
+      Ports		      [1]
+      Position		      [520, 545, 580, 575]
+      NamePlacement	      "alternate"
+      VariableName	      "yc"
+      MaxDataPoints	      "inf"
+      SampleTime	      "-1"
+      SaveFormat	      "Array"
+    }
+    Block {
+      BlockType		      TransportDelay
+      Name		      "Preview Time"
+      SID		      51
+      Position		      [445, 545, 475, 575]
+      DelayTime		      "timeDelay"
+    }
+    Block {
       BlockType		      Reference
       Name		      "Ramp"
       SID		      20
       Ports		      [0, 1]
-      Position		      [260, 410, 290, 440]
+      Position		      [260, 405, 290, 435]
       ShowName		      off
       LibraryVersion	      "1.216"
       FontName		      "Arial"
@@ -1468,7 +1507,7 @@ Model {
       Name		      "Ramp1"
       SID		      21
       Ports		      [0, 1]
-      Position		      [220, 430, 250, 460]
+      Position		      [220, 425, 250, 455]
       ShowName		      off
       LibraryVersion	      "1.216"
       FontName		      "Arial"
@@ -1494,7 +1533,7 @@ Model {
       Name		      "Ramp2"
       SID		      22
       Ports		      [0, 1]
-      Position		      [260, 450, 290, 480]
+      Position		      [260, 445, 290, 475]
       ShowName		      off
       LibraryVersion	      "1.216"
       FontName		      "Arial"
@@ -1520,7 +1559,7 @@ Model {
       Name		      "Ramp3"
       SID		      23
       Ports		      [0, 1]
-      Position		      [220, 470, 250, 500]
+      Position		      [220, 465, 250, 495]
       ShowName		      off
       LibraryVersion	      "1.216"
       FontName		      "Arial"
@@ -1622,7 +1661,7 @@ Model {
       Name		      "Sum5"
       SID		      31
       Ports		      [4, 1]
-      Position		      [325, 412, 350, 498]
+      Position		      [325, 407, 350, 493]
       ShowName		      off
       Inputs		      "++++"
       InputSameDT	      off
@@ -1645,17 +1684,6 @@ Model {
       OutDataType	      "sfix(16)"
       OutScaling	      "2^0"
       OutDataTypeStr	      "Inherit: Inherit via internal rule"
-      SaturateOnIntegerOverflow	off
-    }
-    Block {
-      BlockType		      Switch
-      Name		      "Switch"
-      SID		      115
-      Position		      [540, 224, 575, 286]
-      Criteria		      "u2 ~= 0"
-      InputSameDT	      off
-      OutDataType	      "fixdt(1, 16)"
-      OutScaling	      "2^0"
       SaturateOnIntegerOverflow	off
     }
     Block {
@@ -1714,23 +1742,14 @@ Model {
       SaturateOnIntegerOverflow	off
     }
     Block {
-      BlockType		      Switch
-      Name		      "Switch 6"
-      SID		      121
-      Position		      [1345, 584, 1375, 636]
-      BlockMirror	      on
-      Criteria		      "u2 ~= 0"
-      InputSameDT	      off
-      OutDataType	      "fixdt(1, 16)"
-      OutScaling	      "2^0"
-      SaturateOnIntegerOverflow	off
-    }
-    Block {
-      BlockType		      Switch
-      Name		      "Switch 7"
-      SID		      125
-      Position		      [2395, 644, 2425, 696]
-      Criteria		      "u2 ~= 0"
+      BlockType		      MultiPortSwitch
+      Name		      "System Output\nSwitch"
+      SID		      70
+      Ports		      [7, 1]
+      Position		      [2285, 409, 2330, 611]
+      DataPortOrder	      "Zero-based contiguous"
+      Inputs		      "6"
+      zeroidx		      on
       InputSameDT	      off
       OutDataType	      "fixdt(1, 16)"
       OutScaling	      "2^0"
@@ -1748,18 +1767,6 @@ Model {
       SaveFormat	      "Array"
     }
     Block {
-      BlockType		      ToWorkspace
-      Name		      "To Workspace12"
-      SID		      37
-      Ports		      [1]
-      Position		      [520, 545, 580, 575]
-      NamePlacement	      "alternate"
-      VariableName	      "yc"
-      MaxDataPoints	      "inf"
-      SampleTime	      "-1"
-      SaveFormat	      "Array"
-    }
-    Block {
       BlockType		      TransferFcn
       Name		      "Transfer Fcn1"
       SID		      46
@@ -1769,17 +1776,10 @@ Model {
       Denominator	      "pathFilterDen"
     }
     Block {
-      BlockType		      TransportDelay
-      Name		      "Transport\nDelay1"
-      SID		      51
-      Position		      [445, 545, 475, 575]
-      DelayTime		      "timeDelay"
-    }
-    Block {
       BlockType		      Outport
       Name		      "Closed Loop Output"
       SID		      52
-      Position		      [2475, 663, 2505, 677]
+      Position		      [2495, 663, 2525, 677]
       IconDisplay	      "Port number"
       OutDataType	      "sfix(16)"
       OutScaling	      "2^0"
@@ -1825,9 +1825,9 @@ Model {
       }
     }
     Line {
-      SrcBlock		      "Transport\nDelay1"
+      SrcBlock		      "Preview Time"
       SrcPort		      1
-      DstBlock		      "To Workspace12"
+      DstBlock		      "Path"
       DstPort		      1
     }
     Line {
@@ -1851,7 +1851,7 @@ Model {
     Line {
       SrcBlock		      "Constant1"
       SrcPort		      1
-      DstBlock		      "Multiport\nSwitch"
+      DstBlock		      "System Output\nSwitch"
       DstPort		      1
     }
     Line {
@@ -1957,7 +1957,7 @@ Model {
       SrcPort		      5
       Points		      [35, 0]
       Branch {
-	DstBlock		"Multiport\nSwitch"
+	DstBlock		"System Output\nSwitch"
 	DstPort			3
       }
       Branch {
@@ -1974,11 +1974,11 @@ Model {
       }
     }
     Line {
-      SrcBlock		      "Closed Loop Input"
+      SrcBlock		      "Perturbation Input"
       SrcPort		      1
       Points		      [15, 0]
       Branch {
-	DstBlock		"Switch"
+	DstBlock		"HQ Metric Switch 1"
 	DstPort			3
       }
       Branch {
@@ -2011,7 +2011,7 @@ Model {
 	DstPort			1
       }
       Branch {
-	DstBlock		"Multiport\nSwitch"
+	DstBlock		"System Output\nSwitch"
 	DstPort			7
       }
     }
@@ -2041,7 +2041,7 @@ Model {
       SrcPort		      3
       Points		      [70, 0; 0, 140]
       Branch {
-	DstBlock		"Multiport\nSwitch"
+	DstBlock		"System Output\nSwitch"
 	DstPort			5
       }
       Branch {
@@ -2060,7 +2060,7 @@ Model {
 	DstPort			1
       }
       Branch {
-	DstBlock		"Multiport\nSwitch"
+	DstBlock		"System Output\nSwitch"
 	DstPort			6
       }
     }
@@ -2069,7 +2069,7 @@ Model {
       SrcPort		      4
       Points		      [50, 0; 0, 70]
       Branch {
-	DstBlock		"Multiport\nSwitch"
+	DstBlock		"System Output\nSwitch"
 	DstPort			4
       }
       Branch {
@@ -2099,7 +2099,7 @@ Model {
       DstPort		      1
     }
     Line {
-      SrcBlock		      "Switch"
+      SrcBlock		      "HQ Metric Switch 1"
       SrcPort		      1
       Points		      [50, 0]
       Branch {
@@ -2154,7 +2154,7 @@ Model {
       }
     }
     Line {
-      SrcBlock		      "Switch 6"
+      SrcBlock		      "HQ Metric Switch 2"
       SrcPort		      1
       Points		      [-9, 0; 0, -195]
       DstBlock		      "Sum"
@@ -2163,60 +2163,60 @@ Model {
     Line {
       SrcBlock		      "Gain1"
       SrcPort		      1
-      DstBlock		      "Switch 6"
+      DstBlock		      "HQ Metric Switch 2"
       DstPort		      3
     }
     Line {
       SrcBlock		      "Gain7"
       SrcPort		      1
       Points		      [-65, 0; 0, -275]
-      DstBlock		      "Switch 6"
+      DstBlock		      "HQ Metric Switch 2"
       DstPort		      1
     }
     Line {
       SrcBlock		      "Handling Qualities Filter"
       SrcPort		      1
       Points		      [15, 0; 0, 70]
-      DstBlock		      "Switch"
+      DstBlock		      "HQ Metric Switch 1"
       DstPort		      1
     }
     Line {
-      SrcBlock		      "Constant3"
+      SrcBlock		      "HQ Metric Control 1"
       SrcPort		      1
       Points		      [20, 0; 0, 20]
-      DstBlock		      "Switch"
+      DstBlock		      "HQ Metric Switch 1"
       DstPort		      2
     }
     Line {
-      SrcBlock		      "Constant4"
+      SrcBlock		      "HQ Metric Control 2"
       SrcPort		      1
       Points		      [-15, 0; 0, 55]
-      DstBlock		      "Switch 6"
+      DstBlock		      "HQ Metric Switch 2"
       DstPort		      2
     }
     Line {
       SrcBlock		      "Gain5"
       SrcPort		      1
       Points		      [60, 0; 0, -270]
-      DstBlock		      "Switch 7"
+      DstBlock		      "HQ Metric Switch 3"
       DstPort		      1
     }
     Line {
-      SrcBlock		      "Multiport\nSwitch"
+      SrcBlock		      "System Output\nSwitch"
       SrcPort		      1
-      Points		      [30, 0; 0, 170]
-      DstBlock		      "Switch 7"
+      Points		      [30, 0; 0, 175]
+      DstBlock		      "HQ Metric Switch 3"
       DstPort		      3
     }
     Line {
-      SrcBlock		      "Constant5"
+      SrcBlock		      "HQ Metric Control 3"
       SrcPort		      1
       Points		      [30, 0; 0, -50]
-      DstBlock		      "Switch 7"
+      DstBlock		      "HQ Metric Switch 3"
       DstPort		      2
     }
     Line {
-      SrcBlock		      "Switch 7"
+      SrcBlock		      "HQ Metric Switch 3"
       SrcPort		      1
       DstBlock		      "Closed Loop Output"
       DstPort		      1
@@ -2254,8 +2254,8 @@ Model {
 	DstPort			1
       }
       Branch {
-	Points			[0, 105]
-	DstBlock		"Transport\nDelay1"
+	Points			[0, 110]
+	DstBlock		"Preview Time"
 	DstPort			1
       }
     }

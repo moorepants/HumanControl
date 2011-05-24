@@ -56,7 +56,7 @@ modelPar.initialConditions = [-par.w, ... rear wheel contact x
                                0, ... rear wheel rotation
                                0, ... steer angle
                                0, ... front wheel rotation
-                               0.0, ... roll rate
+                               0, ... roll rate
                                -speed / par.rR, ... rear wheel rate
                                0]; % steer rate
 
@@ -75,7 +75,7 @@ modelPar.pathFilterDen = [1, 2 * 2.4 * gain  (2.4*gain)^2];
 % preview time delay
 modelPar.timeDelay = 2.75;
 
-% load the gains
+% load the gains, set to zero if gains aren't available
 try
     pathToGainFile = ['gains' filesep bike 'Gains.txt'];
     [modelPar.kDelta, modelPar.kPhiDot, modelPar.kPhi, ...
@@ -91,9 +91,9 @@ end
 
 % make a truth table for perturbing the loops
 % the first row is default setup
-perturbTable = [zeros(1, 5); eye(5)]
+perturbTable = [zeros(1, 5); eye(5)];
 % make a truth table for closing the loops
-closedTable = ~perturbTable
+closedTable = ~perturbTable;
 
 % set all loops closed, perturbing none
 modelPar.perturb = perturbTable(1, :);
@@ -110,7 +110,8 @@ for i = 1:length(loopNames)
     modelPar.perturb = perturbTable(i + 1, :);
     update_model_variables(modelPar)
     [num, den] = linmod('WhippleModel');
-    closedLoops.(loopNames{i}) = [num; den];
+    closedLoops.(loopNames{i}).num = num;
+    closedLoops.(loopNames{i}).den = den;
 end
 
 % get the transfer functions for the open loops
@@ -123,7 +124,8 @@ for i = 1:length(loopNames)
     modelPar.closed = closedTable(i + 1, :);
     update_model_variables(modelPar);
     [num, den] = linmod('WhippleModel');
-    openLoops.(loopNames{i}) = [num; den];
+    openLoops.(loopNames{i}).num = num;
+    openLoops.(loopNames{i}).den = den;
 end
 
 % get the handling quality metric
@@ -142,9 +144,11 @@ modelPar.isHandling = 0;
 modelPar.closed = closedTable(1, :);
 modelPar.perturb = perturbTable(1, :);
 update_model_variables(modelPar)
-display('Simulating the tracking task')
+display('Simulating the tracking task.')
+tic;
 sim('WhippleModel.mdl')
-display('Simulation finished')
+elapsedTime = toc;
+display(sprintf('Simulation finished in %f1.3 seconds.', elapsedTime))
 
 % set the initial point of the front wheel ahead of the rear wheel by the
 % wheelbase length
@@ -161,6 +165,7 @@ data.time = t;
 data.command = command;
 data.inputs = u;
 data.outputs = y;
+data.path = yc;
 
 % plot
 if basicPlots
@@ -169,9 +174,8 @@ if basicPlots
     % go through each loop and plot the bode plot for the closed loops
     hold all
     for i = 1:length(loopNames)
-        nd = closedLoops.(loopNames{i});
-        num = nd(1, :);
-        den = nd(2, :);
+        num = closedLoops.(loopNames{i}).num;
+        den = closedLoops.(loopNames{i}).den;
         bode(tf(num, den), {0.1, 20.0})
     end
     legend(loopNames)
@@ -181,9 +185,8 @@ if basicPlots
     % go through each loop and plot the bode plot
     hold all
     for i = 1:length(loopNames)
-        nd = openLoops.(loopNames{i});
-        num = nd(1, :);
-        den = nd(2, :);
+        num = openLoops.(loopNames{i}).num;
+        den = openLoops.(loopNames{i}).den;
         bode(tf(num, den), {0.1, 20.0})
     end
     legend(loopNames)
@@ -227,6 +230,9 @@ function outputPlot = plot_outputs(t, y, yc)
 % t : matrix, size(n, 1)
 %   The time vector.
 % y : matrix, size(n, 18)
+%   The outputs of the bicycle system.
+% yc : matrix, size(n, 1)
+%   The path that was tracked.
 %
 % Returns
 % -------
@@ -258,7 +264,7 @@ subplot(6, 1, 1)
 plot(y(:, 17), yc, ...
      y(:, 1), y(:, 2), ...
      y(:, 17), y(:, 18))
-legend({'Rear Wheel', 'Front Wheel'})
+legend({'Path', 'Rear Wheel', 'Front Wheel'})
 
 plt.angles = [3, 4, 5, 7];
 plt.wheelAngles = [6, 8];
@@ -281,12 +287,12 @@ for i = 1:numPlots
     %set(leg, 'interpreter', 'latex')
 end
 
-function [kDelta, kPhiDot, kPhi, kPsi, kY] = load_gains(path, speed)
+function [kDelta, kPhiDot, kPhi, kPsi, kY] = load_gains(pathToGains, speed)
 % Returns the gains from a file for a particular speed.
 %
 % Parameters
 % ----------
-% path : string
+% pathToGains : string
 %   Path to a csv file with the gains for one bike at various speeds.
 % speed : float
 %   Speed associated with the desired gains.
@@ -304,7 +310,7 @@ function [kDelta, kPhiDot, kPhi, kPsi, kY] = load_gains(path, speed)
 % kY : float
 %   The gain for the lateral deviation loop.
 
-contents = importdata(path);
+contents = importdata(pathToGains);
 
 % find the row with the corresponding speed
 speeds = contents.data(:, 1);
