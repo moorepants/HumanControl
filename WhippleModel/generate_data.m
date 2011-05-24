@@ -45,13 +45,24 @@ tic
 elapsedTime = toc;
 display(sprintf('A, B, C, D calculated in %1.4f seconds.', elapsedTime))
 
-% more thought on the initial conditions of the front and rear wheels is needed
-modelPar.initialConditions = [0, 0, 0, 0, 0, 0, 0, 0, ...
-                              0.0, -speed / par.rR, 0];
+% Keep in mind that the there is a function that relates steer angle, roll
+% angle and pitch angle that must be enforced when setting any of those initial
+% conditions.
+modelPar.initialConditions = [-par.w, ... rear wheel contact x
+                               0, ... rear wheel contact y
+                               0, ... yaw angle
+                               0, ... roll angle
+                               0, ... pitch angle
+                               0, ... rear wheel rotation
+                               0, ... steer angle
+                               0, ... front wheel rotation
+                               0.0, ... roll rate
+                               -speed / par.rR, ... rear wheel rate
+                               0]; % steer rate
 
 % human neuromuscular system
 modelPar.neuroNum = 900;
-modelPar.neuroDen = [1, 2 * .707 * 30, 900];
+modelPar.neuroDen = [1, 2 * 0.707 * 30, 900];
 
 % handling qualities metric filter
 modelPar.handlingFilterNum = 400;
@@ -80,10 +91,11 @@ end
 
 % make a truth table for perturbing the loops
 % the first row is default setup
-perturbTable = [zeros(1, 5); eye(5)];
-closedTable = ~perturbTable;
+perturbTable = [zeros(1, 5); eye(5)]
+% make a truth table for closing the loops
+closedTable = ~perturbTable
 
-% set closed to the default, all loops closed
+% set all loops closed, perturbing none
 modelPar.perturb = perturbTable(1, :);
 modelPar.closed = closedTable(1, :);
 modelPar.isHandling = 0;
@@ -94,8 +106,8 @@ loopNames = {'Delta', 'PhiDot', 'Phi', 'Psi', 'Y'};
 for i = 1:length(loopNames)
     str = 'Finding the closed loop transfer function of the %s loop.';
     display(sprintf(str, loopNames{i}))
-    modelPar.loopNumber = i
-    modelPar.perturb = perturbTable(i + 1, :)
+    modelPar.loopNumber = i;
+    modelPar.perturb = perturbTable(i + 1, :);
     update_model_variables(modelPar)
     [num, den] = linmod('WhippleModel');
     closedLoops.(loopNames{i}) = [num; den];
@@ -107,8 +119,8 @@ for i = 1:length(loopNames)
     display(sprintf(str, loopNames{i}));
     modelPar.loopNumber = i;
     % open the appropriate loop
-    modelPar.perturb = perturbTable(i + 1, :)
-    modelPar.closed = closedTable(i + 1, :)
+    modelPar.perturb = perturbTable(i + 1, :);
+    modelPar.closed = closedTable(i + 1, :);
     update_model_variables(modelPar);
     [num, den] = linmod('WhippleModel');
     openLoops.(loopNames{i}) = [num; den];
@@ -119,7 +131,7 @@ display('Finding the handling quality metric.')
 modelPar.isHandling = 1;
 modelPar.loopNumber = 3;
 modelPar.closed = [0, 0, 1, 1, 1];
-modelPar.perturb = [0, 0, 1, 0, 0]
+modelPar.perturb = [0, 0, 1, 0, 0];
 update_model_variables(modelPar);
 [num, den] = linmod('WhippleModel');
 handlingMetric = [num; den];
@@ -133,6 +145,10 @@ update_model_variables(modelPar)
 display('Simulating the tracking task')
 sim('WhippleModel.mdl')
 display('Simulation finished')
+
+% set the initial point of the front wheel ahead of the rear wheel by the
+% wheelbase length
+y(:, 17) = y(:, 17) + par.w;
 
 % write data for export
 data.speed = speed;
@@ -176,10 +192,11 @@ if basicPlots
     figure(3)
     num = handlingMetric(1, :);
     den = handlingMetric(2, :);
-    [mag, phase, freq] = bode(tf(num, den));
-    plot(freq, 20 * log10(mag(1, :)'))
+    wl = linspace(0.01, 20, 200);
+    [mag, phase, freq] = bode(tf(num, den), wl);
+    plot(wl, mag(:)')
 
-    outputPlot = plot_outputs(t, y);
+    outputPlot = plot_outputs(t, y, yc);
 
     figure()
     plot(t, u)
@@ -202,7 +219,7 @@ for i = 1:length(modelParNames)
     assignin('base', modelParNames{i}, modelPar.(modelParNames{i}))
 end
 
-function outputPlot = plot_outputs(t, y)
+function outputPlot = plot_outputs(t, y, yc)
 % Returns a plot of the model outputs.
 %
 % Parameters
@@ -238,7 +255,8 @@ outputs = {'$x_P$',
 outputPlot = figure();
 % plot the wheel contact points
 subplot(6, 1, 1)
-plot(y(:, 1), y(:, 2), ...
+plot(y(:, 17), yc, ...
+     y(:, 1), y(:, 2), ...
      y(:, 17), y(:, 18))
 legend({'Rear Wheel', 'Front Wheel'})
 

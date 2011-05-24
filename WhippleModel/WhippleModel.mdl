@@ -14,7 +14,7 @@ Model {
       Name		      "Closed Loop Output"
     }
     ParameterArgumentNames  ""
-    ComputedModelVersion    "1.181"
+    ComputedModelVersion    "1.183"
     NumModelReferences	    0
     NumTestPointedSignals   0
   }
@@ -33,9 +33,9 @@ Model {
   ModifiedByFormat	  "%<Auto>"
   LastModifiedBy	  "moorepants"
   ModifiedDateFormat	  "%<Auto>"
-  LastModifiedDate	  "Wed May 18 23:51:45 2011"
-  RTWModifiedTimeStamp	  227663498
-  ModelVersionFormat	  "1.%<AutoIncrement:181>"
+  LastModifiedDate	  "Mon May 23 18:08:40 2011"
+  RTWModifiedTimeStamp	  228074913
+  ModelVersionFormat	  "1.%<AutoIncrement:183>"
   ConfigurationManager	  "None"
   SampleTimeColors	  off
   SampleTimeAnnotations	  off
@@ -786,7 +786,7 @@ Model {
   }
   System {
     Name		    "WhippleModel"
-    Location		    [0, 75, 1366, 743]
+    Location		    [1366, 51, 3046, 1049]
     Open		    on
     ModelBrowserVisibility  off
     ModelBrowserWidth	    200
@@ -798,7 +798,7 @@ Model {
     TiledPaperMargins	    [0.500000, 0.500000, 0.500000, 0.500000]
     TiledPageScale	    1
     ShowPageBoundaries	    off
-    ZoomFactor		    "82"
+    ZoomFactor		    "102"
     ReportName		    "simulink-default.rpt"
     SIDHighWatermark	    130
     Block {
@@ -1254,7 +1254,7 @@ Model {
       SID		      117
       Position		      [1850, 853, 1945, 897]
       BlockMirror	      on
-      Gain		      "-1/kPhiDot"
+      Gain		      "1/kPhiDot"
       ParameterDataTypeMode   "Inherit via internal rule"
       ParameterDataType	      "fixdt(1, 16)"
       ParameterScaling	      "2^0"
@@ -2041,20 +2041,13 @@ Model {
       SrcPort		      3
       Points		      [70, 0; 0, 140]
       Branch {
-	Points			[0, 150; -270, 0]
-	Branch {
-	  DstBlock		  "Gain2"
-	  DstPort		  1
-	}
-	Branch {
-	  Points		  [0, 170]
-	  DstBlock		  "Sum2"
-	  DstPort		  1
-	}
-      }
-      Branch {
 	DstBlock		"Multiport\nSwitch"
 	DstPort			5
+      }
+      Branch {
+	Points			[0, 150]
+	DstBlock		"Gain2"
+	DstPort			1
       }
     }
     Line {
@@ -2076,13 +2069,20 @@ Model {
       SrcPort		      4
       Points		      [50, 0; 0, 70]
       Branch {
-	Points			[0, 115]
-	DstBlock		"Gain1"
-	DstPort			1
-      }
-      Branch {
 	DstBlock		"Multiport\nSwitch"
 	DstPort			4
+      }
+      Branch {
+	Points			[0, 115; -265, 0]
+	Branch {
+	  DstBlock		  "Gain1"
+	  DstPort		  1
+	}
+	Branch {
+	  Points		  [0, 235]
+	  DstBlock		  "Sum2"
+	  DstPort		  1
+	}
       }
     }
     Line {
