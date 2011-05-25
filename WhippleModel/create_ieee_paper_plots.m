@@ -1,29 +1,28 @@
-clc; close all;
+function create_ieee_paper_plots(data)
+% Creates all of the figures for the IEEE paper.
 
-bikes = {'Benchmark', 'Browserins', 'Browser', 'Pista', ...
-         'Fisher', 'Yellow', 'Yellowrev'};
-speedNames = {'Slow', 'Medium', 'Fast'};
+%loop_shape_example(data.Benchmark)
+%open_loop_all_bikes(data)
+handling_all_bikes(data)
 
-%data = load_bikes(bikes);
+function loop_shape_example(bikeData)
+% Creates the example loop shaping for the bicycle at medium speed.
 
 % used for figure width to height ratio
 goldenRatio = (1 + sqrt(5)) / 2;
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Example Loop Shaping for the Benchmark Bicycle
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 figure()
 freq = {0.1, 20.0};
 
 % the closed delta loop
-num = data.Benchmark.Medium.closedLoops.Delta.num;
-den = data.Benchmark.Medium.closedLoops.Delta.den;
+num = bikeData.Medium.closedLoops.Delta.num;
+den = bikeData.Medium.closedLoops.Delta.den;
 hold all
 deltaBode = bodeplot(tf(num, den), freq);
 
 % the closed phi dot loop
-num = data.Benchmark.Medium.closedLoops.PhiDot.num;
-den = data.Benchmark.Medium.closedLoops.PhiDot.den;
+num = bikeData.Medium.closedLoops.PhiDot.num;
+den = bikeData.Medium.closedLoops.PhiDot.den;
 closedBode = bodeplot(tf(num, den), freq);
 
 % a typical neuromuscular model
@@ -37,7 +36,6 @@ opts.Title.String = 'Closed Loop Bode Diagrams';
 opts.YLim = {[-45, 20], [-360, 90]};
 opts.PhaseMatching = 'on';
 opts.PhaseMatchingValue = 0;
-%opts.Grid = 'on';
 setoptions(closedBode, opts)
 hold off
 
@@ -64,17 +62,17 @@ saveas(gcf, 'plots/benchmarkClosed.eps')
 
 % open loop plots for the benchmark bicycle
 figure()
-num = data.Benchmark.Medium.openLoops.Phi.num;
-den = data.Benchmark.Medium.openLoops.Phi.den;
+num = bikeData.Medium.openLoops.Phi.num;
+den = bikeData.Medium.openLoops.Phi.den;
 hold all
 bodeplot(tf(num, den), freq);
 
-num = data.Benchmark.Medium.openLoops.Psi.num;
-den = data.Benchmark.Medium.openLoops.Psi.den;
+num = bikeData.Medium.openLoops.Psi.num;
+den = bikeData.Medium.openLoops.Psi.den;
 bodeplot(tf(num, den), freq);
 
-num = data.Benchmark.Medium.openLoops.Y.num;
-den = data.Benchmark.Medium.openLoops.Y.den;
+num = bikeData.Medium.openLoops.Y.num;
+den = bikeData.Medium.openLoops.Y.den;
 openBode = bodeplot(tf(num, den), freq);
 hold off
 
@@ -107,8 +105,8 @@ set(gcf, ...
 saveas(gcf, 'plots/benchmarkOpen.eps')
 
 % handling qualities plot
-num = data.Benchmark.Medium.handlingMetric.num;
-den = data.Benchmark.Medium.handlingMetric.den;
+num = bikeData.Medium.handlingMetric.num;
+den = bikeData.Medium.handlingMetric.den;
 w = linspace(0.01, 20, 200);
 [mag, phase, freq] = bode(tf(num, den), w);
 figure()
@@ -129,11 +127,11 @@ set(gcf, ...
     'PaperSize', [goldenRatio * figWidth, figWidth])
 saveas(gcf, 'plots/benchmarkHandling.eps')
 
+function open_loop_all_bikes(data)
+% Creates open loop Bode plots of all the bikes.
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Open loop Bode plots of all the bikes.
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+bikes = fieldnames(data)
 freq = {0.1, 20.0};
 figure()
 hold all
@@ -163,30 +161,38 @@ colors = {'k', 'k', 'k', ...
           [0.6, 0.6, 0.6], ...
           [0.6, 0.6, 0.6], ...
           [0.6, 0.6, 0.6]};
+
 for i = 2:length(magLines)
-    set(magLines(i), 'LineStyle', linestyles{i - 1}, ...
-                  'Color', colors{i - 1}, ...
-                  'LineWidth', 1.0)
-    set(phaseLines(i), 'LineStyle', linestyles{i - 1}, ...
-                  'Color', colors{i - 1}, ...
-                  'LineWidth', 1.0)
+    set(magLines(i), ...
+        'LineStyle', linestyles{i - 1}, ...
+        'Color', colors{i - 1}, ...
+        'LineWidth', 1.0)
+    set(phaseLines(i), ...
+        'LineStyle', linestyles{i - 1}, ...
+        'Color', colors{i - 1}, ...
+        'LineWidth', 1.0)
 end
 
 plotAxes = findobj(gcf, 'type', 'axes');
 closeLeg = legend(magLines(2:7), ...
                   bikes(2:7), ...
                   'Location', 'Southwest');
+% used for figure width to height ratio
+goldenRatio = (1 + sqrt(5)) / 2;
+figWidth = 3.0;
 set(gcf, ...
     'PaperSize', [goldenRatio * figWidth, figWidth])
 print plots/openBode.eps -depsc
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Open loop Bode plots of all the bikes.
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+function handling_all_bikes(data)
+% Creates handling quality metric for all bikes.
+bikes = fieldnames(data);
 figure()
 
 w = linspace(0.01, 20, 200);
 hold all
+speedNames = fieldnames(data.Browser);
+fillColors = {[0.98, 0.98, 0.98], [0.93, 0.93, 0.93], [0.85, 0.85, 0.85]};
 for j = 1:length(speedNames)
     magnitudes = zeros(length(w), length(bikes) - 1);
     for i = 2:length(bikes)
@@ -196,23 +202,33 @@ for j = 1:length(speedNames)
         magnitudes(:, i - 1) = mag(:)';
     end
     maxMag = max(magnitudes, [], 2);
-    size(freq)
-    size(maxMag)
-    area(freq, maxMag)
+    area(freq, maxMag, ...
+         'Facecolor', fillColors{j}, ...
+         'Edgecolor', fillColors{j})
 end
 
+linestyles = {'-', '--', '-.', ...
+              '-', '--', '-.'};
+colors = {'k', 'k', 'k', ...
+          [0.5, 0.5, 0.5], ...
+          [0.5, 0.5, 0.5], ...
+          [0.5, 0.5, 0.5]};
+
 for j = 1:length(speedNames)
+    metricLines = zeros(length(bikes) - 1, 1);
     for i = 2:length(bikes)
         num = data.(bikes{i}).(speedNames{j}).handlingMetric.num;
         den = data.(bikes{i}).(speedNames{j}).handlingMetric.den;
         [mag, phase, freq] = bode(tf(num, den), w);
-        metricLine = plot(freq, mag(:)', ...
-                          'Color', colors{i - 1}, ...
-                          'Linestyle', linestyles{i - 1}, ...
-                          'Linewidth', 2.0);
+        metricLines(i - 1) = plot(freq, mag(:)', ...
+                                 'Color', colors{i - 1}, ...
+                                 'Linestyle', linestyles{i - 1}, ...
+                                 'Linewidth', 2.0);
     end
 end
 hold off
+
+legend([{'2.5 m/s', '5.0 m/s', '7.5 m/s'}, bikes(2:end)'])
 
 ylim([0, 20]);
 level1 = line([0, 20], [5, 5]);
@@ -221,10 +237,14 @@ set(level1, 'Color', 'k', 'Linestyle', '--', 'Linewidth', 1.0)
 set(level2, 'Color', 'k', 'Linestyle', '--', 'Linewidth', 1.0)
 ylabel('Handling Quality Metric')
 xlabel('Frequency (rad/sec)')
-text(3.5, 4, 'Level 1')
+text(3.5, 4.25, 'Level 1')
 text(3, 6.5, 'Level 2')
 text(3, 9, 'Level 3')
 box on
+% used for figure width to height ratio
+goldenRatio = (1 + sqrt(5)) / 2;
+figWidth = 3.0;
 set(gcf, ...
     'PaperSize', [goldenRatio * figWidth, figWidth])
 print plots/handling.eps -depsc
+fixPSlinestyle('plots/handling.eps')

@@ -31,6 +31,9 @@ warning off
 
 modelPar.gain = gain;
 
+display(sprintf(repmat('-', 1, 79)))
+display(sprintf('%s at %1.2f m/s.', bike, speed))
+display(sprintf(repmat('-', 1, 79)))
 % load the bicycle parameters
 pathToParFile = ['parameters' filesep bike 'Par.txt'];
 par = par_text_to_struct(pathToParFile);
@@ -151,7 +154,7 @@ display('Simulating the tracking task.')
 tic;
 sim('WhippleModel.mdl')
 elapsedTime = toc;
-display(sprintf('Simulation finished in %f1.3 seconds.', elapsedTime))
+display(sprintf('Simulation finished in %1.3f seconds.', elapsedTime))
 
 % set the initial point of the front wheel ahead of the rear wheel by the
 % wheelbase length
@@ -169,6 +172,8 @@ data.command = command;
 data.inputs = u;
 data.outputs = y;
 data.path = yc;
+
+display(sprintf('Data written. \n'))
 
 % plot
 if basicPlots
