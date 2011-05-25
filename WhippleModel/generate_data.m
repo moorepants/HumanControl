@@ -83,8 +83,10 @@ try
 catch
     display('No Gains found, all set to zero. No feedback.')
     modelPar.kDelta = 0.0;
-    modelPar.kPhiDot = 0.0;
-    modelPar.kPhi = 0.0;
+    % the following two are just a hack to get around the 1/kPhi and 1/kPhiDot,
+    % this can be handled better with some logic
+    modelPar.kPhiDot = 1E-10;
+    modelPar.kPhi = 1E-10;
     modelPar.kPsi = 0.0;
     modelPar.kY = 0.0;
 end
@@ -136,7 +138,8 @@ modelPar.closed = [0, 0, 1, 1, 1];
 modelPar.perturb = [0, 0, 1, 0, 0];
 update_model_variables(modelPar);
 [num, den] = linmod('WhippleModel');
-handlingMetric = [num; den];
+handlingMetric.num = num;
+handlingMetric.den = den;
 
 % close all the loops and simulate
 modelPar.loopNumber = 0;
@@ -193,8 +196,8 @@ if basicPlots
     hold off
 
     figure(3)
-    num = handlingMetric(1, :);
-    den = handlingMetric(2, :);
+    num = handlingMetric.num;
+    den = handlingMetric.den;
     wl = linspace(0.01, 20, 200);
     [mag, phase, freq] = bode(tf(num, den), wl);
     plot(wl, mag(:)')

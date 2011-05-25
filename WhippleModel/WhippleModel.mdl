@@ -14,7 +14,7 @@ Model {
       Name		      "Closed Loop Output"
     }
     ParameterArgumentNames  ""
-    ComputedModelVersion    "1.186"
+    ComputedModelVersion    "1.187"
     NumModelReferences	    0
     NumTestPointedSignals   0
   }
@@ -33,9 +33,9 @@ Model {
   ModifiedByFormat	  "%<Auto>"
   LastModifiedBy	  "moorepants"
   ModifiedDateFormat	  "%<Auto>"
-  LastModifiedDate	  "Mon May 23 22:06:16 2011"
-  RTWModifiedTimeStamp	  228089172
-  ModelVersionFormat	  "1.%<AutoIncrement:186>"
+  LastModifiedDate	  "Tue May 24 15:23:19 2011"
+  RTWModifiedTimeStamp	  228151272
+  ModelVersionFormat	  "1.%<AutoIncrement:187>"
   ConfigurationManager	  "None"
   SampleTimeColors	  off
   SampleTimeAnnotations	  off
