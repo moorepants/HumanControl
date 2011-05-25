@@ -1,9 +1,24 @@
 function create_ieee_paper_plots(data)
 % Creates all of the figures for the IEEE paper.
 
+% Define some linestyles and colors for each of the six bicycles
+linestyles = {'-', '-', '--', ...
+              '--', '-.', '-.'};
+colors = {'k', ...
+          [0.5, 0.5, 0.5], ...
+          'k', ...
+          [0.5, 0.5, 0.5], ...
+          'k', ...
+          [0.5, 0.5, 0.5]};
+
 %loop_shape_example(data.Benchmark)
 %open_loop_all_bikes(data)
-handling_all_bikes(data)
+%handling_all_bikes(data, linestyles, colors)
+path_plots(data, linestyles, colors)
+plot_io('delta', 'output', data, linestyles, colors)
+plot_io('phi', 'output', data, linestyles, colors)
+plot_io('psi', 'output', data, linestyles, colors)
+plot_io('Tdelta', 'input', data, linestyles, colors)
 
 function loop_shape_example(bikeData)
 % Creates the example loop shaping for the bicycle at medium speed.
@@ -184,11 +199,16 @@ set(gcf, ...
     'PaperSize', [goldenRatio * figWidth, figWidth])
 print plots/openBode.eps -depsc
 
-function handling_all_bikes(data)
+function handling_all_bikes(data, linestyles, colors)
 % Creates handling quality metric for all bikes.
 bikes = fieldnames(data);
 figure()
 
+% used for figure width to height ratio
+goldenRatio = (1 + sqrt(5)) / 2;
+figWidth = 3.0;
+set(gcf, ...
+    'PaperSize', [goldenRatio * figWidth, figWidth])
 w = linspace(0.01, 20, 200);
 hold all
 speedNames = fieldnames(data.Browser);
@@ -206,13 +226,6 @@ for j = 1:length(speedNames)
          'Facecolor', fillColors{j}, ...
          'Edgecolor', fillColors{j})
 end
-
-linestyles = {'-', '--', '-.', ...
-              '-', '--', '-.'};
-colors = {'k', 'k', 'k', ...
-          [0.5, 0.5, 0.5], ...
-          [0.5, 0.5, 0.5], ...
-          [0.5, 0.5, 0.5]};
 
 for j = 1:length(speedNames)
     metricLines = zeros(length(bikes) - 1, 1);
@@ -241,10 +254,163 @@ text(3.5, 4.25, 'Level 1')
 text(3, 6.5, 'Level 2')
 text(3, 9, 'Level 3')
 box on
-% used for figure width to height ratio
+print plots/handling.eps -depsc
+fixPSlinestyle('plots/handling.eps')
+
+function path_plots(data, linestyles, colors)
+% Creates a plot of the path tracking for all bikes at all speeds.
+
+bikes = fieldnames(data);
+speedNames = fieldnames(data.Browser);
+
+figure()
 goldenRatio = (1 + sqrt(5)) / 2;
 figWidth = 3.0;
 set(gcf, ...
     'PaperSize', [goldenRatio * figWidth, figWidth])
-print plots/handling.eps -depsc
-fixPSlinestyle('plots/handling.eps')
+
+hold all
+for j = 1:length(speedNames)
+    time = data.(bikes{2}).(speedNames{j}).time;
+    path = data.(bikes{2}).(speedNames{j}).path;
+    speed = data.(bikes{2}).(speedNames{j}).speed;
+    plot(time * speed, path * j, 'k-')
+    for i = 2:length(bikes)
+        x = data.(bikes{i}).(speedNames{j}).outputs(:, 17);
+        y = data.(bikes{i}).(speedNames{j}).outputs(:, 18);
+        plot(x, y * j, 'Linestyle', linestyles{i - 1}, 'Color', colors{i - 1})
+    end
+end
+hold off
+xlim([30 190])
+box on
+legend(['Path', bikes(2:end)'])
+xlabel('Distance (m)')
+ylabel('Lateral Deviation (m)')
+print plots/paths.eps -depsc
+fixPSlinestyle('plots/paths.eps')
+
+function plot_io(variable, io, data, linestyles, colors)
+% Creates a plot of the time histories of a particular output or input variable
+% for three different speeds.
+%
+% Parameters
+% ----------
+% variable : string
+%   The name of the variable you'd like to plot.
+% io : string
+%   'input' for input and 'output' for output.
+% data : structure
+%   Data for a set of bicycles, the first being the benchmark bicycle.
+% linestyles : cell array
+%   An array of linestyle types, one for each bicycle.
+% colors : cell array
+%   An array of colors, one for each bicycle.
+
+if strcmp(io, 'input')
+    names = {'Tphi',
+             'Tdelta',
+             'F'};
+    prettyNames = {'$T_\phi$',
+                   '$T_\delta$',
+                   '$F$'};
+    units = {'(Nm)',
+             '(Nm)',
+             '(N)'};
+elseif strcmp(io, 'output')
+    names = {'xP',
+             'yP',
+             'psi',
+             'phi',
+             'thetaP',
+             'thetaR',
+             'delta',
+             'thetaF',
+             'xPDot',
+             'ypDot',
+             'psiDot',
+             'phiDot',
+             'thetaPDot',
+             'thetaRDot',
+             'deltaDot',
+             'thetaFDot',
+             'xQ',
+             'yQ'};
+    prettyNames = {'$x_P$',
+                   '$y_P$',
+                   '$\psi$',
+                   '$\phi$',
+                   '$\theta_P$',
+                   '$\theta_R$',
+                   '$\delta$',
+                   '$\theta_F$',
+                   '$\dot{x}_P$',
+                   '$\dot{y}_P$',
+                   '$\dot{\psi}$',
+                   '$\dot{\phi}$',
+                   '$\dot{\theta}_P$',
+                   '$\dot{\theta}_R$',
+                   '$\dot{\delta}$',
+                   '$\dot{\theta}_F$',
+                   '$x_Q$',
+                   '$y_Q$'};
+    units = {'(m)',
+             '(m)',
+             '(rad)',
+             '(rad)',
+             '(rad)',
+             '(rad)',
+             '(rad)',
+             '(rad)',
+             '(m/sec)',
+             '(m/sec)',
+             '(rad/sec)',
+             '(rad/sec)',
+             '(rad/sec)',
+             '(rad/sec)',
+             '(rad/sec)',
+             '(rad/sec)',
+             '(m)',
+             '(m)'};
+else
+    error('Please choose i or o')
+end
+
+index = find(ismember(names, variable) == 1);
+
+bikes = fieldnames(data);
+speedNames = fieldnames(data.Browser);
+
+figure()
+goldenRatio = (1 + sqrt(5)) / 2;
+figWidth = 3.0;
+set(gcf, ...
+    'PaperSize', [goldenRatio * figWidth, figWidth])
+
+
+for j = 1:length(speedNames)
+    subplot(3, 1, j)
+    hold all
+    for i = 2:length(bikes)
+        oneSpeed = data.(bikes{i}).(speedNames{j});
+        time = oneSpeed.time;
+        speed = oneSpeed.speed;
+        distance = time * speed;
+        history = oneSpeed.([io 's'])(:, index);
+        plot(distance, history, ...
+             'Linestyle', linestyles{i - 1}, ...
+             'Color', colors{i - 1})
+    end
+    xlabel('Distance (m)')
+    first = [prettyNames{index} ' ' units{index}];
+    second = sprintf(' at %1.1f m/s', speed);
+    ylabel([first second], 'Interpreter', 'Latex')
+    box on
+    xlim([30 190])
+    hold off
+end
+plotAxes = findobj(gcf, 'type', 'axes');
+legend(plotAxes(3), bikes(2:end))
+filename = [variable '.eps'];
+print(['plots' filesep filename], '-depsc')
+fixPSlinestyle(['plots' filesep filename])

@@ -14,7 +14,7 @@ Model {
       Name		      "Closed Loop Output"
     }
     ParameterArgumentNames  ""
-    ComputedModelVersion    "1.187"
+    ComputedModelVersion    "1.189"
     NumModelReferences	    0
     NumTestPointedSignals   0
   }
@@ -33,9 +33,9 @@ Model {
   ModifiedByFormat	  "%<Auto>"
   LastModifiedBy	  "moorepants"
   ModifiedDateFormat	  "%<Auto>"
-  LastModifiedDate	  "Tue May 24 15:23:19 2011"
-  RTWModifiedTimeStamp	  228151272
-  ModelVersionFormat	  "1.%<AutoIncrement:187>"
+  LastModifiedDate	  "Wed May 25 13:42:48 2011"
+  RTWModifiedTimeStamp	  228231759
+  ModelVersionFormat	  "1.%<AutoIncrement:189>"
   ConfigurationManager	  "None"
   SampleTimeColors	  off
   SampleTimeAnnotations	  off
@@ -786,7 +786,7 @@ Model {
   }
   System {
     Name		    "WhippleModel"
-    Location		    [3, 75, 1369, 743]
+    Location		    [3, 75, 1363, 741]
     Open		    on
     ModelBrowserVisibility  off
     ModelBrowserWidth	    200
@@ -798,7 +798,7 @@ Model {
     TiledPaperMargins	    [0.500000, 0.500000, 0.500000, 0.500000]
     TiledPageScale	    1
     ShowPageBoundaries	    off
-    ZoomFactor		    "82"
+    ZoomFactor		    "53"
     ReportName		    "simulink-default.rpt"
     SIDHighWatermark	    130
     Block {
@@ -1497,8 +1497,8 @@ Model {
       RTWMemSecDataConstants  "Inherit from model"
       RTWMemSecDataInternal   "Inherit from model"
       RTWMemSecDataParameters "Inherit from model"
-      slope		      "1*7.5/5"
-      start		      "(7)*5/7.5"
+      slope		      "1 * speed / 5"
+      start		      "7 * 5 / speed"
       X0		      "0"
       VectorParams1D	      on
     }
@@ -1523,8 +1523,8 @@ Model {
       RTWMemSecDataConstants  "Inherit from model"
       RTWMemSecDataInternal   "Inherit from model"
       RTWMemSecDataParameters "Inherit from model"
-      slope		      "-1*7.5/5"
-      start		      "9*5/7.5"
+      slope		      "-1 * speed / 5"
+      start		      "9 * 5 / speed"
       X0		      "0"
       VectorParams1D	      on
     }
@@ -1549,8 +1549,8 @@ Model {
       RTWMemSecDataConstants  "Inherit from model"
       RTWMemSecDataInternal   "Inherit from model"
       RTWMemSecDataParameters "Inherit from model"
-      slope		      "-1*7.5/5"
-      start		      "17*5/7.5"
+      slope		      "-1 * speed / 5"
+      start		      "17 * 5 / speed"
       X0		      "0"
       VectorParams1D	      on
     }
@@ -1575,8 +1575,8 @@ Model {
       RTWMemSecDataConstants  "Inherit from model"
       RTWMemSecDataInternal   "Inherit from model"
       RTWMemSecDataParameters "Inherit from model"
-      slope		      "1*7.5/5"
-      start		      "19*5/7.5"
+      slope		      "1 * speed / 5"
+      start		      "19 * 5 / speed"
       X0		      "0"
       VectorParams1D	      on
     }

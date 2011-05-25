@@ -30,6 +30,7 @@ function data = generate_data(bike, speed, gain, basicPlots)
 warning off
 
 modelPar.gain = gain;
+modelPar.speed = speed;
 
 display(sprintf(repmat('-', 1, 79)))
 display(sprintf('%s at %1.2f m/s.', bike, speed))
