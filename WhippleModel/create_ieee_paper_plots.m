@@ -29,15 +29,16 @@ goldenRatio = (1 + sqrt(5)) / 2;
 figure()
 freq = {0.1, 20.0};
 
-% the closed delta loop
-num = bikeData.Medium.closedLoops.Delta.num;
-den = bikeData.Medium.closedLoops.Delta.den;
 hold all
+% the closed delta loop
+closedLoops = bikeData.Medium.closedLoops;
+num = closedLoops.Delta.num;
+den = closedLoops.Delta.den;
 deltaBode = bodeplot(tf(num, den), freq);
 
 % the closed phi dot loop
-num = bikeData.Medium.closedLoops.PhiDot.num;
-den = bikeData.Medium.closedLoops.PhiDot.den;
+num = closedLoops.PhiDot.num;
+den = closedLoops.PhiDot.den;
 closedBode = bodeplot(tf(num, den), freq);
 
 % a typical neuromuscular model
@@ -55,7 +56,7 @@ setoptions(closedBode, opts)
 hold off
 
 % find all the lines in the current figure
-lines = findobj(gcf, 'type', 'line');
+lines = findobj(gcf, 'type', 'line')
 linestyles = {'', '', '-.', '--', '-', '-.', '--', '-'};
 for i = 3:length(lines)
     set(lines(i), 'LineStyle', linestyles{i}, ...
@@ -77,17 +78,18 @@ saveas(gcf, 'plots/benchmarkClosed.eps')
 
 % open loop plots for the benchmark bicycle
 figure()
-num = bikeData.Medium.openLoops.Phi.num;
-den = bikeData.Medium.openLoops.Phi.den;
+openLoops = bikeData.Medium.openLoops;
+num = openLoops.Phi.num;
+den = openLoops.Phi.den;
 hold all
 bodeplot(tf(num, den), freq);
 
-num = bikeData.Medium.openLoops.Psi.num;
-den = bikeData.Medium.openLoops.Psi.den;
+num = openLoops.Psi.num;
+den = openLoops.Psi.den;
 bodeplot(tf(num, den), freq);
 
-num = bikeData.Medium.openLoops.Y.num;
-den = bikeData.Medium.openLoops.Y.den;
+num = openLoops.Y.num;
+den = openLoops.Y.den;
 openBode = bodeplot(tf(num, den), freq);
 hold off
 

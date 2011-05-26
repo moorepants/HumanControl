@@ -33,8 +33,8 @@ Model {
   ModifiedByFormat	  "%<Auto>"
   LastModifiedBy	  "moorepants"
   ModifiedDateFormat	  "%<Auto>"
-  LastModifiedDate	  "Wed May 25 13:42:48 2011"
-  RTWModifiedTimeStamp	  228231759
+  LastModifiedDate	  "Thu May 26 14:22:47 2011"
+  RTWModifiedTimeStamp	  228237063
   ModelVersionFormat	  "1.%<AutoIncrement:189>"
   ConfigurationManager	  "None"
   SampleTimeColors	  off
@@ -786,7 +786,7 @@ Model {
   }
   System {
     Name		    "WhippleModel"
-    Location		    [3, 75, 1363, 741]
+    Location		    [1366, 51, 3046, 1049]
     Open		    on
     ModelBrowserVisibility  off
     ModelBrowserWidth	    200
@@ -798,7 +798,7 @@ Model {
     TiledPaperMargins	    [0.500000, 0.500000, 0.500000, 0.500000]
     TiledPageScale	    1
     ShowPageBoundaries	    off
-    ZoomFactor		    "53"
+    ZoomFactor		    "102"
     ReportName		    "simulink-default.rpt"
     SIDHighWatermark	    130
     Block {
@@ -910,7 +910,7 @@ Model {
       MaskHideContents	      off
       System {
 	Name			"Feedback Variables"
-	Location		[1474, 169, 1813, 791]
+	Location		[1434, 169, 1773, 791]
 	Open			off
 	ModelBrowserVisibility	off
 	ModelBrowserWidth	200
