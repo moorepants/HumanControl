@@ -1,4 +1,4 @@
-function data = generate_data(bike, speed, gain, basicPlots)
+function data = generate_data(bike, speed, input, gain, basicPlots)
 % Generates data files for the human operator control model.
 %
 % Parameters
@@ -7,6 +7,8 @@ function data = generate_data(bike, speed, gain, basicPlots)
 %   The shortname of the bicycle model to use.
 % speed : float
 %   The speed of the bicycle.
+% input : string
+%   'Steer' or 'Roll'
 % gain : float
 %   A general gain multiplier for the model.
 % basicPlots : boolean
@@ -35,6 +37,7 @@ modelPar.speed = speed;
 display(sprintf(repmat('-', 1, 79)))
 display(sprintf('%s at %1.2f m/s.', bike, speed))
 display(sprintf(repmat('-', 1, 79)))
+
 % load the bicycle parameters
 pathToParFile = ['parameters' filesep bike 'Par.txt'];
 par = par_text_to_struct(pathToParFile);
@@ -81,7 +84,7 @@ modelPar.timeDelay = 2.75;
 
 % load the gains, set to zero if gains aren't available
 try
-    pathToGainFile = ['gains' filesep bike 'Gains.txt'];
+    pathToGainFile = ['gains' filesep bike input 'Gains.txt'];
     [modelPar.kDelta, modelPar.kPhiDot, modelPar.kPhi, ...
      modelPar.kPsi, modelPar.kY] = load_gains(pathToGainFile, speed);
 catch

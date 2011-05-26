@@ -14,7 +14,7 @@ Model {
       Name		      "Closed Loop Output"
     }
     ParameterArgumentNames  ""
-    ComputedModelVersion    "1.189"
+    ComputedModelVersion    "1.193"
     NumModelReferences	    0
     NumTestPointedSignals   0
   }
@@ -33,9 +33,9 @@ Model {
   ModifiedByFormat	  "%<Auto>"
   LastModifiedBy	  "moorepants"
   ModifiedDateFormat	  "%<Auto>"
-  LastModifiedDate	  "Thu May 26 14:22:47 2011"
-  RTWModifiedTimeStamp	  228237063
-  ModelVersionFormat	  "1.%<AutoIncrement:189>"
+  LastModifiedDate	  "Thu May 26 14:57:31 2011"
+  RTWModifiedTimeStamp	  228322638
+  ModelVersionFormat	  "1.%<AutoIncrement:193>"
   ConfigurationManager	  "None"
   SampleTimeColors	  off
   SampleTimeAnnotations	  off
@@ -786,7 +786,7 @@ Model {
   }
   System {
     Name		    "WhippleModel"
-    Location		    [1366, 51, 3046, 1049]
+    Location		    [1369, 51, 3049, 1049]
     Open		    on
     ModelBrowserVisibility  off
     ModelBrowserWidth	    200
@@ -798,9 +798,9 @@ Model {
     TiledPaperMargins	    [0.500000, 0.500000, 0.500000, 0.500000]
     TiledPageScale	    1
     ShowPageBoundaries	    off
-    ZoomFactor		    "102"
+    ZoomFactor		    "158"
     ReportName		    "simulink-default.rpt"
-    SIDHighWatermark	    130
+    SIDHighWatermark	    136
     Block {
       BlockType		      Inport
       Name		      "Perturbation Input"
@@ -814,7 +814,7 @@ Model {
       BlockType		      StateSpace
       Name		      "Bicycle"
       SID		      24
-      Position		      [1870, 383, 1930, 417]
+      Position		      [1965, 383, 2025, 417]
       A			      "A"
       B			      "B"
       C			      "C"
@@ -853,7 +853,7 @@ Model {
       BlockType		      Constant
       Name		      "Constant1"
       SID		      71
-      Position		      [2160, 404, 2250, 436]
+      Position		      [2245, 404, 2335, 436]
       Value		      "loopNumber"
       OutDataType	      "fixdt(1, 16)"
       OutScaling	      "2^0"
@@ -864,6 +864,15 @@ Model {
       SID		      127
       Position		      [735, 359, 805, 391]
       Value		      "perturb(4)"
+      OutDataType	      "fixdt(1, 16)"
+      OutScaling	      "2^0"
+    }
+    Block {
+      BlockType		      Constant
+      Name		      "Constant4"
+      SID		      136
+      Position		      [1720, 315, 1780, 345]
+      Value		      "isRollInput"
       OutDataType	      "fixdt(1, 16)"
       OutScaling	      "2^0"
     }
@@ -899,7 +908,7 @@ Model {
       Name		      "Feedback Variables"
       SID		      57
       Ports		      [1, 5]
-      Position		      [1980, 304, 2030, 496]
+      Position		      [2065, 304, 2115, 496]
       LibraryVersion	      "1.216"
       MinAlgLoopOccurrences   off
       PropExecContextOutsideSubsystem off
@@ -910,7 +919,7 @@ Model {
       MaskHideContents	      off
       System {
 	Name			"Feedback Variables"
-	Location		[1434, 169, 1773, 791]
+	Location		[1394, 169, 1733, 791]
 	Open			off
 	ModelBrowserVisibility	off
 	ModelBrowserWidth	200
@@ -1224,7 +1233,7 @@ Model {
       BlockType		      Gain
       Name		      "Gain6"
       SID		      117
-      Position		      [1850, 853, 1945, 897]
+      Position		      [1885, 853, 1980, 897]
       BlockMirror	      on
       Gain		      "1/kPhiDot"
       ParameterDataTypeMode   "Inherit via internal rule"
@@ -1277,7 +1286,7 @@ Model {
       BlockType		      Constant
       Name		      "HQ Metric Control 3"
       SID		      124
-      Position		      [2250, 704, 2340, 736]
+      Position		      [2335, 704, 2425, 736]
       Value		      "isHandling"
       OutDataType	      "fixdt(1, 16)"
       OutScaling	      "2^0"
@@ -1309,7 +1318,7 @@ Model {
       BlockType		      Switch
       Name		      "HQ Metric Switch 3"
       SID		      125
-      Position		      [2415, 644, 2445, 696]
+      Position		      [2500, 644, 2530, 696]
       Criteria		      "u2 ~= 0"
       InputSameDT	      off
       OutDataType	      "fixdt(1, 16)"
@@ -1329,7 +1338,7 @@ Model {
       Name		      "Inputs"
       SID		      56
       Ports		      [1]
-      Position		      [1745, 490, 1805, 520]
+      Position		      [1835, 260, 1895, 290]
       BlockMirror	      on
       VariableName	      "u"
       MaxDataPoints	      "inf"
@@ -1432,7 +1441,7 @@ Model {
       Name		      "Mux1"
       SID		      19
       Ports		      [3, 1]
-      Position		      [1835, 329, 1840, 471]
+      Position		      [1930, 329, 1935, 471]
       ShowName		      off
       Inputs		      "3"
       DisplayOption	      "bar"
@@ -1450,7 +1459,7 @@ Model {
       Name		      "Outputs"
       SID		      55
       Ports		      [1]
-      Position		      [1870, 490, 1930, 520]
+      Position		      [1960, 260, 2020, 290]
       BlockMirror	      on
       VariableName	      "y"
       MaxDataPoints	      "inf"
@@ -1688,6 +1697,16 @@ Model {
     }
     Block {
       BlockType		      Switch
+      Name		      "Switch"
+      SID		      133
+      Position		      [1850, 315, 1880, 345]
+      InputSameDT	      off
+      OutDataType	      "fixdt(1, 16)"
+      OutScaling	      "2^0"
+      SaturateOnIntegerOverflow	off
+    }
+    Block {
+      BlockType		      Switch
       Name		      "Switch 1"
       SID		      72
       Position		      [1505, 369, 1535, 421]
@@ -1742,11 +1761,21 @@ Model {
       SaturateOnIntegerOverflow	off
     }
     Block {
+      BlockType		      Switch
+      Name		      "Switch1"
+      SID		      134
+      Position		      [1850, 385, 1880, 415]
+      InputSameDT	      off
+      OutDataType	      "fixdt(1, 16)"
+      OutScaling	      "2^0"
+      SaturateOnIntegerOverflow	off
+    }
+    Block {
       BlockType		      MultiPortSwitch
       Name		      "System Output\nSwitch"
       SID		      70
       Ports		      [7, 1]
-      Position		      [2285, 409, 2330, 611]
+      Position		      [2370, 409, 2415, 611]
       DataPortOrder	      "Zero-based contiguous"
       Inputs		      "6"
       zeroidx		      on
@@ -1776,10 +1805,19 @@ Model {
       Denominator	      "pathFilterDen"
     }
     Block {
+      BlockType		      Constant
+      Name		      "Zero"
+      SID		      135
+      Position		      [1750, 465, 1780, 495]
+      Value		      "0"
+      OutDataType	      "fixdt(1, 16)"
+      OutScaling	      "2^0"
+    }
+    Block {
       BlockType		      Outport
       Name		      "Closed Loop Output"
       SID		      52
-      Position		      [2495, 663, 2525, 677]
+      Position		      [2580, 663, 2610, 677]
       IconDisplay	      "Port number"
       OutDataType	      "sfix(16)"
       OutScaling	      "2^0"
@@ -1801,7 +1839,7 @@ Model {
       SrcPort		      1
       Points		      [5, 0]
       Branch {
-	Points			[1, 1; 0, 104]
+	Points			[1, 1; 0, -126]
 	DstBlock		"Inputs"
 	DstPort			1
       }
@@ -1815,7 +1853,7 @@ Model {
       SrcPort		      1
       Points		      [15, 0]
       Branch {
-	Points			[0, 105]
+	Points			[0, -125]
 	DstBlock		"Outputs"
 	DstPort			1
       }
@@ -1865,12 +1903,6 @@ Model {
       SrcPort		      1
       DstBlock		      "Neuromuscular"
       DstPort		      1
-    }
-    Line {
-      SrcBlock		      "Neuromuscular"
-      SrcPort		      1
-      DstBlock		      "Mux1"
-      DstPort		      2
     }
     Line {
       SrcBlock		      "K_\\dot{\\phi}"
@@ -2197,7 +2229,7 @@ Model {
     Line {
       SrcBlock		      "Gain5"
       SrcPort		      1
-      Points		      [60, 0; 0, -270]
+      Points		      [145, 0; 0, -270]
       DstBlock		      "HQ Metric Switch 3"
       DstPort		      1
     }
@@ -2296,21 +2328,83 @@ Model {
     Line {
       SrcBlock		      "Constant8"
       SrcPort		      1
-      Points		      [20, 0; 0, 50]
+      Points		      [10, -1; 0, 50]
       DstBlock		      "Switch 1"
       DstPort		      2
     }
+    Line {
+      SrcBlock		      "Switch1"
+      SrcPort		      1
+      DstBlock		      "Mux1"
+      DstPort		      2
+    }
+    Line {
+      SrcBlock		      "Switch"
+      SrcPort		      1
+      Points		      [0, 25]
+      DstBlock		      "Mux1"
+      DstPort		      1
+    }
+    Line {
+      SrcBlock		      "Zero"
+      SrcPort		      1
+      Points		      [50, 0; 0, -35]
+      Branch {
+	Points			[0, -55]
+	Branch {
+	  DstBlock		  "Switch1"
+	  DstPort		  1
+	}
+	Branch {
+	  DstBlock		  "Switch"
+	  DstPort		  3
+	}
+      }
+      Branch {
+	DstBlock		"Mux1"
+	DstPort			3
+      }
+    }
+    Line {
+      SrcBlock		      "Constant4"
+      SrcPort		      1
+      Points		      [40, 0]
+      Branch {
+	DstBlock		"Switch"
+	DstPort			2
+      }
+      Branch {
+	Points			[0, 70]
+	DstBlock		"Switch1"
+	DstPort			2
+      }
+    }
+    Line {
+      SrcBlock		      "Neuromuscular"
+      SrcPort		      1
+      Points		      [10, 0]
+      Branch {
+	Points			[0, -80]
+	DstBlock		"Switch"
+	DstPort			1
+      }
+      Branch {
+	Points			[0, 10]
+	DstBlock		"Switch1"
+	DstPort			3
+      }
+    }
     Annotation {
       Name		      "T_\\phi"
-      Position		      [1812, 344]
+      Position		      [1907, 339]
     }
     Annotation {
       Name		      "T_\\delta"
-      Position		      [1812, 382]
+      Position		      [1907, 382]
     }
     Annotation {
       Name		      "F"
-      Position		      [1823, 432]
+      Position		      [1918, 432]
     }
     Annotation {
       Position		      [1677, 587]
