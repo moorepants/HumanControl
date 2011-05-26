@@ -12,7 +12,7 @@ colors = {'k', ...
           [0.5, 0.5, 0.5]};
 
 loop_shape_example(data.Benchmark)
-open_loop_all_bikes(data)
+open_loop_all_bikes(data, linestyles, colors)
 handling_all_bikes(data, linestyles, colors)
 path_plots(data, linestyles, colors)
 plot_io('delta', 'output', data, linestyles, colors)
@@ -144,9 +144,8 @@ set(gcf, ...
     'PaperSize', [goldenRatio * figWidth, figWidth])
 saveas(gcf, 'plots/benchmarkHandling.eps')
 
-function open_loop_all_bikes(data)
+function open_loop_all_bikes(data, linestyles, colors)
 % Creates open loop Bode plots of all the bikes.
-
 
 bikes = fieldnames(data)
 freq = {0.1, 20.0};
@@ -171,13 +170,6 @@ setoptions(openBode, opts)
 plotAxes = findobj(gcf, 'type', 'axes');
 magLines = findobj(plotAxes(2), 'type', 'line');
 phaseLines = findobj(plotAxes(1), 'type', 'line');
-
-linestyles = {'-', '--', '-.', ...
-              '-', '--', '-.'};
-colors = {'k', 'k', 'k', ...
-          [0.6, 0.6, 0.6], ...
-          [0.6, 0.6, 0.6], ...
-          [0.6, 0.6, 0.6]};
 
 for i = 2:length(magLines)
     set(magLines(i), ...

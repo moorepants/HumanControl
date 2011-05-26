@@ -155,8 +155,6 @@ for i = startLoop:length(loopNames)
     openLoops.(loopNames{i}).den = den;
 end
 
-% this gives matching results to Ron's but I don't know why it is there.
-modelPar.kPhi = modelPar.kPhi * 1.259;
 % get the handling quality metric
 display('Finding the handling quality metric.')
 modelPar.isHandling = 1;

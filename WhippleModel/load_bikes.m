@@ -1,10 +1,12 @@
-function data = load_bikes(bikes)
+function data = load_bikes(bikes, input)
 % Returns the data for a set of bicycles.
 %
 % Parameters
 % ----------
 % bikes : cell array
 %   A cell array that lists the bicyle short names.
+% input : string
+%   'Steer' or 'Roll'
 %
 % Returns
 % -------
@@ -18,6 +20,6 @@ speedNames = {'Slow', 'Medium', 'Fast'};
 for i = 1:length(bikes)
     for j = 1:length(speeds)
         data.(bikes{i}).(speedNames{j}) = ...
-            generate_data(bikes{i}, speeds(j), 1.0, 0);
+            generate_data(bikes{i}, speeds(j), input, 1.0, 0);
     end
 end
