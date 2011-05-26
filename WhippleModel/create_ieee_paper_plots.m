@@ -11,9 +11,9 @@ colors = {'k', ...
           'k', ...
           [0.5, 0.5, 0.5]};
 
-%loop_shape_example(data.Benchmark)
-%open_loop_all_bikes(data)
-%handling_all_bikes(data, linestyles, colors)
+loop_shape_example(data.Benchmark)
+open_loop_all_bikes(data)
+handling_all_bikes(data, linestyles, colors)
 path_plots(data, linestyles, colors)
 plot_io('delta', 'output', data, linestyles, colors)
 plot_io('phi', 'output', data, linestyles, colors)
