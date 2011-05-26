@@ -79,8 +79,6 @@ modelPar.handlingFilterDen = [1, 40, 400];
 modelPar.pathFilterNum = (2.4 * gain)^2;
 modelPar.pathFilterDen = [1, 2 * 2.4 * gain  (2.4*gain)^2];
 
-% preview time delay
-modelPar.timeDelay = 2.75;
 
 % load the gains, set to zero if gains aren't available
 try
@@ -104,6 +102,20 @@ perturbTable = [zeros(1, 5); eye(5)];
 % make a truth table for closing the loops
 closedTable = ~perturbTable;
 
+if strcmp(input, 'Steer')
+    startLoop = 1;
+    modelPar.isRollInput = 0;
+    % preview time delay
+    modelPar.timeDelay = 2.75;
+elseif strcmp(input, 'Roll')
+    startLoop = 2;
+    modelPar.isRollInput = 1;
+    % preview time delay
+    modelPar.timeDelay = 3.5;
+else
+    error('Choose Steer or Roll as the input')
+end
+
 % set all loops closed, perturbing none
 modelPar.perturb = perturbTable(1, :);
 modelPar.closed = closedTable(1, :);
@@ -112,7 +124,7 @@ modelPar.isHandling = 0;
 loopNames = {'Delta', 'PhiDot', 'Phi', 'Psi', 'Y'};
 
 % get the transfer functions for the closed loops
-for i = 1:length(loopNames)
+for i = startLoop:length(loopNames)
     str = 'Finding the closed loop transfer function of the %s loop.';
     display(sprintf(str, loopNames{i}))
     modelPar.loopNumber = i;
@@ -124,7 +136,7 @@ for i = 1:length(loopNames)
 end
 
 % get the transfer functions for the open loops
-for i = 1:length(loopNames)
+for i = startLoop:length(loopNames)
     str = 'Finding the open loop transfer function of the %s loop.';
     display(sprintf(str, loopNames{i}));
     modelPar.loopNumber = i;
@@ -185,23 +197,23 @@ if basicPlots
     figure(1)
     % go through each loop and plot the bode plot for the closed loops
     hold all
-    for i = 1:length(loopNames)
+    for i = startLoop:length(loopNames)
         num = closedLoops.(loopNames{i}).num;
         den = closedLoops.(loopNames{i}).den;
         bode(tf(num, den), {0.1, 20.0})
     end
-    legend(loopNames)
+    legend(loopNames(startLoop:end))
     hold off
 
     figure(2)
     % go through each loop and plot the bode plot
     hold all
-    for i = 1:length(loopNames)
+    for i = startLoop:length(loopNames)
         num = openLoops.(loopNames{i}).num;
         den = openLoops.(loopNames{i}).den;
         bode(tf(num, den), {0.1, 20.0})
     end
-    legend(loopNames)
+    legend(loopNames(startLoop:end))
     hold off
 
     figure(3)

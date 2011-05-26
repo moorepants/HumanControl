@@ -14,7 +14,7 @@ Model {
       Name		      "Closed Loop Output"
     }
     ParameterArgumentNames  ""
-    ComputedModelVersion    "1.193"
+    ComputedModelVersion    "1.196"
     NumModelReferences	    0
     NumTestPointedSignals   0
   }
@@ -33,9 +33,9 @@ Model {
   ModifiedByFormat	  "%<Auto>"
   LastModifiedBy	  "moorepants"
   ModifiedDateFormat	  "%<Auto>"
-  LastModifiedDate	  "Thu May 26 14:57:31 2011"
-  RTWModifiedTimeStamp	  228322638
-  ModelVersionFormat	  "1.%<AutoIncrement:193>"
+  LastModifiedDate	  "Thu May 26 15:31:51 2011"
+  RTWModifiedTimeStamp	  228324708
+  ModelVersionFormat	  "1.%<AutoIncrement:196>"
   ConfigurationManager	  "None"
   SampleTimeColors	  off
   SampleTimeAnnotations	  off
@@ -798,7 +798,7 @@ Model {
     TiledPaperMargins	    [0.500000, 0.500000, 0.500000, 0.500000]
     TiledPageScale	    1
     ShowPageBoundaries	    off
-    ZoomFactor		    "158"
+    ZoomFactor		    "100"
     ReportName		    "simulink-default.rpt"
     SIDHighWatermark	    136
     Block {
@@ -814,7 +814,7 @@ Model {
       BlockType		      StateSpace
       Name		      "Bicycle"
       SID		      24
-      Position		      [1965, 383, 2025, 417]
+      Position		      [1965, 378, 2030, 422]
       A			      "A"
       B			      "B"
       C			      "C"
@@ -919,7 +919,7 @@ Model {
       MaskHideContents	      off
       System {
 	Name			"Feedback Variables"
-	Location		[1394, 169, 1733, 791]
+	Location		[1677, 167, 2016, 789]
 	Open			off
 	ModelBrowserVisibility	off
 	ModelBrowserWidth	200
@@ -1700,6 +1700,7 @@ Model {
       Name		      "Switch"
       SID		      133
       Position		      [1850, 315, 1880, 345]
+      Criteria		      "u2 ~= 0"
       InputSameDT	      off
       OutDataType	      "fixdt(1, 16)"
       OutScaling	      "2^0"
@@ -1765,6 +1766,7 @@ Model {
       Name		      "Switch1"
       SID		      134
       Position		      [1850, 385, 1880, 415]
+      Criteria		      "u2 ~= 0"
       InputSameDT	      off
       OutDataType	      "fixdt(1, 16)"
       OutScaling	      "2^0"
@@ -1808,7 +1810,7 @@ Model {
       BlockType		      Constant
       Name		      "Zero"
       SID		      135
-      Position		      [1750, 465, 1780, 495]
+      Position		      [1785, 465, 1815, 495]
       Value		      "0"
       OutDataType	      "fixdt(1, 16)"
       OutScaling	      "2^0"
@@ -1851,7 +1853,7 @@ Model {
     Line {
       SrcBlock		      "Bicycle"
       SrcPort		      1
-      Points		      [15, 0]
+      Points		      [10, 0]
       Branch {
 	Points			[0, -125]
 	DstBlock		"Outputs"
@@ -2326,13 +2328,6 @@ Model {
       DstPort		      2
     }
     Line {
-      SrcBlock		      "Constant8"
-      SrcPort		      1
-      Points		      [10, -1; 0, 50]
-      DstBlock		      "Switch 1"
-      DstPort		      2
-    }
-    Line {
       SrcBlock		      "Switch1"
       SrcPort		      1
       DstBlock		      "Mux1"
@@ -2348,7 +2343,7 @@ Model {
     Line {
       SrcBlock		      "Zero"
       SrcPort		      1
-      Points		      [50, 0; 0, -35]
+      Points		      [15, 0; 0, -35]
       Branch {
 	Points			[0, -55]
 	Branch {
@@ -2393,6 +2388,13 @@ Model {
 	DstBlock		"Switch1"
 	DstPort			3
       }
+    }
+    Line {
+      SrcBlock		      "Constant8"
+      SrcPort		      1
+      Points		      [20, 0; 0, 50]
+      DstBlock		      "Switch 1"
+      DstPort		      2
     }
     Annotation {
       Name		      "T_\\phi"
