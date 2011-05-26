@@ -79,7 +79,6 @@ modelPar.handlingFilterDen = [1, 40, 400];
 modelPar.pathFilterNum = (2.4 * gain)^2;
 modelPar.pathFilterDen = [1, 2 * 2.4 * gain  (2.4*gain)^2];
 
-
 % load the gains, set to zero if gains aren't available
 try
     pathToGainFile = ['gains' filesep bike input 'Gains.txt'];
@@ -99,8 +98,8 @@ end
 % make a truth table for perturbing the loops
 % the first row is default setup
 perturbTable = [zeros(1, 5); eye(5)];
-% make a truth table for closing the loops
-closedTable = ~perturbTable;
+% all the loops are closed at first
+closedTable = ones(6, 5);
 
 if strcmp(input, 'Steer')
     startLoop = 1;
@@ -108,20 +107,21 @@ if strcmp(input, 'Steer')
     % preview time delay
     modelPar.timeDelay = 2.75;
 elseif strcmp(input, 'Roll')
+    % skip the first loop
     startLoop = 2;
+    % use the roll torque input
     modelPar.isRollInput = 1;
     % preview time delay
     modelPar.timeDelay = 3.5;
+    % don't feed back delta
+    closedTable(:, 1) = zeros(6, 1)
 else
     error('Choose Steer or Roll as the input')
 end
 
-% set all loops closed, perturbing none
-modelPar.perturb = perturbTable(1, :);
-modelPar.closed = closedTable(1, :);
-modelPar.isHandling = 0;
-
 loopNames = {'Delta', 'PhiDot', 'Phi', 'Psi', 'Y'};
+
+modelPar.isHandling = 0;
 
 % get the transfer functions for the closed loops
 for i = startLoop:length(loopNames)
@@ -129,18 +129,24 @@ for i = startLoop:length(loopNames)
     display(sprintf(str, loopNames{i}))
     modelPar.loopNumber = i;
     modelPar.perturb = perturbTable(i + 1, :);
+    modelPar.closed = closedTable(i + 1, :);
     update_model_variables(modelPar)
     [num, den] = linmod('WhippleModel');
     closedLoops.(loopNames{i}).num = num;
     closedLoops.(loopNames{i}).den = den;
 end
 
+% make a truth table for closing the loops sequentially
+closedTable = ~perturbTable;
+if strcmp(input, 'Roll')
+    % don't feed back delta
+    closedTable(:, 1) = zeros(6, 1);
+end
 % get the transfer functions for the open loops
 for i = startLoop:length(loopNames)
     str = 'Finding the open loop transfer function of the %s loop.';
     display(sprintf(str, loopNames{i}));
     modelPar.loopNumber = i;
-    % open the appropriate loop
     modelPar.perturb = perturbTable(i + 1, :);
     modelPar.closed = closedTable(i + 1, :);
     update_model_variables(modelPar);
@@ -149,6 +155,8 @@ for i = startLoop:length(loopNames)
     openLoops.(loopNames{i}).den = den;
 end
 
+% this gives matching results to Ron's but I don't know why it is there.
+modelPar.kPhi = modelPar.kPhi * 1.259;
 % get the handling quality metric
 display('Finding the handling quality metric.')
 modelPar.isHandling = 1;
@@ -163,8 +171,8 @@ handlingMetric.den = den;
 % close all the loops and simulate
 modelPar.loopNumber = 0;
 modelPar.isHandling = 0;
-modelPar.closed = closedTable(1, :);
 modelPar.perturb = perturbTable(1, :);
+modelPar.closed = closedTable(1, :);
 update_model_variables(modelPar)
 display('Simulating the tracking task.')
 tic;
