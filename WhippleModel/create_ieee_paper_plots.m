@@ -56,7 +56,7 @@ setoptions(closedBode, opts)
 hold off
 
 % find all the lines in the current figure
-lines = findobj(gcf, 'type', 'line')
+lines = findobj(gcf, 'type', 'line');
 linestyles = {'', '', '-.', '--', '-', '-.', '--', '-'};
 for i = 3:length(lines)
     set(lines(i), 'LineStyle', linestyles{i}, ...
@@ -74,7 +74,10 @@ figWidth = 3.0;
 set(gcf, ...
     'PaperSize', [goldenRatio * figWidth, figWidth])
 
-saveas(gcf, 'plots/benchmarkClosed.eps')
+filename = 'benchmarkClosed.eps';
+pathToFile = ['plots' filesep filename];
+saveas(gcf, pathToFile)
+fixPSlinestyle(pathToFile)
 
 % open loop plots for the benchmark bicycle
 figure()
@@ -119,7 +122,10 @@ closeLeg = legend(lines(8:-1:6), ...
 
 set(gcf, ...
     'PaperSize', [goldenRatio * figWidth, figWidth])
-saveas(gcf, 'plots/benchmarkOpen.eps')
+filename = 'benchmarkOpen.eps';
+pathToFile = ['plots' filesep filename];
+saveas(gcf, pathToFile)
+fixPSlinestyle(pathToFile)
 
 % handling qualities plot
 num = bikeData.Medium.handlingMetric.num;
@@ -142,7 +148,10 @@ text(3, 9, 'Level 3')
 box on
 set(gcf, ...
     'PaperSize', [goldenRatio * figWidth, figWidth])
-saveas(gcf, 'plots/benchmarkHandling.eps')
+filename = 'benchmarkHandling.eps';
+pathToFile = ['plots' filesep filename];
+saveas(gcf, pathToFile)
+fixPSlinestyle(pathToFile)
 
 function open_loop_all_bikes(data, linestyles, colors)
 % Creates open loop Bode plots of all the bikes.
@@ -191,7 +200,10 @@ goldenRatio = (1 + sqrt(5)) / 2;
 figWidth = 3.0;
 set(gcf, ...
     'PaperSize', [goldenRatio * figWidth, figWidth])
-print plots/openBode.eps -depsc
+filename = 'openBode.eps';
+pathToFile = ['plots' filesep filename];
+print(pathToFile, '-depsc')
+fixPSlinestyle(pathToFile)
 
 function handling_all_bikes(data, linestyles, colors)
 % Creates handling quality metric for all bikes.
@@ -248,8 +260,10 @@ text(3.5, 4.25, 'Level 1')
 text(3, 6.5, 'Level 2')
 text(3, 9, 'Level 3')
 box on
-print plots/handling.eps -depsc
-fixPSlinestyle('plots/handling.eps')
+filename = 'handling.eps';
+pathToFile = ['plots' filesep filename];
+print(pathToFile, '-depsc')
+fixPSlinestyle(pathToFile)
 
 function path_plots(data, linestyles, colors)
 % Creates a plot of the path tracking for all bikes at all speeds.
@@ -281,8 +295,10 @@ box on
 legend(['Path', bikes(2:end)'])
 xlabel('Distance (m)')
 ylabel('Lateral Deviation (m)')
-print plots/paths.eps -depsc
-fixPSlinestyle('plots/paths.eps')
+filename = 'paths.eps';
+pathToFile = ['plots' filesep filename];
+print(pathToFile, '-depsc')
+fixPSlinestyle(pathToFile)
 
 function plot_io(variable, io, data, linestyles, colors)
 % Creates a plot of the time histories of a particular output or input variable
