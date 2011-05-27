@@ -29,18 +29,22 @@ colors = {'k', ...
           'k', ...
           [0.5, 0.5, 0.5]};
 
-%loop_shape_example(data.Benchmark.Medium, 'Steer')
-%loop_shape_example(rollData, 'Roll')
+loop_shape_example(data.Benchmark.Medium, 'Steer')
+loop_shape_example(rollData, 'Roll')
 plot_io_roll(rollData, 'Distance')
 plot_io_roll(rollData, 'Time')
-%open_loop_all_bikes(data, linestyles, colors)
-%handling_all_bikes(data, linestyles, colors)
-%path_plots(data, linestyles, colors)
-%plot_io('delta', 'output', data, linestyles, colors)
-%plot_io('phi', 'output', data, linestyles, colors)
-%plot_io('psi', 'output', data, linestyles, colors)
-%plot_io('Tdelta', 'input', data, linestyles, colors)
-%phase_portraits(data.Benchmark.Medium)
+open_loop_all_bikes(data, linestyles, colors)
+handling_all_bikes(data, linestyles, colors)
+path_plots(data, linestyles, colors)
+var = {'delta', 'phi', 'psi', 'Tdelta'};
+io = {'output', 'output', 'output', 'input'};
+typ = {'Distance', 'Time'};
+for i = 1:length(var)
+    for j = 1:length(typ)
+        plot_io(var{i}, io{i}, typ{j}, data, linestyles, colors)
+    end
+end
+phase_portraits(data.Benchmark.Medium)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function loop_shape_example(bikeData, input)
@@ -394,9 +398,9 @@ print(pathToFile, '-depsc')
 fixPSlinestyle(pathToFile)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function plot_io(variable, io, data, linestyles, colors)
+function plot_io(variable, io, xAxis, data, linestyles, colors)
 % Creates a plot of the time histories of a particular output or input variable
-% for three different speeds.
+% for three different speeds with either time or distance on the x axis.
 %
 % Parameters
 % ----------
@@ -406,6 +410,8 @@ function plot_io(variable, io, data, linestyles, colors)
 %   'input' for input and 'output' for output.
 % data : structure
 %   Data for a set of bicycles, the first being the benchmark bicycle.
+% xAxis : string
+%   'Distance' or 'Time' on the x axis.
 % linestyles : cell array
 %   An array of linestyle types, one for each bicycle.
 % colors : cell array
@@ -488,11 +494,15 @@ bikes = fieldnames(data);
 speedNames = fieldnames(data.Browser);
 
 figure()
-figWidth = 4.0;
+figWidth = 5.0;
+figHeight = figWidth / goldenRatio;
 set(gcf, ...
+    'Color', [1, 1, 1], ...
+    'PaperOrientation', 'portrait', ...
     'PaperUnits', 'inches', ...
-    'PaperPosition', [0, 0, figWidth, figWidth / goldenRatio], ...
-    'PaperSize', [figWidth, figWidth / goldenRatio])
+    'PaperPositionMode', 'manual', ...
+    'PaperPosition', [0, 0, figWidth, figHeight], ...
+    'PaperSize', [figWidth, figHeight])
 
 for j = 1:length(speedNames)
     subplot(3, 1, j)
@@ -503,21 +513,34 @@ for j = 1:length(speedNames)
         speed = oneSpeed.speed;
         distance = time * speed;
         history = oneSpeed.([io 's'])(:, index);
-        plot(distance, history, ...
-             'Linestyle', linestyles{i - 1}, ...
-             'Color', colors{i - 1})
+        if strcmp(xAxis, 'Distance')
+            plot(distance, history, ...
+                 'Linestyle', linestyles{i - 1}, ...
+                 'Color', colors{i - 1})
+        elseif strcmp(xAxis, 'Time')
+            plot(time, history, ...
+                 'Linestyle', linestyles{i - 1}, ...
+                 'Color', colors{i - 1})
+        else
+            error('Choose Time or Distance, no other')
+        end
     end
-    xlabel('Distance (m)')
+    if strcmp(xAxis, 'Distance')
+        xlabel('Distance (m)')
+        xlim([30 190])
+    else
+        xlabel('Time (s)')
+        xlim([30 / speed, 190 / speed])
+    end
     first = [prettyNames{index} ' ' units{index}];
     second = sprintf(' at %1.1f m/s', speed);
     ylabel([first second], 'Interpreter', 'Latex')
     box on
-    xlim([30 190])
     hold off
 end
 plotAxes = findobj(gcf, 'type', 'axes');
 legend(plotAxes(3), bikes(2:end))
-filename = [variable '.eps'];
+filename = [variable xAxis '.eps'];
 print(['plots' filesep filename], '-depsc')
 fixPSlinestyle(['plots' filesep filename])
 
