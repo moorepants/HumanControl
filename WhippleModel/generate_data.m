@@ -114,7 +114,7 @@ elseif strcmp(input, 'Roll')
     % preview time delay
     modelPar.timeDelay = 3.5;
     % don't feed back delta
-    closedTable(:, 1) = zeros(6, 1)
+    closedTable(:, 1) = zeros(6, 1);
 else
     error('Choose Steer or Roll as the input')
 end
@@ -157,6 +157,13 @@ end
 
 % get the handling quality metric
 display('Finding the handling quality metric.')
+% the handling qualities must be calculated with the phi loop at 2 rad/sec
+% crossover, so this modifies the transfer function !!!Currently only works for
+% the Benchmark bike at medium speed!!! Needs to be smarter to work generally.
+if strcmp(input, 'Roll')
+    origkPhi = modelPar.kPhi;
+    modelPar.kPhi = 1.259 * origkPhi;
+end
 modelPar.isHandling = 1;
 modelPar.loopNumber = 3;
 modelPar.closed = [0, 0, 1, 1, 1];
@@ -165,6 +172,10 @@ update_model_variables(modelPar);
 [num, den] = linmod('WhippleModel');
 handlingMetric.num = num;
 handlingMetric.den = den;
+% change the gain back for simulation
+if strcmp(input, 'Roll')
+    modelPar.kPhi = origkPhi;
+end
 
 % close all the loops and simulate
 modelPar.loopNumber = 0;
