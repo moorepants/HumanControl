@@ -26,8 +26,9 @@ on the topic.
 
 Requirements
 ============
-= Matlab 2010a (7.10.0)
-= Simulink
+- Matlab 2010a (7.10.0)
+- Matlab Control Systems Toolbox
+- Simulink
 
 Example Use
 ===========
