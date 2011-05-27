@@ -5,6 +5,21 @@ bicycle model is based on the Whipple bicycle dynamic model. The control
 portion is based on the crossover model and includes a crude preview. The model
 is capable of tracking a path.
 
+There is one simulink model, WhippleModel.mdl, which is used to calculate the
+gains, the various transfer function for the open and closed loops, and the
+handling qualities metric for both steer torque and roll torque inputs.
+
+M-Files
+-------
+whipple_pull_force_abcd.m : Generates the linearized Whipple model about the
+upright constant velocity equilibrium point for various parameter sets. It
+includes and additional lateral pull force input.
+
+par_text_to_struct.m : Loads in a parameter file to Matlab's structure data
+type.
+
+generate_data.m : Generates the data by simulating and perturbing the model.
+
 Requirements
 ------------
 - Matlab 2010a (7.10.0)
@@ -17,7 +32,15 @@ bicycle in a lane change maneuver and plot basic time histories of the inputs
 and outputs along with bode plots of the various transfer functions.
 
 ```matlab
-% generate the data set for the Fisher bicycle at 7.5 m/s with only steer input
-and show the graphs.
-data = generate_data('Fisher', 7.5, 'Steer', 1., 1);
+% generate the data set for the Fisher bicycle at 7.5 m/s with steer input
+% and show the graphs.
+data = generate_data('Fisher', 7.5, 'Steer', 1);
+
+% generate the data set for the Benchmark bicycle at 5.0 m/s with roll as the
+% input and don't show the graphs.
+data = generate_data('Benchmark', 5.0, 'Roll', 0);
+
+% generate the data set for the Browser bicycle at 2.5 m/s with steer as an
+% input and multiply the five gains by various values.
+data = generate_data('Browser', 2.5, 'Steer', 1, [1.1, 1.1, 0.9, 1.0, 0.8])
 ```
