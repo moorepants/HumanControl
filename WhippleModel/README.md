@@ -1,12 +1,12 @@
 Description
------------
+===========
 This is a human operator control model for a person controlling a bicycle. The
 bicycle model is based on the Whipple bicycle dynamic model. The control
 portion is based on the crossover model and includes a crude preview. The model
 is capable of tracking a path.
 
 Source Descriptions
--------------------
+===================
 whipple_pull_force_abcd.m : Generates the linearized Whipple model about the
 upright constant velocity equilibrium point for various parameter sets. It
 includes an additional lateral pull force input.
@@ -25,12 +25,12 @@ create_ieee_paper_plots.m : Generates most of the plots for our journal paper
 on the topic.
 
 Requirements
-------------
-- Matlab 2010a (7.10.0)
-- Simulink
+============
+= Matlab 2010a (7.10.0)
+= Simulink
 
 Example Use
------------
+===========
 This will generate the transfer function and simulation data for the Fisher
 bicycle in a lane change maneuver and plot basic time histories of the inputs
 and outputs along with bode plots of the various transfer functions.

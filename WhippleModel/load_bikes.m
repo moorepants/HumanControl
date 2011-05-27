@@ -1,5 +1,5 @@
 function data = load_bikes(bikes, input)
-% Returns the data for a set of bicycles.
+% Returns the data for a set of bicycles at three speeds.
 %
 % Parameters
 % ----------
@@ -11,7 +11,7 @@ function data = load_bikes(bikes, input)
 % Returns
 % -------
 % data : structure
-%   A structure containg a node for each bicycle.
+%   A structure containg a node for each bicycle and each speed.
 
 speeds = [2.5, 5.0, 7.5];
 speedNames = {'Slow', 'Medium', 'Fast'};
