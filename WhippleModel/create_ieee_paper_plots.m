@@ -439,21 +439,24 @@ fixPSlinestyle(['plots' filesep filename])
 
 function phase_portraits(bikeData)
 
+twentyPercent = generate_data('Benchmark', 5.0, 'Steer', 1., 0, ...
+                              [1.2, 1.2, 1.2, 1.0, 1.0]);
+
 figure()
 subplot(2, 2, 1)
 % steer angle loop
 steerAngle = bikeData.outputs(:, 7);
 steerRate = bikeData.outputs(:, 15);
-plot(steerAngle, steerRate)
+plot(steerAngle, steerRate, 'k-')
 
 subplot(2, 2, 2)
 % roll rate loop
 rollRate = bikeData.outputs(:, 12);
 rollAccel = bikeData.outputsDot(:, 12);
-plot(rollRate, rollAccel)
+plot(rollRate, rollAccel, 'k-')
 
 subplot(2, 2, 3)
 % roll angle loop
 rollAngle = bikeData.outputs(:, 4);
 rollRate = bikeData.outputs(:, 12);
-plot(rollAngle, rollRate)
+plot(rollAngle, rollRate, 'k-')

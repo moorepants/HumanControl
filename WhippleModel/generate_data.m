@@ -1,4 +1,4 @@
-function data = generate_data(bike, speed, input, gain, basicPlots)
+function data = generate_data(bike, speed, input, basicPlots, varargin)
 % Generates data files for the human operator control model.
 %
 % Parameters
@@ -9,10 +9,11 @@ function data = generate_data(bike, speed, input, gain, basicPlots)
 %   The speed of the bicycle.
 % input : string
 %   'Steer' or 'Roll'
-% gain : float
-%   A general gain multiplier for the model.
 % basicPlots : boolean
 %   If 1 basic plots will be shown, if 0 no plots will be shown.
+% gains : matrix, size(5, 1)
+%   General gain multipliers. The gains are applied starting at the inner loop
+%   going out.
 %
 % Returns
 % -------
@@ -31,7 +32,12 @@ function data = generate_data(bike, speed, input, gain, basicPlots)
 % this is for the latex expressions in the simulink model that can't compute
 warning off
 
-modelPar.gain = gain;
+if varargin > 0
+    gains = varargin{1};
+else
+    gains = ones(5, 1);
+end
+
 modelPar.speed = speed;
 
 display(sprintf(repmat('-', 1, 79)))
@@ -76,8 +82,8 @@ modelPar.handlingFilterNum = 400;
 modelPar.handlingFilterDen = [1, 40, 400];
 
 % path filter
-modelPar.pathFilterNum = (2.4 * gain)^2;
-modelPar.pathFilterDen = [1, 2 * 2.4 * gain  (2.4*gain)^2];
+modelPar.pathFilterNum = (2.4 * gains(5))^2;
+modelPar.pathFilterDen = [1, 2 * 2.4 * gains(5)  (2.4 * gains(5))^2];
 
 % load the gains, set to zero if gains aren't available
 try
@@ -95,9 +101,11 @@ catch
     modelPar.kY = 0.0;
 end
 
-% mulitply the gain adjustment
-modelPar.kPhi = gain * modelPar.kPhi;
-modelPar.kY = gain * modelPar.kY;
+% scale the gains
+k = {'kDelta', 'kPhiDot', 'kPhi', 'kPsi', 'kY'};
+for i = 1:length(k)
+    modelPar.(k{i}) = gains(i) * modelPar.(k{i});
+end
 
 % make a truth table for perturbing the loops
 % the first row is default setup
