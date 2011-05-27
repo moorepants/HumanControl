@@ -20,6 +20,6 @@ speedNames = {'Slow', 'Medium', 'Fast'};
 for i = 1:length(bikes)
     for j = 1:length(speeds)
         data.(bikes{i}).(speedNames{j}) = ...
-            generate_data(bikes{i}, speeds(j), input, 1.0, 0);
+            generate_data(bikes{i}, speeds(j), input, 0);
     end
 end

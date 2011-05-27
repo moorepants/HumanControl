@@ -14,7 +14,7 @@ Model {
       Name		      "Closed Loop Output"
     }
     ParameterArgumentNames  ""
-    ComputedModelVersion    "1.204"
+    ComputedModelVersion    "1.206"
     NumModelReferences	    0
     NumTestPointedSignals   0
   }
@@ -33,9 +33,9 @@ Model {
   ModifiedByFormat	  "%<Auto>"
   LastModifiedBy	  "moorepants"
   ModifiedDateFormat	  "%<Auto>"
-  LastModifiedDate	  "Thu May 26 18:17:24 2011"
-  RTWModifiedTimeStamp	  228334640
-  ModelVersionFormat	  "1.%<AutoIncrement:204>"
+  LastModifiedDate	  "Thu May 26 20:29:58 2011"
+  RTWModifiedTimeStamp	  228342594
+  ModelVersionFormat	  "1.%<AutoIncrement:206>"
   ConfigurationManager	  "None"
   SampleTimeColors	  off
   SampleTimeAnnotations	  off
@@ -790,7 +790,7 @@ Model {
   }
   System {
     Name		    "WhippleModel"
-    Location		    [1369, 51, 3049, 1049]
+    Location		    [3, 75, 1369, 743]
     Open		    on
     ModelBrowserVisibility  off
     ModelBrowserWidth	    200
@@ -940,7 +940,7 @@ Model {
       MaskHideContents	      off
       System {
 	Name			"Feedback Variables"
-	Location		[1677, 167, 2016, 789]
+	Location		[513, 75, 852, 697]
 	Open			off
 	ModelBrowserVisibility	off
 	ModelBrowserWidth	200
@@ -975,7 +975,7 @@ Model {
 	}
 	Block {
 	  BlockType		  Outport
-	  Name			  "y_Q"
+	  Name			  "yQ"
 	  SID			  64
 	  Position		  [240, 538, 270, 552]
 	  IconDisplay		  "Port number"
@@ -984,7 +984,7 @@ Model {
 	}
 	Block {
 	  BlockType		  Outport
-	  Name			  "\\psi"
+	  Name			  "psi"
 	  SID			  63
 	  Position		  [240, 88, 270, 102]
 	  Port			  "2"
@@ -994,7 +994,7 @@ Model {
 	}
 	Block {
 	  BlockType		  Outport
-	  Name			  "\\phi"
+	  Name			  "phi"
 	  SID			  62
 	  Position		  [240, 118, 270, 132]
 	  Port			  "3"
@@ -1004,7 +1004,7 @@ Model {
 	}
 	Block {
 	  BlockType		  Outport
-	  Name			  "\\dot{\\phi}"
+	  Name			  "phiDot"
 	  SID			  61
 	  Position		  [240, 358, 270, 372]
 	  Port			  "4"
@@ -1014,7 +1014,7 @@ Model {
 	}
 	Block {
 	  BlockType		  Outport
-	  Name			  "\\delta"
+	  Name			  "delta"
 	  SID			  59
 	  Position		  [240, 208, 270, 222]
 	  Port			  "5"
@@ -1031,119 +1031,119 @@ Model {
 	Line {
 	  SrcBlock		  "Demux1"
 	  SrcPort		  3
-	  DstBlock		  "\\psi"
+	  DstBlock		  "psi"
 	  DstPort		  1
 	}
 	Line {
 	  SrcBlock		  "Demux1"
 	  SrcPort		  4
-	  DstBlock		  "\\phi"
+	  DstBlock		  "phi"
 	  DstPort		  1
 	}
 	Line {
 	  SrcBlock		  "Demux1"
 	  SrcPort		  7
-	  DstBlock		  "\\delta"
+	  DstBlock		  "delta"
 	  DstPort		  1
 	}
 	Line {
 	  SrcBlock		  "Demux1"
 	  SrcPort		  12
-	  DstBlock		  "\\dot{\\phi}"
+	  DstBlock		  "phiDot"
 	  DstPort		  1
 	}
 	Line {
 	  SrcBlock		  "Demux1"
 	  SrcPort		  18
-	  DstBlock		  "y_Q"
+	  DstBlock		  "yQ"
 	  DstPort		  1
 	}
 	Annotation {
-	  Name			  "x_P"
+	  Name			  "xP"
 	  Position		  [142, 38]
 	  Interpreter		  "tex"
 	}
 	Annotation {
-	  Name			  "y_P"
+	  Name			  "yP"
 	  Position		  [144, 68]
 	  Interpreter		  "tex"
 	}
 	Annotation {
-	  Name			  "\\psi"
+	  Name			  "psi"
 	  Position		  [144, 99]
 	  Interpreter		  "tex"
 	}
 	Annotation {
-	  Name			  "\\phi"
+	  Name			  "phi"
 	  Position		  [143, 128]
 	  Interpreter		  "tex"
 	}
 	Annotation {
-	  Name			  "\\theta_P"
-	  Position		  [146, 158]
+	  Name			  "thetaP"
+	  Position		  [136, 158]
 	  Interpreter		  "tex"
 	}
 	Annotation {
-	  Name			  "\\theta_R"
-	  Position		  [148, 189]
+	  Name			  "thetaR"
+	  Position		  [138, 189]
 	  Interpreter		  "tex"
 	}
 	Annotation {
-	  Name			  "\\delta"
-	  Position		  [150, 219]
+	  Name			  "delta"
+	  Position		  [140, 219]
 	  Interpreter		  "tex"
 	}
 	Annotation {
-	  Name			  "\\theta_F"
-	  Position		  [147, 249]
+	  Name			  "thetaF"
+	  Position		  [137, 249]
 	  Interpreter		  "tex"
 	}
 	Annotation {
-	  Name			  "\\dot{x}_P"
+	  Name			  "xPdot"
 	  Position		  [133, 279]
 	  Interpreter		  "tex"
 	}
 	Annotation {
-	  Name			  "\\dot{y}_P"
+	  Name			  "yPdot"
 	  Position		  [134, 308]
 	}
 	Annotation {
-	  Name			  "\\dot{\\psi}"
+	  Name			  "psiDot"
 	  Position		  [132, 339]
 	  Interpreter		  "tex"
 	}
 	Annotation {
-	  Name			  "\\dot{\\phi}"
+	  Name			  "phiDot"
 	  Position		  [132, 367]
 	  Interpreter		  "tex"
 	}
 	Annotation {
-	  Name			  "\\dot{\\theta}_P"
+	  Name			  "thetaPDot"
 	  Position		  [124, 399]
 	  Interpreter		  "tex"
 	}
 	Annotation {
-	  Name			  "\\dot{\\theta}_R"
+	  Name			  "thetaRDot"
 	  Position		  [125, 428]
 	  Interpreter		  "tex"
 	}
 	Annotation {
-	  Name			  "\\dot{\\delta}"
+	  Name			  "deltaDot"
 	  Position		  [131, 456]
 	  Interpreter		  "tex"
 	}
 	Annotation {
-	  Name			  "\\dot{\\theta}_F"
+	  Name			  "thetaFDot"
 	  Position		  [124, 489]
 	  Interpreter		  "tex"
 	}
 	Annotation {
-	  Name			  "x_Q"
+	  Name			  "xQ"
 	  Position		  [145, 520]
 	  Interpreter		  "tex"
 	}
 	Annotation {
-	  Name			  "y_Q"
+	  Name			  "yQ"
 	  Position		  [144, 545]
 	  Interpreter		  "tex"
 	}
@@ -1382,86 +1382,6 @@ Model {
       MaxDataPoints	      "inf"
       SampleTime	      "-1"
       SaveFormat	      "Array"
-    }
-    Block {
-      BlockType		      Gain
-      Name		      "K_\\delta"
-      SID		      13
-      Position		      [1425, 388, 1500, 422]
-      Gain		      "kDelta"
-      ParameterDataTypeMode   "Inherit via internal rule"
-      ParameterDataType	      "sfix(16)"
-      ParameterScaling	      "2^0"
-      ParamDataTypeStr	      "Inherit: Inherit via internal rule"
-      OutDataTypeMode	      "Inherit via internal rule"
-      OutDataType	      "sfix(16)"
-      OutScaling	      "2^0"
-      OutDataTypeStr	      "Inherit: Inherit via internal rule"
-      SaturateOnIntegerOverflow	off
-    }
-    Block {
-      BlockType		      Gain
-      Name		      "K_\\dot{\\phi}"
-      SID		      10
-      Position		      [1215, 397, 1290, 433]
-      Gain		      "kPhiDot"
-      ParameterDataTypeMode   "Inherit via internal rule"
-      ParameterDataType	      "sfix(16)"
-      ParameterScaling	      "2^0"
-      ParamDataTypeStr	      "Inherit: Inherit via internal rule"
-      OutDataTypeMode	      "Inherit via internal rule"
-      OutDataType	      "sfix(16)"
-      OutScaling	      "2^0"
-      OutDataTypeStr	      "Inherit: Inherit via internal rule"
-      SaturateOnIntegerOverflow	off
-    }
-    Block {
-      BlockType		      Gain
-      Name		      "K_\\phi"
-      SID		      4
-      Position		      [1010, 405, 1065, 445]
-      Gain		      "kPhi"
-      ParameterDataTypeMode   "Inherit via internal rule"
-      ParameterDataType	      "sfix(16)"
-      ParameterScaling	      "2^0"
-      ParamDataTypeStr	      "Inherit: Inherit via internal rule"
-      OutDataTypeMode	      "Inherit via internal rule"
-      OutDataType	      "sfix(16)"
-      OutScaling	      "2^0"
-      OutDataTypeStr	      "Inherit: Inherit via internal rule"
-      SaturateOnIntegerOverflow	off
-    }
-    Block {
-      BlockType		      Gain
-      Name		      "K_\\psi"
-      SID		      3
-      Position		      [800, 413, 870, 457]
-      Gain		      "kPsi"
-      ParameterDataTypeMode   "Inherit via internal rule"
-      ParameterDataType	      "sfix(16)"
-      ParameterScaling	      "2^0"
-      ParamDataTypeStr	      "Inherit: Inherit via internal rule"
-      OutDataTypeMode	      "Inherit via internal rule"
-      OutDataType	      "sfix(16)"
-      OutScaling	      "2^0"
-      OutDataTypeStr	      "Inherit: Inherit via internal rule"
-      SaturateOnIntegerOverflow	off
-    }
-    Block {
-      BlockType		      Gain
-      Name		      "K_y"
-      SID		      2
-      Position		      [580, 428, 635, 462]
-      Gain		      "kY"
-      ParameterDataTypeMode   "Inherit via internal rule"
-      ParameterDataType	      "sfix(16)"
-      ParameterScaling	      "2^0"
-      ParamDataTypeStr	      "Inherit: Inherit via internal rule"
-      OutDataTypeMode	      "Inherit via internal rule"
-      OutDataType	      "sfix(16)"
-      OutScaling	      "2^0"
-      OutDataTypeStr	      "Inherit: Inherit via internal rule"
-      SaturateOnIntegerOverflow	off
     }
     Block {
       BlockType		      Mux
@@ -1854,6 +1774,86 @@ Model {
       OutScaling	      "2^0"
     }
     Block {
+      BlockType		      Gain
+      Name		      "kDelta"
+      SID		      13
+      Position		      [1425, 388, 1500, 422]
+      Gain		      "kDelta"
+      ParameterDataTypeMode   "Inherit via internal rule"
+      ParameterDataType	      "sfix(16)"
+      ParameterScaling	      "2^0"
+      ParamDataTypeStr	      "Inherit: Inherit via internal rule"
+      OutDataTypeMode	      "Inherit via internal rule"
+      OutDataType	      "sfix(16)"
+      OutScaling	      "2^0"
+      OutDataTypeStr	      "Inherit: Inherit via internal rule"
+      SaturateOnIntegerOverflow	off
+    }
+    Block {
+      BlockType		      Gain
+      Name		      "kPhiDot"
+      SID		      10
+      Position		      [1215, 397, 1290, 433]
+      Gain		      "kPhiDot"
+      ParameterDataTypeMode   "Inherit via internal rule"
+      ParameterDataType	      "sfix(16)"
+      ParameterScaling	      "2^0"
+      ParamDataTypeStr	      "Inherit: Inherit via internal rule"
+      OutDataTypeMode	      "Inherit via internal rule"
+      OutDataType	      "sfix(16)"
+      OutScaling	      "2^0"
+      OutDataTypeStr	      "Inherit: Inherit via internal rule"
+      SaturateOnIntegerOverflow	off
+    }
+    Block {
+      BlockType		      Gain
+      Name		      "kPhii"
+      SID		      4
+      Position		      [1010, 405, 1065, 445]
+      Gain		      "kPhi"
+      ParameterDataTypeMode   "Inherit via internal rule"
+      ParameterDataType	      "sfix(16)"
+      ParameterScaling	      "2^0"
+      ParamDataTypeStr	      "Inherit: Inherit via internal rule"
+      OutDataTypeMode	      "Inherit via internal rule"
+      OutDataType	      "sfix(16)"
+      OutScaling	      "2^0"
+      OutDataTypeStr	      "Inherit: Inherit via internal rule"
+      SaturateOnIntegerOverflow	off
+    }
+    Block {
+      BlockType		      Gain
+      Name		      "kPsi"
+      SID		      3
+      Position		      [800, 413, 870, 457]
+      Gain		      "kPsi"
+      ParameterDataTypeMode   "Inherit via internal rule"
+      ParameterDataType	      "sfix(16)"
+      ParameterScaling	      "2^0"
+      ParamDataTypeStr	      "Inherit: Inherit via internal rule"
+      OutDataTypeMode	      "Inherit via internal rule"
+      OutDataType	      "sfix(16)"
+      OutScaling	      "2^0"
+      OutDataTypeStr	      "Inherit: Inherit via internal rule"
+      SaturateOnIntegerOverflow	off
+    }
+    Block {
+      BlockType		      Gain
+      Name		      "kY"
+      SID		      2
+      Position		      [580, 428, 635, 462]
+      Gain		      "kY"
+      ParameterDataTypeMode   "Inherit via internal rule"
+      ParameterDataType	      "sfix(16)"
+      ParameterScaling	      "2^0"
+      ParamDataTypeStr	      "Inherit: Inherit via internal rule"
+      OutDataTypeMode	      "Inherit via internal rule"
+      OutDataType	      "sfix(16)"
+      OutScaling	      "2^0"
+      OutDataTypeStr	      "Inherit: Inherit via internal rule"
+      SaturateOnIntegerOverflow	off
+    }
+    Block {
       BlockType		      Outport
       Name		      "Closed Loop Output"
       SID		      52
@@ -1865,7 +1865,7 @@ Model {
     Line {
       SrcBlock		      "Sum"
       SrcPort		      1
-      DstBlock		      "K_\\dot{\\phi}"
+      DstBlock		      "kPhiDot"
       DstPort		      1
     }
     Line {
@@ -1918,19 +1918,19 @@ Model {
     Line {
       SrcBlock		      "Sum1"
       SrcPort		      1
-      DstBlock		      "K_\\phi"
+      DstBlock		      "kPhii"
       DstPort		      1
     }
     Line {
       SrcBlock		      "Sum3"
       SrcPort		      1
-      DstBlock		      "K_\\psi"
+      DstBlock		      "kPsi"
       DstPort		      1
     }
     Line {
       SrcBlock		      "Sum4"
       SrcPort		      1
-      DstBlock		      "K_y"
+      DstBlock		      "kY"
       DstPort		      1
     }
     Line {
@@ -1942,35 +1942,35 @@ Model {
     Line {
       SrcBlock		      "Sum6"
       SrcPort		      1
-      DstBlock		      "K_\\delta"
+      DstBlock		      "kDelta"
       DstPort		      1
     }
     Line {
-      SrcBlock		      "K_\\delta"
+      SrcBlock		      "kDelta"
       SrcPort		      1
       DstBlock		      "Neuromuscular"
       DstPort		      1
     }
     Line {
-      SrcBlock		      "K_\\dot{\\phi}"
+      SrcBlock		      "kPhiDot"
       SrcPort		      1
       DstBlock		      "Switch 1"
       DstPort		      3
     }
     Line {
-      SrcBlock		      "K_\\phi"
+      SrcBlock		      "kPhii"
       SrcPort		      1
       DstBlock		      "Switch 2"
       DstPort		      3
     }
     Line {
-      SrcBlock		      "K_\\psi"
+      SrcBlock		      "kPsi"
       SrcPort		      1
       DstBlock		      "Switch 3"
       DstPort		      3
     }
     Line {
-      SrcBlock		      "K_y"
+      SrcBlock		      "kY"
       SrcPort		      1
       DstBlock		      "Switch 4"
       DstPort		      3
@@ -2454,11 +2454,11 @@ Model {
       DstPort		      1
     }
     Annotation {
-      Name		      "T_\\phi"
+      Name		      "TPhi"
       Position		      [1717, 344]
     }
     Annotation {
-      Name		      "T_\\delta"
+      Name		      "TDelta"
       Position		      [1717, 387]
     }
     Annotation {

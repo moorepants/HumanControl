@@ -439,24 +439,116 @@ fixPSlinestyle(['plots' filesep filename])
 
 function phase_portraits(bikeData)
 
-twentyPercent = generate_data('Benchmark', 5.0, 'Steer', 1., 0, ...
-                              [1.2, 1.2, 1.2, 1.0, 1.0]);
 
 figure()
-subplot(2, 2, 1)
+goldenRatio = (1 + sqrt(5)) / 2;
+figWidth = 3.0;
+set(gcf, ...
+    'PaperSize', [goldenRatio * figWidth, figWidth])
+
 % steer angle loop
+display('Calculating with 20 percent gain decrease to kDelta.')
+twentyPercent = generate_data('Benchmark', 5.0, 'Steer', 0, ...
+                              [0.8, 1, 1, 1, 1]);
+subplot(2, 2, 1)
+hold on
+
 steerAngle = bikeData.outputs(:, 7);
 steerRate = bikeData.outputs(:, 15);
-plot(steerAngle, steerRate, 'k-')
+plot(steerAngle, steerRate, 'k-', 'Linewidth', 1.0)
 
-subplot(2, 2, 2)
+steerAngle = twentyPercent.outputs(:, 7);
+steerRate = twentyPercent.outputs(:, 15);
+plot(steerAngle, steerRate, 'k--', 'Linewidth', 1.0)
+
+hold off
+
+box on
+axis tight
+xlabel('$\delta$ (rad)', 'Interpreter', 'Latex')
+ylabel('$\dot{\delta}$ (rad/s)', 'Interpreter', 'Latex')
+kDelta1 = bikeData.modelPar.kDelta;
+kDelta2 = twentyPercent.modelPar.kDelta;
+leg1 = sprintf('%1.1f', kDelta1);
+leg2 = sprintf('%1.1f', kDelta2);
+legend({['$k_\delta$ = ' leg1], ['$k_\delta$ = ' leg2]} , 'Interpreter', 'Latex')
+
 % roll rate loop
+display('Calculating with 20 percent gain increase to kPhiDot.')
+twentyPercent = generate_data('Benchmark', 5.0, 'Steer', 0, ...
+                              [1, 1.2, 1, 1, 1]);
+subplot(2, 2, 2)
+hold on
+
 rollRate = bikeData.outputs(:, 12);
 rollAccel = bikeData.outputsDot(:, 12);
-plot(rollRate, rollAccel, 'k-')
+plot(rollRate, rollAccel, 'k-', 'Linewidth', 1.0)
 
-subplot(2, 2, 3)
+rollRate = twentyPercent.outputs(:, 12);
+rollAccel = twentyPercent.outputsDot(:, 12);
+plot(rollRate, rollAccel, 'k--', 'Linewidth', 1.0)
+
+hold off
+
+box on
+axis tight
+xlabel('$\dot{\phi}$ (rad/s)', 'Interpreter', 'Latex')
+ylabel('$\ddot{\phi}$ (rad/s$^2$)', 'Interpreter', 'Latex')
+leg1 = sprintf('%1.3f', bikeData.modelPar.kPhiDot);
+leg2 = sprintf('%1.3f', twentyPercent.modelPar.kPhiDot);
+legend({['$k_{\dot{\phi}}$ = ' leg1], ['$k_{\dot{\phi}}$ = ' leg2]} , 'Interpreter', 'Latex')
+
 % roll angle loop
+subplot(2, 2, 3)
+display('Calculating with 20 percent gain increase to kPhi.')
+twentyPercent = generate_data('Benchmark', 5.0, 'Steer', 0, ...
+                              [1, 1, 1.2, 1, 1]);
+hold on
+
 rollAngle = bikeData.outputs(:, 4);
 rollRate = bikeData.outputs(:, 12);
-plot(rollAngle, rollRate, 'k-')
+plot(rollAngle, rollRate, 'k-', 'Linewidth', 1.0)
+
+rollAngle = twentyPercent.outputs(:, 4);
+rollRate = twentyPercent.outputs(:, 12);
+plot(rollAngle, rollRate, 'k--', 'Linewidth', 1.0)
+
+hold off
+
+box on
+axis tight
+xlabel('$\phi$ (rad)', 'Interpreter', 'Latex')
+ylabel('$\dot{\phi}$ (rad/s)', 'Interpreter', 'Latex')
+leg1 = sprintf('%1.1f', bikeData.modelPar.kPhi);
+leg2 = sprintf('%1.1f', twentyPercent.modelPar.kPhi);
+legend({['$k_\phi$ = ' leg1], ['$k_\phi$ = ' leg2]} , 'Interpreter', 'Latex')
+
+% roll angle loop
+display('Calculating with 20 percent gain increase to kPhi and decrease to kPsi and kY.')
+twentyPercent = generate_data('Benchmark', 5.0, 'Steer', 0, ...
+                              [1, 1, 1.2, 0.8, 0.8]);
+subplot(2, 2, 4)
+hold on
+
+rollAngle = bikeData.outputs(:, 4);
+rollRate = bikeData.outputs(:, 12);
+plot(rollAngle, rollRate, 'k-', 'Linewidth', 1.0)
+
+rollAngle = twentyPercent.outputs(:, 4);
+rollRate = twentyPercent.outputs(:, 12);
+plot(rollAngle, rollRate, 'k--', 'Linewidth', 1.0)
+
+hold off
+
+box on
+axis tight
+xlabel('$\phi$ (rad)', 'Interpreter', 'Latex')
+ylabel('$\dot{\phi} (rad/s)$', 'Interpreter', 'Latex')
+leg1 = sprintf('%1.1f', bikeData.modelPar.kPhi);
+leg2 = sprintf('%1.1f', twentyPercent.modelPar.kPhi);
+legend({['$k_\phi$ = ' leg1], ['$k_\phi$ = ' leg2]} , 'Interpreter', 'Latex')
+
+% save the plot
+filename = 'phasePortraits.eps';
+print(['plots' filesep filename], '-depsc')
+fixPSlinestyle(['plots' filesep filename])

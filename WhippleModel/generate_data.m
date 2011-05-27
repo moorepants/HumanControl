@@ -11,7 +11,7 @@ function data = generate_data(bike, speed, input, basicPlots, varargin)
 %   'Steer' or 'Roll'
 % basicPlots : boolean
 %   If 1 basic plots will be shown, if 0 no plots will be shown.
-% gains : matrix, size(5, 1)
+% gains : matrix, size(5, 1), optional
 %   General gain multipliers. The gains are applied starting at the inner loop
 %   going out.
 %
@@ -29,10 +29,11 @@ function data = generate_data(bike, speed, input, basicPlots, varargin)
 %   - inputs : matrix (n, 3), inputs to the bicycle system
 %   - outputs : matrix (n, 18), outputs of the bicycle system
 
-% this is for the latex expressions in the simulink model that can't compute
+% there are some unconnected ports that send out warnings
 warning off
 
-if varargin > 0
+% make the gain multipliers unity unless they are supplied
+if size(varargin) > 0
     gains = varargin{1};
 else
     gains = ones(5, 1);
@@ -59,8 +60,8 @@ elapsedTime = toc;
 display(sprintf('A, B, C, D calculated in %1.4f seconds.', elapsedTime))
 
 % Keep in mind that the there is a function that relates steer angle, roll
-% angle and pitch angle that must be enforced when setting any of those initial
-% conditions.
+% angle and pitch angle that must be enforced when setting any three of those
+% initial conditions.
 modelPar.initialConditions = [-par.w, ... rear wheel contact x
                                0, ... rear wheel contact y
                                0, ... yaw angle
@@ -150,10 +151,12 @@ end
 
 % make a truth table for closing the loops sequentially
 closedTable = ~perturbTable;
+
+% don't feed back delta if looking at roll control
 if strcmp(input, 'Roll')
-    % don't feed back delta
     closedTable(:, 1) = zeros(6, 1);
 end
+
 % get the transfer functions for the open loops
 for i = startLoop:length(loopNames)
     str = 'Finding the open loop transfer function of the %s loop.';
@@ -169,6 +172,7 @@ end
 
 % get the handling quality metric
 display('Finding the handling quality metric.')
+
 % the handling qualities must be calculated with the phi loop at 2 rad/sec
 % crossover, so this modifies the transfer function !!!Currently only works for
 % the Benchmark bike at medium speed!!! Needs to be smarter to work generally.
@@ -176,6 +180,7 @@ if strcmp(input, 'Roll')
     origkPhi = modelPar.kPhi;
     modelPar.kPhi = 1.259 * origkPhi;
 end
+
 modelPar.isHandling = 1;
 modelPar.loopNumber = 3;
 modelPar.closed = [0, 0, 1, 1, 1];
@@ -184,6 +189,7 @@ update_model_variables(modelPar);
 [num, den] = linmod('WhippleModel');
 handlingMetric.num = num;
 handlingMetric.den = den;
+
 % change the gain back for simulation
 if strcmp(input, 'Roll')
     modelPar.kPhi = origkPhi;
@@ -218,6 +224,7 @@ data.inputs = u;
 data.outputs = y;
 data.outputsDot = yDot;
 data.path = yc;
+data.gains = gains;
 
 display(sprintf('Data written. \n'))
 
@@ -287,11 +294,6 @@ function outputPlot = plot_outputs(t, y, yc)
 %   The outputs of the bicycle system.
 % yc : matrix, size(n, 1)
 %   The path that was tracked.
-%
-% Returns
-% -------
-% outputPlot : figure
-%   Plot of the outputs versus time.
 
 outputs = {'$x_P$',
            '$y_P$',
