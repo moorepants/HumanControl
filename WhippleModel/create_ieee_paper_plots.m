@@ -1,5 +1,16 @@
 function create_ieee_paper_plots(data)
 % Creates all of the figures for the IEEE paper.
+%
+% Parameters
+% ----------
+% data : structure
+%   A structure contating the data from generate_data.m for all of the bicycles
+%   and speeds for the IEEE paper.
+
+% create a plot directory if one doesn't already exist
+if exist('plots/', 'dir') ~= 7
+    mkdir('plots/')
+end
 
 % Define some linestyles and colors for each of the six bicycles
 linestyles = {'-', '-', '--', ...
@@ -11,14 +22,15 @@ colors = {'k', ...
           'k', ...
           [0.5, 0.5, 0.5]};
 
-loop_shape_example(data.Benchmark)
-open_loop_all_bikes(data, linestyles, colors)
-handling_all_bikes(data, linestyles, colors)
-path_plots(data, linestyles, colors)
-plot_io('delta', 'output', data, linestyles, colors)
-plot_io('phi', 'output', data, linestyles, colors)
-plot_io('psi', 'output', data, linestyles, colors)
-plot_io('Tdelta', 'input', data, linestyles, colors)
+%loop_shape_example(data.Benchmark)
+%open_loop_all_bikes(data, linestyles, colors)
+%handling_all_bikes(data, linestyles, colors)
+%path_plots(data, linestyles, colors)
+%plot_io('delta', 'output', data, linestyles, colors)
+%plot_io('phi', 'output', data, linestyles, colors)
+%plot_io('psi', 'output', data, linestyles, colors)
+%plot_io('Tdelta', 'input', data, linestyles, colors)
+phase_portraits(data.Benchmark.Medium)
 
 function loop_shape_example(bikeData)
 % Creates the example loop shaping for the bicycle at medium speed.
@@ -424,3 +436,24 @@ legend(plotAxes(3), bikes(2:end))
 filename = [variable '.eps'];
 print(['plots' filesep filename], '-depsc')
 fixPSlinestyle(['plots' filesep filename])
+
+function phase_portraits(bikeData)
+
+figure()
+subplot(2, 2, 1)
+% steer angle loop
+steerAngle = bikeData.outputs(:, 7);
+steerRate = bikeData.outputs(:, 15);
+plot(steerAngle, steerRate)
+
+subplot(2, 2, 2)
+% roll rate loop
+rollRate = bikeData.outputs(:, 12);
+rollAccel = bikeData.outputsDot(:, 12);
+plot(rollRate, rollAccel)
+
+subplot(2, 2, 3)
+% roll angle loop
+rollAngle = bikeData.outputs(:, 4);
+rollRate = bikeData.outputs(:, 12);
+plot(rollAngle, rollRate)

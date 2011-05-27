@@ -197,6 +197,7 @@ data.time = t;
 data.command = command;
 data.inputs = u;
 data.outputs = y;
+data.outputsDot = yDot;
 data.path = yc;
 
 display(sprintf('Data written. \n'))

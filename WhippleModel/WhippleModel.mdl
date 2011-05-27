@@ -14,7 +14,7 @@ Model {
       Name		      "Closed Loop Output"
     }
     ParameterArgumentNames  ""
-    ComputedModelVersion    "1.201"
+    ComputedModelVersion    "1.204"
     NumModelReferences	    0
     NumTestPointedSignals   0
   }
@@ -33,9 +33,9 @@ Model {
   ModifiedByFormat	  "%<Auto>"
   LastModifiedBy	  "moorepants"
   ModifiedDateFormat	  "%<Auto>"
-  LastModifiedDate	  "Thu May 26 16:49:06 2011"
-  RTWModifiedTimeStamp	  228329317
-  ModelVersionFormat	  "1.%<AutoIncrement:201>"
+  LastModifiedDate	  "Thu May 26 18:17:24 2011"
+  RTWModifiedTimeStamp	  228334640
+  ModelVersionFormat	  "1.%<AutoIncrement:204>"
   ConfigurationManager	  "None"
   SampleTimeColors	  off
   SampleTimeAnnotations	  off
@@ -600,6 +600,10 @@ Model {
       BusSelectionMode	      off
     }
     Block {
+      BlockType		      Derivative
+      LinearizePole	      "inf"
+    }
+    Block {
       BlockType		      Gain
       Gain		      "1"
       Multiplication	      "Element-wise(K.*u)"
@@ -786,7 +790,7 @@ Model {
   }
   System {
     Name		    "WhippleModel"
-    Location		    [1366, 51, 3046, 1049]
+    Location		    [1369, 51, 3049, 1049]
     Open		    on
     ModelBrowserVisibility  off
     ModelBrowserWidth	    200
@@ -800,7 +804,7 @@ Model {
     ShowPageBoundaries	    off
     ZoomFactor		    "97"
     ReportName		    "simulink-default.rpt"
-    SIDHighWatermark	    138
+    SIDHighWatermark	    141
     Block {
       BlockType		      Inport
       Name		      "Perturbation Input"
@@ -902,6 +906,23 @@ Model {
       Value		      "perturb(1)"
       OutDataType	      "fixdt(1, 16)"
       OutScaling	      "2^0"
+    }
+    Block {
+      BlockType		      Derivative
+      Name		      "Derivative"
+      SID		      140
+      Position		      [1890, 225, 1920, 255]
+    }
+    Block {
+      BlockType		      ToWorkspace
+      Name		      "Derivatives of the Output"
+      SID		      141
+      Ports		      [1]
+      Position		      [1985, 225, 2045, 255]
+      VariableName	      "yDot"
+      MaxDataPoints	      "inf"
+      SampleTime	      "-1"
+      SaveFormat	      "Array"
     }
     Block {
       BlockType		      SubSystem
@@ -1872,13 +1893,20 @@ Model {
       SrcPort		      1
       Points		      [10, 0]
       Branch {
-	Points			[0, -125]
-	DstBlock		"Outputs"
+	DstBlock		"Feedback Variables"
 	DstPort			1
       }
       Branch {
-	DstBlock		"Feedback Variables"
-	DstPort			1
+	Points			[0, -125]
+	Branch {
+	  DstBlock		  "Outputs"
+	  DstPort		  1
+	}
+	Branch {
+	  Points		  [0, -40]
+	  DstBlock		  "Derivative"
+	  DstPort		  1
+	}
       }
     }
     Line {
@@ -2418,6 +2446,12 @@ Model {
       SrcPort		      1
       DstBlock		      "Sum2"
       DstPort		      2
+    }
+    Line {
+      SrcBlock		      "Derivative"
+      SrcPort		      1
+      DstBlock		      "Derivatives of the Output"
+      DstPort		      1
     }
     Annotation {
       Name		      "T_\\phi"
