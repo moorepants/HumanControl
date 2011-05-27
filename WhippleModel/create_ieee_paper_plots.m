@@ -136,7 +136,7 @@ closeLeg = legend(lines(whichLines), ...
 filename = ['benchmark' input 'Closed'];
 pathToFile = ['plots' filesep filename];
 print(gcf, '-deps2', '-loose', [pathToFile '.eps'])
-fixPSlinestyle([pathToFile '.eps'])
+fix_ps_linestyle([pathToFile '.eps'])
 
 % open loop plots
 figure()
@@ -196,7 +196,7 @@ closeLeg = legend(lines(8:-1:6), ...
 filename = ['benchmark' input 'Open.eps'];
 pathToFile = ['plots' filesep filename];
 print(gcf, '-deps2', '-loose', pathToFile)
-fixPSlinestyle(pathToFile)
+fix_ps_linestyle(pathToFile)
 
 % handling qualities plot
 num = bikeData.handlingMetric.num;
@@ -232,7 +232,7 @@ box on
 filename = ['benchmark' input 'Handling.eps'];
 pathToFile = ['plots' filesep filename];
 print(gcf, '-deps2', '-loose', pathToFile)
-fixPSlinestyle(pathToFile)
+fix_ps_linestyle(pathToFile)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function open_loop_all_bikes(data, linestyles, colors)
@@ -291,7 +291,7 @@ closeLeg = legend(magLines(2:7), ...
 filename = 'openBode.eps';
 pathToFile = ['plots' filesep filename];
 print(pathToFile, '-depsc')
-fixPSlinestyle(pathToFile)
+fix_ps_linestyle(pathToFile)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function handling_all_bikes(data, linestyles, colors)
@@ -356,7 +356,7 @@ box on
 filename = 'handling.eps';
 pathToFile = ['plots' filesep filename];
 print(pathToFile, '-depsc')
-fixPSlinestyle(pathToFile)
+fix_ps_linestyle(pathToFile)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function path_plots(data, linestyles, colors)
@@ -395,7 +395,7 @@ ylabel('Lateral Deviation (m)')
 filename = 'paths.eps';
 pathToFile = ['plots' filesep filename];
 print(pathToFile, '-depsc')
-fixPSlinestyle(pathToFile)
+fix_ps_linestyle(pathToFile)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function plot_io(variable, io, xAxis, data, linestyles, colors)
@@ -542,7 +542,7 @@ plotAxes = findobj(gcf, 'type', 'axes');
 legend(plotAxes(3), bikes(2:end))
 filename = [variable xAxis '.eps'];
 print(['plots' filesep filename], '-depsc')
-fixPSlinestyle(['plots' filesep filename])
+fix_ps_linestyle(['plots' filesep filename])
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function plot_io_roll(rollData, xAxis)
@@ -629,7 +629,7 @@ legend({'$\phi$', '$\delta$', '$T_\phi$'}, ...
 
 filename = ['roll' xAxis '.eps'];
 print(['plots' filesep filename], '-depsc', '-loose')
-fixPSlinestyle(['plots' filesep filename])
+fix_ps_linestyle(['plots' filesep filename])
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function phase_portraits(bikeData)
@@ -700,4 +700,4 @@ end
 % save the plot
 filename = 'phasePortraits.eps';
 print(['plots' filesep filename], '-depsc')
-fixPSlinestyle(['plots' filesep filename])
+fix_ps_linestyle(['plots' filesep filename])

@@ -1,4 +1,4 @@
-function fixPSlinestyle(varargin)
+function fix_ps_linestyle(varargin)
 
 %FIXPSLINESTYLE Fix line styles in exported post script files
 %
