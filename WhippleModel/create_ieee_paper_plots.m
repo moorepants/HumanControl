@@ -1,4 +1,4 @@
-function create_ieee_paper_plots(data)
+function create_ieee_paper_plots(data, rollData)
 % Creates all of the figures for the IEEE paper.
 %
 % Parameters
@@ -6,6 +6,13 @@ function create_ieee_paper_plots(data)
 % data : structure
 %   A structure contating the data from generate_data.m for all of the bicycles
 %   and speeds for the IEEE paper.
+% rollData : structure
+%   The data for a single bicycle at a single speed with roll torque as the
+%   input.
+
+global goldenRatio
+% used for figure width to height ratio
+goldenRatio = (1 + sqrt(5)) / 2;
 
 % create a plot directory if one doesn't already exist
 if exist('plots/', 'dir') ~= 7
@@ -22,7 +29,10 @@ colors = {'k', ...
           'k', ...
           [0.5, 0.5, 0.5]};
 
-%loop_shape_example(data.Benchmark)
+%loop_shape_example(data.Benchmark.Medium, 'Steer')
+%loop_shape_example(rollData, 'Roll')
+plot_io_roll(rollData, 'Distance')
+plot_io_roll(rollData, 'Time')
 %open_loop_all_bikes(data, linestyles, colors)
 %handling_all_bikes(data, linestyles, colors)
 %path_plots(data, linestyles, colors)
@@ -30,33 +40,63 @@ colors = {'k', ...
 %plot_io('phi', 'output', data, linestyles, colors)
 %plot_io('psi', 'output', data, linestyles, colors)
 %plot_io('Tdelta', 'input', data, linestyles, colors)
-phase_portraits(data.Benchmark.Medium)
+%phase_portraits(data.Benchmark.Medium)
 
-function loop_shape_example(bikeData)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+function loop_shape_example(bikeData, input)
 % Creates the example loop shaping for the bicycle at medium speed.
+%
+% Parameters
+% ----------
+% bikeData : structure
+%   Contains data for a single bicycle at a single speed.
+% input : string
+%   'Steer' or 'Roll' depending on what input was used to control the bicycle.
 
-% used for figure width to height ratio
-goldenRatio = (1 + sqrt(5)) / 2;
+global goldenRatio
 
+% closed loop bode plots
 figure()
+figWidth = 5.0;
+figHeight = figWidth / goldenRatio;
+set(gcf, ...
+    'Color', [1, 1, 1], ...
+    'PaperOrientation', 'portrait', ...
+    'PaperUnits', 'inches', ...
+    'PaperPositionMode', 'manual', ...
+    'PaperPosition', [0, 0, figWidth, figHeight], ...
+    'PaperSize', [figWidth, figHeight])
+
 freq = {0.1, 20.0};
 
 hold all
-% the closed delta loop
-closedLoops = bikeData.Medium.closedLoops;
-num = closedLoops.Delta.num;
-den = closedLoops.Delta.den;
-deltaBode = bodeplot(tf(num, den), freq);
+
+closedLoops = bikeData.closedLoops;
+
+if strcmp(input, 'Steer')
+    linestyles = {'', '', '-.', '--', '-', '-.', '--', '-'};
+    % the closed delta loop
+    num = closedLoops.Delta.num;
+    den = closedLoops.Delta.den;
+    bodeplot(tf(num, den), freq);
+    % a typical neuromuscular model
+    num = 2722.5;
+    den = [1, 13.96, 311.85, 2722.5];
+    bodeplot(tf(num, den), freq);
+    whichLines = 5:-1:3;
+elseif strcmp(input, 'Roll')
+    linestyles = {'', '', '-', '-'};
+    whichLines = 4:-1:2;
+else
+    error('Bad input, use Steer or Roll')
+end
 
 % the closed phi dot loop
 num = closedLoops.PhiDot.num;
 den = closedLoops.PhiDot.den;
 closedBode = bodeplot(tf(num, den), freq);
 
-% a typical neuromuscular model
-num = 2722.5;
-den = [1, 13.96, 311.85, 2722.5];
-closedBode = bodeplot(tf(num, den), freq);
+hold off
 
 % clean it up
 opts = getoptions(closedBode);
@@ -65,11 +105,9 @@ opts.YLim = {[-45, 20], [-360, 90]};
 opts.PhaseMatching = 'on';
 opts.PhaseMatchingValue = 0;
 setoptions(closedBode, opts)
-hold off
 
 % find all the lines in the current figure
 lines = findobj(gcf, 'type', 'line');
-linestyles = {'', '', '-.', '--', '-', '-.', '--', '-'};
 for i = 3:length(lines)
     set(lines(i), 'LineStyle', linestyles{i}, ...
                   'Color', 'k', ...
@@ -77,26 +115,41 @@ for i = 3:length(lines)
 end
 
 plotAxes = findobj(gcf, 'type', 'axes');
-closeLeg = legend(lines(8:-1:6), ...
-                  {'$\delta$', '$\dot{\phi}$','Neuromuscular'}, ...
-                  'Location', 'Southeast', ...
-                  'Interpreter', 'Latex');
+% make the tick labels smaller
+set(plotAxes(1), 'Fontsize', 8)
+set(plotAxes(2), 'Fontsize', 8)
+if strcmp(input, 'Steer')
+    legWords = {'$\delta$', '$\dot{\phi}$','Neuromuscular model from [27]'};
+elseif strcmp(input, 'Roll')
+    legWords = {'$\dot{\phi}$'};
+end
+closeLeg = legend(lines(whichLines), ...
+                  legWords, ...
+                  'Location', 'Southwest', ...
+                  'Interpreter', 'Latex', ...
+                  'Fontsize', 8);
 
-figWidth = 3.0;
-set(gcf, ...
-    'PaperSize', [goldenRatio * figWidth, figWidth])
-
-filename = 'benchmarkClosed.eps';
+filename = ['benchmark' input 'Closed'];
 pathToFile = ['plots' filesep filename];
-saveas(gcf, pathToFile)
-fixPSlinestyle(pathToFile)
+print(gcf, '-deps2', '-loose', [pathToFile '.eps'])
+fixPSlinestyle([pathToFile '.eps'])
 
-% open loop plots for the benchmark bicycle
+% open loop plots
 figure()
-openLoops = bikeData.Medium.openLoops;
+set(gcf, ...
+    'Color', [1, 1, 1], ...
+    'PaperOrientation', 'portrait', ...
+    'PaperUnits', 'inches', ...
+    'PaperPositionMode', 'manual', ...
+    'PaperPosition', [0, 0, figWidth, figHeight], ...
+    'PaperSize', [figWidth, figHeight])
+
+openLoops = bikeData.openLoops;
+
+hold all
+
 num = openLoops.Phi.num;
 den = openLoops.Phi.den;
-hold all
 bodeplot(tf(num, den), freq);
 
 num = openLoops.Psi.num;
@@ -106,12 +159,13 @@ bodeplot(tf(num, den), freq);
 num = openLoops.Y.num;
 den = openLoops.Y.den;
 openBode = bodeplot(tf(num, den), freq);
+
 hold off
 
 % clean it up
 opts = getoptions(openBode);
 opts.Title.String = 'Open Loop Bode Diagrams';
-opts.YLim = {[-80, 20], [-540, -90]};
+opts.YLim = {[-80, 20], [-540, -80]};
 opts.PhaseMatching = 'on';
 opts.PhaseMatchingValue = 0;
 opts.Grid = 'on';
@@ -127,50 +181,72 @@ for i = 3:length(lines)
 end
 
 plotAxes = findobj(gcf, 'type', 'axes');
+% make the tick labels smaller
+set(plotAxes(1), 'Fontsize', 8)
+set(plotAxes(2), 'Fontsize', 8)
 closeLeg = legend(lines(8:-1:6), ...
                   {'$\phi$', '$\psi$','$y$'}, ...
-                  'Location', 'Southeast', ...
+                  'Location', 'Southwest', ...
                   'Interpreter', 'Latex');
 
-set(gcf, ...
-    'PaperSize', [goldenRatio * figWidth, figWidth])
-filename = 'benchmarkOpen.eps';
+filename = ['benchmark' input 'Open.eps'];
 pathToFile = ['plots' filesep filename];
-saveas(gcf, pathToFile)
+print(gcf, '-deps2', '-loose', pathToFile)
 fixPSlinestyle(pathToFile)
 
 % handling qualities plot
-num = bikeData.Medium.handlingMetric.num;
-den = bikeData.Medium.handlingMetric.den;
+num = bikeData.handlingMetric.num;
+den = bikeData.handlingMetric.den;
 w = linspace(0.01, 20, 200);
 [mag, phase, freq] = bode(tf(num, den), w);
 figure()
+set(gcf, ...
+    'Color', [1, 1, 1], ...
+    'PaperOrientation', 'portrait', ...
+    'PaperUnits', 'inches', ...
+    'PaperPositionMode', 'manual', ...
+    'PaperPosition', [0, 0, figWidth, figHeight], ...
+    'PaperSize', [figWidth, figHeight])
+
 hold on
+
 metricLine = plot(freq, mag(:)', 'k-', 'Linewidth', 2.0);
-ylim([0, 10]);
 level1 = line([0, 20], [5, 5]);
 level2 = line([0, 20], [8, 8]);
 set(level1, 'Color', 'k', 'Linestyle', '--', 'Linewidth', 2.0)
 set(level2, 'Color', 'k', 'Linestyle', '--', 'Linewidth', 2.0)
+
+ylim([0, 10]);
+
 ylabel('Handling Quality Metric')
 xlabel('Frequency (rad/sec)')
 text(3, 3, 'Level 1')
 text(3, 6.5, 'Level 2')
 text(3, 9, 'Level 3')
 box on
-set(gcf, ...
-    'PaperSize', [goldenRatio * figWidth, figWidth])
-filename = 'benchmarkHandling.eps';
+
+filename = ['benchmark' input 'Handling.eps'];
 pathToFile = ['plots' filesep filename];
-saveas(gcf, pathToFile)
+print(gcf, '-deps2', '-loose', pathToFile)
 fixPSlinestyle(pathToFile)
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function open_loop_all_bikes(data, linestyles, colors)
 % Creates open loop Bode plots of all the bikes.
 
+global goldenRatio
+
 bikes = fieldnames(data)
-freq = {0.1, 20.0};
+
 figure()
+figWidth = 4.0;
+set(gcf, ...
+    'PaperUnits', 'inches', ...
+    'PaperPosition', [0, 0, figWidth, figWidth / goldenRatio], ...
+    'PaperSize', [figWidth, figWidth / goldenRatio])
+
+freq = {0.1, 20.0};
+
 hold all
 for i = 2:length(bikes)
     num = data.(bikes{i}).Medium.openLoops.Phi.num;
@@ -178,6 +254,7 @@ for i = 2:length(bikes)
     openBode = bodeplot(tf(num, den), freq);
 end
 hold off
+
 % clean it up
 opts = getoptions(openBode);
 opts.Title.String = '$\phi$ Open Loop Bode Diagrams at 5 m/s';
@@ -207,30 +284,30 @@ plotAxes = findobj(gcf, 'type', 'axes');
 closeLeg = legend(magLines(2:7), ...
                   bikes(2:7), ...
                   'Location', 'Southwest');
-% used for figure width to height ratio
-goldenRatio = (1 + sqrt(5)) / 2;
-figWidth = 3.0;
-set(gcf, ...
-    'PaperSize', [goldenRatio * figWidth, figWidth])
 filename = 'openBode.eps';
 pathToFile = ['plots' filesep filename];
 print(pathToFile, '-depsc')
 fixPSlinestyle(pathToFile)
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function handling_all_bikes(data, linestyles, colors)
 % Creates handling quality metric for all bikes.
+
+global goldenRatio
+
 bikes = fieldnames(data);
 figure()
 
-% used for figure width to height ratio
-goldenRatio = (1 + sqrt(5)) / 2;
-figWidth = 3.0;
+figWidth = 4.0;
 set(gcf, ...
-    'PaperSize', [goldenRatio * figWidth, figWidth])
+    'PaperUnits', 'inches', ...
+    'PaperPosition', [0, 0, figWidth, figWidth / goldenRatio], ...
+    'PaperSize', [figWidth, figWidth / goldenRatio])
+
 w = linspace(0.01, 20, 200);
-hold all
 speedNames = fieldnames(data.Browser);
 fillColors = {[0.98, 0.98, 0.98], [0.93, 0.93, 0.93], [0.85, 0.85, 0.85]};
+hold all
 for j = 1:length(speedNames)
     magnitudes = zeros(length(w), length(bikes) - 1);
     for i = 2:length(bikes)
@@ -277,17 +354,21 @@ pathToFile = ['plots' filesep filename];
 print(pathToFile, '-depsc')
 fixPSlinestyle(pathToFile)
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function path_plots(data, linestyles, colors)
 % Creates a plot of the path tracking for all bikes at all speeds.
+
+global goldenRatio
 
 bikes = fieldnames(data);
 speedNames = fieldnames(data.Browser);
 
 figure()
-goldenRatio = (1 + sqrt(5)) / 2;
-figWidth = 3.0;
+figWidth = 5.0;
 set(gcf, ...
-    'PaperSize', [goldenRatio * figWidth, figWidth])
+    'PaperUnits', 'inches', ...
+    'PaperPosition', [0, 0, figWidth, figWidth / goldenRatio], ...
+    'PaperSize', [figWidth, figWidth / goldenRatio])
 
 hold all
 for j = 1:length(speedNames)
@@ -312,6 +393,7 @@ pathToFile = ['plots' filesep filename];
 print(pathToFile, '-depsc')
 fixPSlinestyle(pathToFile)
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function plot_io(variable, io, data, linestyles, colors)
 % Creates a plot of the time histories of a particular output or input variable
 % for three different speeds.
@@ -328,6 +410,8 @@ function plot_io(variable, io, data, linestyles, colors)
 %   An array of linestyle types, one for each bicycle.
 % colors : cell array
 %   An array of colors, one for each bicycle.
+
+global goldenRatio
 
 if strcmp(io, 'input')
     names = {'Tphi',
@@ -404,11 +488,11 @@ bikes = fieldnames(data);
 speedNames = fieldnames(data.Browser);
 
 figure()
-goldenRatio = (1 + sqrt(5)) / 2;
-figWidth = 3.0;
+figWidth = 4.0;
 set(gcf, ...
-    'PaperSize', [goldenRatio * figWidth, figWidth])
-
+    'PaperUnits', 'inches', ...
+    'PaperPosition', [0, 0, figWidth, figWidth / goldenRatio], ...
+    'PaperSize', [figWidth, figWidth / goldenRatio])
 
 for j = 1:length(speedNames)
     subplot(3, 1, j)
@@ -437,14 +521,105 @@ filename = [variable '.eps'];
 print(['plots' filesep filename], '-depsc')
 fixPSlinestyle(['plots' filesep filename])
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+function plot_io_roll(rollData, xAxis)
+
+global goldenRatio
+
+% closed loop bode plots
+figure()
+figWidth = 5.0;
+figHeight = figWidth / goldenRatio;
+set(gcf, ...
+    'Color', [1, 1, 1], ...
+    'PaperOrientation', 'portrait', ...
+    'PaperUnits', 'inches', ...
+    'PaperPositionMode', 'manual', ...
+    'PaperPosition', [0, 0, figWidth, figHeight], ...
+    'PaperSize', [figWidth, figHeight])
+
+speed = rollData.speed;
+time = rollData.time;
+path = rollData.path;
+frontWheel = rollData.outputs(:, 18);
+rollAngle = rollData.outputs(:, 4);
+steerAngle = rollData.outputs(:, 7);
+rollTorque = rollData.inputs(:, 1);
+
+% plot the path
+subplot(2, 1, 1)
+hold all
+if strcmp(xAxis, 'Distance')
+    plot(speed * time, path, 'k--', 'Linewidth', 1.0)
+    plot(speed * time, frontWheel, 'k-', 'Linewidth', 1.0)
+    xlabel('Distance (m)')
+    xlim([30, 150])
+elseif strcmp(xAxis, 'Time')
+    plot(time, path, 'k--', 'Linewidth', 1.0)
+    plot(time, frontWheel, 'k-', 'Linewidth', 1.0)
+    xlabel('Time (s)')
+    xlim([30 / speed, 150 / speed])
+else
+    error('Bad xAxis, choose Distance or Time')
+end
+hold off
+box on
+ylabel('Lateral Deviation (m)')
+ylim([-0.2, 2.2])
+legend({'Path', '$x_Q$'}, ...
+       'Interpreter', 'Latex', ...
+       'Fontsize', 8)
+
+subplot(2, 1, 2)
+hold all
+if strcmp(xAxis, 'Distance')
+    plot(speed * time, rollAngle, 'k-', 'Linewidth', 1.0)
+    [ax, h1, h2] = plotyy(speed * time, steerAngle, speed * time, rollTorque);
+    xlabel('Distance (m)')
+    xlim(ax(1), [30, 150])
+    xlim(ax(2), [30, 150])
+elseif strcmp(xAxis, 'Time')
+    plot(time, rollAngle, 'k-', 'Linewidth', 1.0)
+    [ax, h1, h2] = plotyy(time, steerAngle, time, rollTorque);
+    xlabel('Time (s)')
+    xlim(ax(1), [30 / speed, 150 / speed])
+    xlim(ax(2), [30 / speed, 150 / speed])
+else
+    error('Bad xAxis, choose Distance or Time')
+end
+hold off
+box on
+
+set(get(ax(1), 'Ylabel'), ...
+    'String', 'Angle (rad)', ...
+    'Color', 'k')
+set(get(ax(2), 'Ylabel'), ...
+    'String', 'Torque (Nm)', ...
+    'Color', 'k')
+set(ax, 'YColor', 'k', 'Fontsize', 8)
+set(h1, 'Linestyle', '--', 'Color', 'k', 'Linewidth', 1.0)
+set(h2, 'Linestyle', '-.', 'Color', 'k', 'Linewidth', 1.0)
+legend({'$\phi$', '$\delta$', '$T_\phi$'}, ...
+       'Interpreter', 'Latex', ...
+       'Fontsize', 8, ...
+       'Location', 'Southeast')
+
+filename = ['roll' xAxis '.eps'];
+print(['plots' filesep filename], '-depsc', '-loose')
+fixPSlinestyle(['plots' filesep filename])
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function phase_portraits(bikeData)
 % Creates four phase portrait plots.
 
+global goldenRatio
+
 figure()
-goldenRatio = (1 + sqrt(5)) / 2;
-figWidth = 3.0;
+figWidth = 5.0;
 set(gcf, ...
-    'PaperSize', [goldenRatio * figWidth, figWidth])
+    'PaperUnits', 'inches', ...
+    'PaperPosition', [0, 0, figWidth, figWidth / goldenRatio], ...
+    'PaperSize', [figWidth, figWidth / goldenRatio])
 
 gainChanges = [0.8, 1, 1, 1, 1;
                1, 1.2, 1, 1, 1;
