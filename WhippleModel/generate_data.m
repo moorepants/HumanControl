@@ -95,6 +95,10 @@ catch
     modelPar.kY = 0.0;
 end
 
+% mulitply the gain adjustment
+modelPar.kPhi = gain * modelPar.kPhi;
+modelPar.kY = gain * modelPar.kY;
+
 % make a truth table for perturbing the loops
 % the first row is default setup
 perturbTable = [zeros(1, 5); eye(5)];
