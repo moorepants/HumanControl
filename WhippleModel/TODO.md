@@ -5,17 +5,11 @@ IEEE Graphs
 -----------
 - Add the roll torque input handling quality to the main HQ graph.
 - benchmarkRollOpen.eps
-    - replace grid with single line at 0 or remove vertical grid
     - add markers for crossover frequencies
-    - decrease font size of tick markers
     - psi may look better with solid line (switch with phi)
-    - remove title
-    - xlabel is cut off
+    - top of the phi loop phase is cut off even though I force the YLim
 - benchmarkSteerOpen.eps
-    - replace grid with single line at 0 or remove vertical grid
     - add markers for crossover frequencies
-    - remove title
-    - xlabel is cut off
 - *Distance.eps
     - decrease font size in legend
     - change legend to numbers instead of bicycle names

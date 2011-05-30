@@ -131,21 +131,22 @@ end
 raise = 0.05;
 plotAxes = findobj(gcf, 'type', 'axes');
 set(plotAxes, 'XColor', 'k', 'YColor', 'k')
-curPos1 = get(plotAxes(1), 'Position')
-curPos2 = get(plotAxes(2), 'Position')
+curPos1 = get(plotAxes(1), 'Position');
+curPos2 = get(plotAxes(2), 'Position');
 set(plotAxes(1), 'Position', curPos1 + [0, raise, 0, 0])
 set(plotAxes(2), 'Position', curPos2 + [0, raise, 0, 0])
 xLab = get(plotAxes(1), 'Xlabel');
-get(xLab)
 set(xLab, 'Units', 'normalized')
 set(xLab, 'Position', get(xLab, 'Position') + [0, raise + 0.05, 0])
 
 % make the tick labels smaller
 set(plotAxes, 'Fontsize', 8)
 if strcmp(input, 'Steer')
-    legWords = {'$\delta$', 'Neuromuscular model from [27]', '$\dot{\phi}$'};
+    legWords = {'$\delta$ Loop',
+                'Neuromuscular model from [27]',
+                '$\dot{\phi}$ Loop'};
 elseif strcmp(input, 'Roll')
-    legWords = {'$\dot{\phi}$'};
+    legWords = {'$\dot{\phi}$ Loop'};
 end
 closeLeg = legend(lines(whichLines), ...
                   legWords, ...
@@ -216,16 +217,15 @@ hold off
 
 % clean it up
 opts = getoptions(openBode);
-opts.Title.String = 'Open Loop Bode Diagrams';
-opts.YLim = {[-80, 20], [-540, -80]};
+opts.Title.String = '';
+opts.YLim = {[-80, 20], [-540, -60]};
 opts.PhaseMatching = 'on';
 opts.PhaseMatchingValue = 0;
-opts.Grid = 'on';
 setoptions(openBode, opts)
 
 % find all the lines in the current figure
 lines = findobj(gcf, 'type', 'line');
-linestyles = {'', '', '-.', '--', '-', '-.', '--', '-'};
+linestyles = {'', '', '-.', '-', '--', '-.', '-', '--'};
 for i = 3:length(lines)
     set(lines(i), 'LineStyle', linestyles{i}, ...
                   'Color', 'k', ...
@@ -234,12 +234,22 @@ end
 
 plotAxes = findobj(gcf, 'type', 'axes');
 % make the tick labels smaller
-set(plotAxes(1), 'Fontsize', 8)
-set(plotAxes(2), 'Fontsize', 8)
+set(plotAxes, 'Fontsize', 8)
 closeLeg = legend(lines(8:-1:6), ...
-                  {'$\phi$', '$\psi$','$y$'}, ...
+                  {'$\phi$ Loop', '$\psi$ Loop','$y$ Loop'}, ...
                   'Location', 'Southwest', ...
                   'Interpreter', 'Latex');
+axes(plotAxes(2))
+line([0.1, 20], [0, 0])
+
+curPos1 = get(plotAxes(1), 'Position')
+curPos2 = get(plotAxes(2), 'Position')
+set(plotAxes(1), 'Position', curPos1 + [0, raise, 0, 0])
+set(plotAxes(2), 'Position', curPos2 + [0, raise, 0, 0])
+xLab = get(plotAxes(1), 'Xlabel');
+get(xLab)
+set(xLab, 'Units', 'normalized')
+set(xLab, 'Position', get(xLab, 'Position') + [0, raise + 0.05, 0])
 
 filename = ['benchmark' input 'Open.eps'];
 pathToFile = ['plots' filesep filename];
