@@ -31,20 +31,20 @@ colors = {'k', ...
 
 loop_shape_example(data.Benchmark.Medium, 'Steer')
 loop_shape_example(rollData, 'Roll')
-plot_io_roll(rollData, 'Distance')
-plot_io_roll(rollData, 'Time')
-open_loop_all_bikes(data, linestyles, colors)
-handling_all_bikes(data, linestyles, colors)
-path_plots(data, linestyles, colors)
-var = {'delta', 'phi', 'psi', 'Tdelta'};
-io = {'output', 'output', 'output', 'input'};
-typ = {'Distance', 'Time'};
-for i = 1:length(var)
-    for j = 1:length(typ)
-        plot_io(var{i}, io{i}, typ{j}, data, linestyles, colors)
-    end
-end
-phase_portraits(data.Benchmark.Medium)
+%plot_io_roll(rollData, 'Distance')
+%plot_io_roll(rollData, 'Time')
+%open_loop_all_bikes(data, linestyles, colors)
+%handling_all_bikes(data, linestyles, colors)
+%path_plots(data, linestyles, colors)
+%var = {'delta', 'phi', 'psi', 'Tdelta'};
+%io = {'output', 'output', 'output', 'input'};
+%typ = {'Distance', 'Time'};
+%for i = 1:length(var)
+    %for j = 1:length(typ)
+        %plot_io(var{i}, io{i}, typ{j}, data, linestyles, colors)
+    %end
+%end
+%phase_portraits(data.Benchmark.Medium)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function loop_shape_example(bikeData, input)
@@ -68,6 +68,7 @@ set(gcf, ...
     'PaperOrientation', 'portrait', ...
     'PaperUnits', 'inches', ...
     'PaperPositionMode', 'manual', ...
+    'OuterPosition', [424, 305 - 50, 518, 465], ...
     'PaperPosition', [0, 0, figWidth, figHeight], ...
     'PaperSize', [figWidth, figHeight])
 
@@ -78,52 +79,71 @@ hold all
 closedLoops = bikeData.closedLoops;
 
 if strcmp(input, 'Steer')
-    linestyles = {'', '', '-.', '--', '-', '-.', '--', '-'};
+    linestyles = {'', '', '-.', '-.', '-', '-.', '-.', '-'};
+    gray = [0.6, 0.6, 0.6];
+    colors = {'k', 'k', 'k', gray, 'k', 'k', gray, 'k'}; 
     % the closed delta loop
-    num = closedLoops.Delta.num;
-    den = closedLoops.Delta.den;
-    bodeplot(tf(num, den), freq);
+    deltaNum = closedLoops.Delta.num;
+    deltaDen = closedLoops.Delta.den;
+    bodeplot(tf(deltaNum, deltaDen), freq);
     % a typical neuromuscular model
-    num = 2722.5;
-    den = [1, 13.96, 311.85, 2722.5];
-    bodeplot(tf(num, den), freq);
+    neuroNum = 2722.5;
+    neuroDen = [1, 13.96, 311.85, 2722.5];
+    bodeplot(tf(neuroNum, neuroDen), freq);
     whichLines = 5:-1:3;
 elseif strcmp(input, 'Roll')
     linestyles = {'', '', '-', '-'};
+    colors = {'k', 'k', 'k', 'k'};
     whichLines = 4:-1:2;
 else
     error('Bad input, use Steer or Roll')
 end
 
 % the closed phi dot loop
-num = closedLoops.PhiDot.num;
-den = closedLoops.PhiDot.den;
-closedBode = bodeplot(tf(num, den), freq);
+phiDotNum = closedLoops.PhiDot.num;
+phiDotDen = closedLoops.PhiDot.den;
+closedBode = bodeplot(tf(phiDotNum, phiDotDen), freq);
 
 hold off
 
 % clean it up
 opts = getoptions(closedBode);
-opts.Title.String = 'Closed Loop Bode Diagrams';
-opts.YLim = {[-45, 20], [-360, 90]};
+if strcmp(input, 'Steer')
+    opts.YLim = {[-45, 20], [-360, 90]};
+else
+    opts.YLim = {[-30, 10], [-180, 90]};
+end
 opts.PhaseMatching = 'on';
 opts.PhaseMatchingValue = 0;
+opts.Title.String = '';
 setoptions(closedBode, opts)
 
 % find all the lines in the current figure
 lines = findobj(gcf, 'type', 'line');
 for i = 3:length(lines)
     set(lines(i), 'LineStyle', linestyles{i}, ...
-                  'Color', 'k', ...
+                  'Color', colors{i}, ...
                   'LineWidth', 2.0)
 end
 
+% there seems to be a bug such that the xlabel is too low, this is a hack to
+% get it to work
+raise = 0.05;
 plotAxes = findobj(gcf, 'type', 'axes');
+set(plotAxes, 'XColor', 'k', 'YColor', 'k')
+curPos1 = get(plotAxes(1), 'Position')
+curPos2 = get(plotAxes(2), 'Position')
+set(plotAxes(1), 'Position', curPos1 + [0, raise, 0, 0])
+set(plotAxes(2), 'Position', curPos2 + [0, raise, 0, 0])
+xLab = get(plotAxes(1), 'Xlabel');
+get(xLab)
+set(xLab, 'Units', 'normalized')
+set(xLab, 'Position', get(xLab, 'Position') + [0, raise + 0.05, 0])
+
 % make the tick labels smaller
-set(plotAxes(1), 'Fontsize', 8)
-set(plotAxes(2), 'Fontsize', 8)
+set(plotAxes, 'Fontsize', 8)
 if strcmp(input, 'Steer')
-    legWords = {'$\delta$', '$\dot{\phi}$','Neuromuscular model from [27]'};
+    legWords = {'$\delta$', 'Neuromuscular model from [27]', '$\dot{\phi}$'};
 elseif strcmp(input, 'Roll')
     legWords = {'$\dot{\phi}$'};
 end
@@ -133,9 +153,37 @@ closeLeg = legend(lines(whichLines), ...
                   'Interpreter', 'Latex', ...
                   'Fontsize', 8);
 
+% add the annotation showing a 10 dB peak
+if strcmp(input, 'Steer')
+    axes(plotAxes(2))
+    db1 = text(2.7, 5.0, '~10dB');
+    db2 = text(2.5, -10.0, '~10dB');
+    set([db1, db2], 'Fontsize', 8)
+    dArrow1 = annotation('doublearrow', ...
+                         [0.7, 0.7], ...
+                         [0.755 + raise, 0.818 + raise]);
+    annotation('line', [0.69, 0.87], [0.818 + raise, 0.818 + raise])
+    dArrow2 = annotation('doublearrow', ...
+                         [0.685, 0.685], ...
+                         [0.665 + raise, 0.725 + raise]);
+    annotation('line', [0.675, 0.87], [0.725 + raise, 0.725 + raise])
+    set([dArrow1, dArrow2], 'Head1width', 3, 'Head1length', 3, ...
+        'Head2width', 3, 'Head2length', 3)
+else
+    axes(plotAxes(2))
+    db1 = text(0.67, -3.7, '~10dB');
+    set(db1, 'Fontsize', 8)
+    dArrow = annotation('doublearrow', ...
+                        [0.5, 0.5], ...
+                        [0.697 + raise, 0.795 + raise]);
+    set(dArrow, 'Head1width', 3, 'Head1length', 3, ...
+        'Head2width', 3, 'Head2length', 3)
+    annotation('line', [0.49, 0.75], [0.795 + raise, 0.795 + raise])
+end
+
 filename = ['benchmark' input 'Closed'];
 pathToFile = ['plots' filesep filename];
-print(gcf, '-deps2', '-loose', [pathToFile '.eps'])
+print(gcf, '-deps2c', '-loose', [pathToFile '.eps'])
 fix_ps_linestyle([pathToFile '.eps'])
 
 % open loop plots

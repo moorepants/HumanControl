@@ -4,11 +4,6 @@ To Do List
 IEEE Graphs
 -----------
 - Add the roll torque input handling quality to the main HQ graph.
-- benchmarkRollClosed.eps
-    - remove title
-    - decrease axis tick fonts to 8
-    - xlabel is cut off
-    - add annotation to show the 10dB peak
 - benchmarkRollOpen.eps
     - replace grid with single line at 0 or remove vertical grid
     - add markers for crossover frequencies
@@ -16,11 +11,6 @@ IEEE Graphs
     - psi may look better with solid line (switch with phi)
     - remove title
     - xlabel is cut off
-- benchmarkSteerClosed.eps
-    - remove title
-    - xlabel is cut off
-    - add annotation to show the 10dB peak
-    - legend is not ordered correctly, phidot and neuro need to be switched
 - benchmarkSteerOpen.eps
     - replace grid with single line at 0 or remove vertical grid
     - add markers for crossover frequencies
