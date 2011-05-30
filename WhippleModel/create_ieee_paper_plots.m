@@ -20,8 +20,8 @@ if exist('plots/', 'dir') ~= 7
 end
 
 % Define some linestyles and colors for each of the six bicycles
-linestyles = {'-', '-', '--', ...
-              '--', '-.', '-.'};
+linestyles = {'-', '--', '--', ...
+              '-', '-.', '-.'};
 colors = {'k', ...
           [0.5, 0.5, 0.5], ...
           'k', ...
@@ -29,11 +29,11 @@ colors = {'k', ...
           'k', ...
           [0.5, 0.5, 0.5]};
 
-loop_shape_example(data.Benchmark.Medium, 'Steer')
-loop_shape_example(rollData, 'Roll')
+%loop_shape_example(data.Benchmark.Medium, 'Steer')
+%loop_shape_example(rollData, 'Roll')
 %plot_io_roll(rollData, 'Distance')
 %plot_io_roll(rollData, 'Time')
-%open_loop_all_bikes(data, linestyles, colors)
+open_loop_all_bikes(data, linestyles, colors)
 %handling_all_bikes(data, linestyles, colors)
 %path_plots(data, linestyles, colors)
 %var = {'delta', 'phi', 'psi', 'Tdelta'};
@@ -239,15 +239,18 @@ closeLeg = legend(lines(8:-1:6), ...
                   {'$\phi$ Loop', '$\psi$ Loop','$y$ Loop'}, ...
                   'Location', 'Southwest', ...
                   'Interpreter', 'Latex');
+
+% add zero crossing lines
+axes(plotAxes(1))
+line([0.1, 20], [-180, -180])
 axes(plotAxes(2))
 line([0.1, 20], [0, 0])
 
-curPos1 = get(plotAxes(1), 'Position')
-curPos2 = get(plotAxes(2), 'Position')
+curPos1 = get(plotAxes(1), 'Position');
+curPos2 = get(plotAxes(2), 'Position');
 set(plotAxes(1), 'Position', curPos1 + [0, raise, 0, 0])
 set(plotAxes(2), 'Position', curPos2 + [0, raise, 0, 0])
 xLab = get(plotAxes(1), 'Xlabel');
-get(xLab)
 set(xLab, 'Units', 'normalized')
 set(xLab, 'Position', get(xLab, 'Position') + [0, raise + 0.05, 0])
 
@@ -298,14 +301,18 @@ function open_loop_all_bikes(data, linestyles, colors)
 
 global goldenRatio
 
-bikes = fieldnames(data)
+bikes = fieldnames(data);
 
 figure()
-figWidth = 4.0;
+figWidth = 5.0;
+figHeight = figWidth / goldenRatio;
 set(gcf, ...
+    'Color', [1, 1, 1], ...
+    'PaperOrientation', 'portrait', ...
     'PaperUnits', 'inches', ...
-    'PaperPosition', [0, 0, figWidth, figWidth / goldenRatio], ...
-    'PaperSize', [figWidth, figWidth / goldenRatio])
+    'PaperPositionMode', 'manual', ...
+    'PaperPosition', [0, 0, figWidth, figHeight], ...
+    'PaperSize', [figWidth, figHeight])
 
 freq = {0.1, 20.0};
 
@@ -319,8 +326,9 @@ hold off
 
 % clean it up
 opts = getoptions(openBode);
-opts.Title.String = '$\phi$ Open Loop Bode Diagrams at 5 m/s';
-opts.Title.Interpreter = 'Latex';
+%opts.Title.String = '$\phi$ Open Loop Bode Diagrams at 5 m/s';
+opts.Title.String = '';
+%opts.Title.Interpreter = 'Latex';
 opts.YLim = {[-30, 10], [-540, -90]};
 opts.PhaseMatching = 'on';
 opts.PhaseMatchingValue = 0;
@@ -342,13 +350,32 @@ for i = 2:length(magLines)
         'LineWidth', 1.0)
 end
 
-plotAxes = findobj(gcf, 'type', 'axes');
 closeLeg = legend(magLines(2:7), ...
-                  bikes(2:7), ...
-                  'Location', 'Southwest');
+                  {'1', '2', '3', '4', '5', '6'}, ...
+                  'Location', 'Southwest', ...
+                  'Fontsize', 8);
+
+set(plotAxes, 'YColor', 'k', 'XColor', 'k', 'Fontsize', 8)
+
+% add a zero lines
+axes(plotAxes(1))
+line([0.1, 20], [-180, -180], 'Color', 'k')
+axes(plotAxes(2))
+line([0.1, 20], [0, 0], 'Color', 'k')
+
+% raise the axes cause the xlabel is cut off
+raise = 0.05;
+curPos1 = get(plotAxes(1), 'Position');
+curPos2 = get(plotAxes(2), 'Position');
+set(plotAxes(1), 'Position', curPos1 + [0, raise, 0, 0])
+set(plotAxes(2), 'Position', curPos2 + [0, raise, 0, 0])
+xLab = get(plotAxes(1), 'Xlabel');
+set(xLab, 'Units', 'normalized')
+set(xLab, 'Position', get(xLab, 'Position') + [0, raise + 0.05, 0])
+
 filename = 'openBode.eps';
 pathToFile = ['plots' filesep filename];
-print(pathToFile, '-depsc')
+print(pathToFile, '-deps2c', '-loose')
 fix_ps_linestyle(pathToFile)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
