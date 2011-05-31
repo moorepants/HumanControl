@@ -409,10 +409,14 @@ set(gcf, ...
 
 w = linspace(0.01, 20, 200);
 speedNames = fieldnames(data.Browser);
-fillColors = {[0.97, 0.97, 0.97], [0.89, 0.89, 0.89], [0.75, 0.75, 0.75]};
+fillColors = {[0.97, 0.97, 0.97],
+              [0.89, 0.89, 0.89],
+              [0.75, 0.75, 0.75]};
 hold all
+
 % plot the background area for each family of curves
 for j = 1:length(speedNames)
+    % get the max values for the set of curves
     magnitudes = zeros(length(w), length(bikes) - 1);
     for i = 2:length(bikes)
         num = data.(bikes{i}).(speedNames{j}).handlingMetric.num;
@@ -421,6 +425,7 @@ for j = 1:length(speedNames)
         magnitudes(:, i - 1) = mag(:)';
     end
     maxMag = max(magnitudes, [], 2);
+    % fill the area under the curve
     area(freq, maxMag, ...
          'Facecolor', fillColors{j}, ...
          'Edgecolor', fillColors{j})
@@ -444,18 +449,14 @@ end
 num = rollData.handlingMetric.num;
 den = rollData.handlingMetric.den;
 [mag, phase, freq] = bode(tf(num, den), w);
-rollLine = plot(freq, mag(:)', 'k', 'Linewidth', 2.0, 'Linestyle', ':');
+rollLine = plot(freq, mag(:)', 'k', 'Linewidth', 2.0, 'Linestyle', ':')
 
 hold off
 
 % move the roll input line down so it shows on the legend
-oldChil = get(gca, 'Children');
-newChil = oldChil;
-newChil(13) = rollLine;
-newChil(1) = oldChil(13);
-set(gca, 'Children', newChil)
-
-legend([{'2.5 m/s', '5.0 m/s', '7.5 m/s'}, ...
+chil = get(gca, 'Children')
+legLines = [chil(end:-1:14)', rollLine]
+legend(legLines, [{'2.5 m/s', '5.0 m/s', '7.5 m/s'}, ...
         {'1', '2', '3', '4', '5', '6', 'Roll input @ 5 m/s'}], ...
         'Fontsize', 8)
 
