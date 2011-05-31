@@ -1,4 +1,5 @@
-function [x, t, y] = lane_change(start, width, slope, type, speed, num, length, varargin)
+function [x, t, y] = lane_change(start, width, slope, type, speed, num, ...
+                                 pathLength, varargin)
 % Generates the time and coordinates for either a single or double lane change
 % manuever at a particular speed.
 %
@@ -16,7 +17,7 @@ function [x, t, y] = lane_change(start, width, slope, type, speed, num, length, 
 %   Speed of travel.
 % num : integer
 %   Number of time steps.
-% length : float
+% pathLength : float
 %   The length of path.
 % laneLength : float, optional
 %   Length of the lane for a double lane change.
@@ -30,9 +31,15 @@ function [x, t, y] = lane_change(start, width, slope, type, speed, num, length, 
 % t : matrix, (num, 1)
 %   Time.
 
-x = 0:(length - start) / num:length;
+x = 0:(pathLength - start) / num:pathLength;
 t = x / speed;
 
 y = zeros(length(x), 1);
+endOfSlope = width / slope + start;
+slopeInd = find((x > start) & (x <= endOfSlope));
+y(slopeInd) = slope * (x(slopeInd) - start);
 if strcmp(type, 'single')
-    y(start:slope(
+    theRest = slopeInd(end) + 1:length(y)
+    y(theRest) = width * ones(length(theRest), 1)
+elseif strcmp(type, 'double')
+end
