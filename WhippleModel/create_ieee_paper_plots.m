@@ -428,8 +428,11 @@ for j = 1:length(speedNames)
     % fill the area under the curve
     area(freq, maxMag, ...
          'Facecolor', fillColors{j}, ...
-         'Edgecolor', 'none') %fillColors{j})
+         'Edgecolor', 'none')
 end
+
+% this makes sure that the edges of the fill area don't cover the axes
+set(gca, 'Layer', 'top')
 
 % plot the actual curves
 for j = 1:length(speedNames)
