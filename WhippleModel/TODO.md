@@ -12,8 +12,6 @@ IEEE Graphs
     - add markers for crossover frequencies
 - *Distance.eps
     - decrease font size in legend
-    - change legend to numbers instead of bicycle names
-    - enlarge size (add -loose)
     - could plot all on one graph instead of subplots (would preserve scale)
     - ylabels are too crowded, go with two lines or move speed in as anotation
     - start at same time as paths.eps

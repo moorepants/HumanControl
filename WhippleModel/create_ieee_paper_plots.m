@@ -35,15 +35,17 @@ colors = {'k', ...
 %plot_io_roll(rollData, 'Time')
 %open_loop_all_bikes(data, linestyles, colors)
 %handling_all_bikes(data, rollData, linestyles, colors)
-path_plots(data, linestyles, colors)
+%path_plots(data, linestyles, colors)
 %var = {'delta', 'phi', 'psi', 'Tdelta'};
 %io = {'output', 'output', 'output', 'input'};
-%typ = {'Distance', 'Time'};
-%for i = 1:length(var)
-    %for j = 1:length(typ)
-        %plot_io(var{i}, io{i}, typ{j}, data, linestyles, colors)
-    %end
-%end
+var = {'delta'};
+io = {'output'};
+typ = {'Distance', 'Time'};
+for i = 1:length(var)
+    for j = 1:length(typ)
+        plot_io(var{i}, io{i}, typ{j}, data, linestyles, colors)
+    end
+end
 %phase_portraits(data.Benchmark.Medium)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -646,14 +648,16 @@ set(gcf, ...
     'PaperPosition', [0, 0, figWidth, figHeight], ...
     'PaperSize', [figWidth, figHeight])
 
+% shifts the paths by this many meters
+shift = [0, 15, 35];
 for j = 1:length(speedNames)
     subplot(3, 1, j)
     hold all
     for i = 2:length(bikes)
         oneSpeed = data.(bikes{i}).(speedNames{j});
         time = oneSpeed.time;
-        speed = oneSpeed.speed;
-        distance = time * speed;
+        speed = oneSpeed.speed
+        distance = time * speed + shift(j);
         history = oneSpeed.([io 's'])(:, index);
         if strcmp(xAxis, 'Distance')
             plot(distance, history, ...
@@ -672,7 +676,7 @@ for j = 1:length(speedNames)
         xlim([30 190])
     else
         xlabel('Time (s)')
-        xlim([30 / speed, 190 / speed])
+        %xlim([30 / speed, 190 / speed])
     end
     first = [prettyNames{index} ' ' units{index}];
     second = sprintf(' at %1.1f m/s', speed);
@@ -681,9 +685,9 @@ for j = 1:length(speedNames)
     hold off
 end
 plotAxes = findobj(gcf, 'type', 'axes');
-legend(plotAxes(3), bikes(2:end))
+legend(plotAxes(3), {'1', '2', '3', '4', '5', '6'}, 'Fontsize', 8)
 filename = [variable xAxis '.eps'];
-print(['plots' filesep filename], '-depsc')
+print(['plots' filesep filename], '-deps2c', '-loose')
 fix_ps_linestyle(['plots' filesep filename])
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
