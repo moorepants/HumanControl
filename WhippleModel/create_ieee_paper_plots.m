@@ -36,10 +36,8 @@ colors = {'k', ...
 %open_loop_all_bikes(data, linestyles, colors)
 %handling_all_bikes(data, rollData, linestyles, colors)
 %path_plots(data, linestyles, colors)
-%var = {'delta', 'phi', 'psi', 'Tdelta'};
-%io = {'output', 'output', 'output', 'input'};
-var = {'delta'};
-io = {'output'};
+var = {'delta', 'phi', 'psi', 'Tdelta'};
+io = {'output', 'output', 'output', 'input'};
 typ = {'Distance', 'Time'};
 for i = 1:length(var)
     for j = 1:length(typ)
@@ -83,7 +81,7 @@ closedLoops = bikeData.closedLoops;
 if strcmp(input, 'Steer')
     linestyles = {'', '', '-.', '-.', '-', '-.', '-.', '-'};
     gray = [0.6, 0.6, 0.6];
-    colors = {'k', 'k', 'k', gray, 'k', 'k', gray, 'k'}; 
+    colors = {'k', 'k', 'k', gray, 'k', 'k', gray, 'k'};
     % the closed delta loop
     deltaNum = closedLoops.Delta.num;
     deltaDen = closedLoops.Delta.den;
@@ -648,44 +646,79 @@ set(gcf, ...
     'PaperPosition', [0, 0, figWidth, figHeight], ...
     'PaperSize', [figWidth, figHeight])
 
+% find the maximum value of the variable
+maxValue = 0;
+for i = 2:length(bikes)
+    for j = 1:length(speedNames)
+        oneSpeed = data.(bikes{i}).(speedNames{j});
+        history = oneSpeed.([io 's'])(:, index);
+        if max(history) > maxValue
+            maxValue = max(history);
+        end
+    end
+end
+
+m = round(maxValue * 100) / 100;
+pad = 0.15 * m;
+yShift = [0, 2 * (m + pad), 4 * (m + pad)];
+
 % shifts the paths by this many meters
-shift = [0, 15, 35];
+xShift = [0, 15, 35];
+hold all
 for j = 1:length(speedNames)
-    subplot(3, 1, j)
-    hold all
     for i = 2:length(bikes)
         oneSpeed = data.(bikes{i}).(speedNames{j});
         time = oneSpeed.time;
-        speed = oneSpeed.speed
-        distance = time * speed + shift(j);
-        history = oneSpeed.([io 's'])(:, index);
+        speed = oneSpeed.speed;
+        distance = time * speed + xShift(j);
+        history = oneSpeed.([io 's'])(:, index) + yShift(j);
         if strcmp(xAxis, 'Distance')
             plot(distance, history, ...
                  'Linestyle', linestyles{i - 1}, ...
-                 'Color', colors{i - 1})
+                 'Color', colors{i - 1}, ...
+                 'Linewidth', 0.75)
+            textX = 165;
         elseif strcmp(xAxis, 'Time')
             plot(time, history, ...
                  'Linestyle', linestyles{i - 1}, ...
-                 'Color', colors{i - 1})
+                 'Color', colors{i - 1}, ...
+                 'Linewidth', 0.75)
+            textX = 2;
         else
             error('Choose Time or Distance, no other')
         end
     end
-    if strcmp(xAxis, 'Distance')
-        xlabel('Distance (m)')
-        xlim([30 190])
-    else
-        xlabel('Time (s)')
-        %xlim([30 / speed, 190 / speed])
-    end
-    first = [prettyNames{index} ' ' units{index}];
-    second = sprintf(' at %1.1f m/s', speed);
-    ylabel([first second], 'Interpreter', 'Latex')
-    box on
-    hold off
+    text(textX, yShift(j) + 4 * pad, [num2str(speed) ' m/s'])
 end
-plotAxes = findobj(gcf, 'type', 'axes');
-legend(plotAxes(3), {'1', '2', '3', '4', '5', '6'}, 'Fontsize', 8)
+
+ylim([-m - pad, yShift(3) + m + pad])
+set(gca, 'YTick', ...
+    [-m, yShift(1), m, ...
+     yShift(2) - m, yShift(2), yShift(2) + m, ...
+     yShift(3) - m, yShift(3), yShift(3) + m])
+ticks = {num2str(-m), '0', num2str(m)};
+set(gca, 'YTickLabel', [ticks, ticks ticks])
+
+if strcmp(xAxis, 'Distance')
+    xlabel('Distance (m)')
+    xLimits = [35, 190];
+    xlim(xLimits)
+    loc = 'Northwest';
+else
+    xlabel('Time (s)')
+    xLimits = [0, 50];
+    xlim(xLimits)
+    loc = 'Northeast';
+end
+l1 = line(xLimits, [yShift(1) + m + pad, yShift(1) + m + pad]);
+l2 = line(xLimits, [yShift(2) + m + pad, yShift(2) + m + pad]);
+set([l1, l2], 'Color', 'k')
+hold off
+set(gca, 'Fontsize', 8)
+first = [prettyNames{index} ' ' units{index}];
+ylabel(first, 'Interpreter', 'Latex')
+box on
+legend({'1', '2', '3', '4', '5', '6'}, 'Fontsize', 8, 'Location', loc)
 filename = [variable xAxis '.eps'];
 print(['plots' filesep filename], '-deps2c', '-loose')
 fix_ps_linestyle(['plots' filesep filename])
