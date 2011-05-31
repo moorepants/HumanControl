@@ -34,8 +34,8 @@ colors = {'k', ...
 %plot_io_roll(rollData, 'Distance')
 %plot_io_roll(rollData, 'Time')
 %open_loop_all_bikes(data, linestyles, colors)
-handling_all_bikes(data, rollData, linestyles, colors)
-%path_plots(data, linestyles, colors)
+%handling_all_bikes(data, rollData, linestyles, colors)
+path_plots(data, linestyles, colors)
 %var = {'delta', 'phi', 'psi', 'Tdelta'};
 %io = {'output', 'output', 'output', 'input'};
 %typ = {'Distance', 'Time'};
@@ -493,32 +493,50 @@ speedNames = fieldnames(data.Browser);
 
 figure()
 figWidth = 5.0;
+figHeight = figWidth / goldenRatio;
 set(gcf, ...
+    'Color', [1, 1, 1], ...
+    'PaperOrientation', 'portrait', ...
     'PaperUnits', 'inches', ...
-    'PaperPosition', [0, 0, figWidth, figWidth / goldenRatio], ...
-    'PaperSize', [figWidth, figWidth / goldenRatio])
+    'PaperPositionMode', 'manual', ...
+    'PaperPosition', [0, 0, figWidth, figHeight], ...
+    'PaperSize', [figWidth, figHeight])
 
 hold all
+
+% shifts the paths by this many meters
+shift = [0, 15, 35];
 for j = 1:length(speedNames)
     time = data.(bikes{2}).(speedNames{j}).time;
     path = data.(bikes{2}).(speedNames{j}).path;
     speed = data.(bikes{2}).(speedNames{j}).speed;
-    plot(time * speed, path * j, 'k-')
+    plot(time * speed + shift(j), -path * j, 'k-')
     for i = 2:length(bikes)
         x = data.(bikes{i}).(speedNames{j}).outputs(:, 17);
+        x = x + shift(j);
         y = data.(bikes{i}).(speedNames{j}).outputs(:, 18);
-        plot(x, y * j, 'Linestyle', linestyles{i - 1}, 'Color', colors{i - 1})
+        plot(x, -y * j, ...
+             'Linestyle', linestyles{i - 1}, ...
+             'Color', colors{i - 1}, ...
+             'Linewidth', 0.75)
     end
 end
+
 hold off
-xlim([30 190])
+
+% change the y tick labels to positive and to reflect the 2 meter width
+set(gca, 'YTick', [-7, -6, -4, -2, 0, 1])
+set(gca, 'YTickLabel', {'', '2', '2', '2', '0', ''})
+
+xlim([30 200])
 box on
-legend(['Path', bikes(2:end)'])
+legend(['Path', {'1', '2', '3', '4', '5', '6'}], ...
+       'Fontsize', 8, 'Location', 'Southeast')
 xlabel('Distance (m)')
 ylabel('Lateral Deviation (m)')
 filename = 'paths.eps';
 pathToFile = ['plots' filesep filename];
-print(pathToFile, '-depsc')
+print(pathToFile, '-deps2c', '-loose')
 fix_ps_linestyle(pathToFile)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
