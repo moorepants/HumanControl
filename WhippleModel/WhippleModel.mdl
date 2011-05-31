@@ -14,7 +14,7 @@ Model {
       Name		      "Closed Loop Output"
     }
     ParameterArgumentNames  ""
-    ComputedModelVersion    "1.206"
+    ComputedModelVersion    "1.209"
     NumModelReferences	    0
     NumTestPointedSignals   0
   }
@@ -33,9 +33,9 @@ Model {
   ModifiedByFormat	  "%<Auto>"
   LastModifiedBy	  "moorepants"
   ModifiedDateFormat	  "%<Auto>"
-  LastModifiedDate	  "Thu May 26 20:29:58 2011"
-  RTWModifiedTimeStamp	  228342594
-  ModelVersionFormat	  "1.%<AutoIncrement:206>"
+  LastModifiedDate	  "Mon May 30 23:52:35 2011"
+  RTWModifiedTimeStamp	  228699905
+  ModelVersionFormat	  "1.%<AutoIncrement:209>"
   ConfigurationManager	  "None"
   SampleTimeColors	  off
   SampleTimeAnnotations	  off
@@ -118,7 +118,7 @@ Model {
 	  $ObjectID		  2
 	  Version		  "1.10.0"
 	  StartTime		  "0.0"
-	  StopTime		  "60"
+	  StopTime		  "stopTime"
 	  AbsTol		  "auto"
 	  FixedStep		  "auto"
 	  InitialStep		  "auto"
@@ -531,8 +531,8 @@ Model {
 	PropName		"Components"
       }
       Name		      "Configuration"
-      CurrentDlgPage	      "Diagnostics/Sample Time"
-      ConfigPrmDlgPosition    " [ 1565, 151, 2712, 807 ] "
+      CurrentDlgPage	      "Solver"
+      ConfigPrmDlgPosition    " [ 225, 105, 1141, 643 ] "
     }
     PropName		    "ConfigurationSets"
   }
@@ -602,6 +602,14 @@ Model {
     Block {
       BlockType		      Derivative
       LinearizePole	      "inf"
+    }
+    Block {
+      BlockType		      FromWorkspace
+      VariableName	      "simulink_input"
+      SampleTime	      "-1"
+      Interpolate	      on
+      ZeroCross		      off
+      OutputAfterFinalValue   "Extrapolation"
     }
     Block {
       BlockType		      Gain
@@ -804,7 +812,7 @@ Model {
     ShowPageBoundaries	    off
     ZoomFactor		    "97"
     ReportName		    "simulink-default.rpt"
-    SIDHighWatermark	    141
+    SIDHighWatermark	    142
     Block {
       BlockType		      Inport
       Name		      "Perturbation Input"
@@ -1148,6 +1156,15 @@ Model {
 	  Interpreter		  "tex"
 	}
       }
+    }
+    Block {
+      BlockType		      FromWorkspace
+      Name		      "From\nWorkspace"
+      SID		      142
+      Position		      [100, 343, 165, 367]
+      VariableName	      "track"
+      SampleTime	      "0"
+      ZeroCross		      on
     }
     Block {
       BlockType		      Gain
@@ -2319,20 +2336,6 @@ Model {
       DstPort		      4
     }
     Line {
-      SrcBlock		      "Sum5"
-      SrcPort		      1
-      Points		      [45, 0]
-      Branch {
-	DstBlock		"Transfer Fcn1"
-	DstPort			1
-      }
-      Branch {
-	Points			[0, 110]
-	DstBlock		"Preview Time"
-	DstPort			1
-      }
-    }
-    Line {
       SrcBlock		      "Transfer Fcn1"
       SrcPort		      1
       DstBlock		      "Switch 5"
@@ -2452,6 +2455,20 @@ Model {
       SrcPort		      1
       DstBlock		      "Derivatives of the Output"
       DstPort		      1
+    }
+    Line {
+      SrcBlock		      "From\nWorkspace"
+      SrcPort		      1
+      Points		      [40, 0; 0, 100]
+      Branch {
+	DstBlock		"Transfer Fcn1"
+	DstPort			1
+      }
+      Branch {
+	Points			[0, 110]
+	DstBlock		"Preview Time"
+	DstPort			1
+      }
     }
     Annotation {
       Name		      "TPhi"

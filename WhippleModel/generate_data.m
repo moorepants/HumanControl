@@ -32,6 +32,13 @@ function data = generate_data(bike, speed, input, basicPlots, varargin)
 % there are some unconnected ports that send out warnings
 warning off
 
+% generate the path to track
+[pathX, pathY, pathT] = lane_change(35, 2, 0.2, 150, speed, ...
+                                    200, 'double', 60);
+modelPar.track = [pathT, pathY];
+size(modelPar.track)
+modelPar.stopTime = pathT(end);
+
 % make the gain multipliers unity unless they are supplied
 if size(varargin) > 0
     gains = varargin{1};

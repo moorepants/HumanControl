@@ -31,7 +31,8 @@ function [x, y, t] = lane_change(start, width, slope, pathLength, speed, num, ..
 % t : matrix, (num, 1)
 %   Time.
 
-x = 0:(pathLength - start) / num:pathLength;
+x = 0:pathLength / num:pathLength;
+x = x';
 t = x / speed;
 
 y = zeros(length(x), 1);
