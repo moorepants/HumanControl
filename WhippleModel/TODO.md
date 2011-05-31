@@ -17,6 +17,8 @@ IEEE Graphs
     - could plot all on one graph instead of subplots (would preserve scale)
     - ylabels are too crowded, go with two lines or move speed in as anotation
     - start at same time as paths.eps
+- handling.eps
+    - the area command covers the axes and tick marks
 - paths.eps
     - increase line thickness
     - numbers instead of names in legend
@@ -25,11 +27,6 @@ IEEE Graphs
     - change y axis tick marks to say 2 meters at each height
     - plot -y instead so that you are looking from the top of the bike (label
       ticks correcly)
-- phasePortraits.eps
-    - decrease legend fontsize
-    - decrease tick mark font size
-    - increase size (add -loose)
-    - lower xlabels are cut off
 - rollDistance.eps
     - make the path the solid line
     - show enlargement of the countersteer

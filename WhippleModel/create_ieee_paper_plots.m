@@ -34,7 +34,7 @@ colors = {'k', ...
 %plot_io_roll(rollData, 'Distance')
 %plot_io_roll(rollData, 'Time')
 %open_loop_all_bikes(data, linestyles, colors)
-handling_all_bikes(data, rollData, linestyles, colors)
+%handling_all_bikes(data, rollData, linestyles, colors)
 %path_plots(data, linestyles, colors)
 %var = {'delta', 'phi', 'psi', 'Tdelta'};
 %io = {'output', 'output', 'output', 'input'};
@@ -44,7 +44,7 @@ handling_all_bikes(data, rollData, linestyles, colors)
         %plot_io(var{i}, io{i}, typ{j}, data, linestyles, colors)
     %end
 %end
-%phase_portraits(data.Benchmark.Medium)
+phase_portraits(data.Benchmark.Medium)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function loop_shape_example(bikeData, input)
@@ -454,8 +454,8 @@ rollLine = plot(freq, mag(:)', 'k', 'Linewidth', 2.0, 'Linestyle', ':')
 hold off
 
 % move the roll input line down so it shows on the legend
-chil = get(gca, 'Children')
-legLines = [chil(end:-1:14)', rollLine]
+chil = get(gca, 'Children');
+legLines = [chil(end:-1:14)', rollLine];
 legend(legLines, [{'2.5 m/s', '5.0 m/s', '7.5 m/s'}, ...
         {'1', '2', '3', '4', '5', '6', 'Roll input @ 5 m/s'}], ...
         'Fontsize', 8)
@@ -759,16 +759,22 @@ function phase_portraits(bikeData)
 global goldenRatio
 
 figure()
-figWidth = 5.0;
+figWidth = 6.0;
+figHeight = figWidth / goldenRatio;
 set(gcf, ...
+    'Color', [1, 1, 1], ...
+    'PaperOrientation', 'portrait', ...
     'PaperUnits', 'inches', ...
-    'PaperPosition', [0, 0, figWidth, figWidth / goldenRatio], ...
-    'PaperSize', [figWidth, figWidth / goldenRatio])
+    'PaperPositionMode', 'manual', ...
+    'OuterPosition', [424, 305 - 50, 518, 465], ...
+    'PaperPosition', [0, 0, figWidth, figHeight], ...
+    'PaperSize', [figWidth, figHeight])
 
 gainChanges = [0.8, 1, 1, 1, 1;
                1, 1.2, 1, 1, 1;
                1, 1, 1.2, 1, 1;
                1, 1, 1.2, 0.8, 0.8];
+
 loopNames = {'kDelta', 'kPhiDot', 'kPhi', 'kPhi'};
 xy = [7, 15;
       4, 12;
@@ -811,14 +817,19 @@ for i = 1:length(loopNames)
 
     box on
     axis tight
-    xlabel(xlabels{i}, 'Interpreter', 'Latex')
-    ylabel(ylabels{i}, 'Interpreter', 'Latex')
+    xlabel(xlabels{i}, 'Interpreter', 'Latex', 'Fontsize', 10)
+    ylabel(ylabels{i}, 'Interpreter', 'Latex', 'Fontsize', 10)
     leg1 = sprintf(floatSpec{i}, bikeData.modelPar.(loopNames{i}));
     leg2 = sprintf(floatSpec{i}, twentyPercent.modelPar.(loopNames{i}));
-    legend({[legends{i} leg1], [legends{i} leg2]} , 'Interpreter', 'Latex')
+    legend({[legends{i} leg1], [legends{i} leg2]} , ...
+           'Interpreter', 'Latex', ...
+           'Fontsize', 6)
 end
+
+plotAxes = findobj(gcf, 'Type', 'Axes');
+set(plotAxes, 'Fontsize', 8)
 
 % save the plot
 filename = 'phasePortraits.eps';
-print(['plots' filesep filename], '-depsc')
+print(gcf, ['plots' filesep filename], '-deps2c', '-loose')
 fix_ps_linestyle(['plots' filesep filename])
