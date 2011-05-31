@@ -20,31 +20,31 @@ if exist('plots/', 'dir') ~= 7
 end
 
 % Define some linestyles and colors for each of the six bicycles
-linestyles = {'-', '-', '--', ...
-              '--', '-.', '-.'};
+linestyles = {'-', '-', '-.', ...
+              '--', '-.', '--'};
 colors = {'k', ...
           [0.5, 0.5, 0.5], ...
-          'k', ...
           [0.5, 0.5, 0.5], ...
+          'k', ...
           'k', ...
           [0.5, 0.5, 0.5]};
 
-loop_shape_example(data.Benchmark.Medium, 'Steer')
-loop_shape_example(rollData, 'Roll')
-plot_io_roll(rollData, 'Distance')
-plot_io_roll(rollData, 'Time')
-open_loop_all_bikes(data, linestyles, colors)
-handling_all_bikes(data, linestyles, colors)
-path_plots(data, linestyles, colors)
-var = {'delta', 'phi', 'psi', 'Tdelta'};
-io = {'output', 'output', 'output', 'input'};
-typ = {'Distance', 'Time'};
-for i = 1:length(var)
-    for j = 1:length(typ)
-        plot_io(var{i}, io{i}, typ{j}, data, linestyles, colors)
-    end
-end
-phase_portraits(data.Benchmark.Medium)
+%loop_shape_example(data.Benchmark.Medium, 'Steer')
+%loop_shape_example(rollData, 'Roll')
+%plot_io_roll(rollData, 'Distance')
+%plot_io_roll(rollData, 'Time')
+%open_loop_all_bikes(data, linestyles, colors)
+handling_all_bikes(data, rollData, linestyles, colors)
+%path_plots(data, linestyles, colors)
+%var = {'delta', 'phi', 'psi', 'Tdelta'};
+%io = {'output', 'output', 'output', 'input'};
+%typ = {'Distance', 'Time'};
+%for i = 1:length(var)
+    %for j = 1:length(typ)
+        %plot_io(var{i}, io{i}, typ{j}, data, linestyles, colors)
+    %end
+%end
+%phase_portraits(data.Benchmark.Medium)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function loop_shape_example(bikeData, input)
@@ -68,6 +68,7 @@ set(gcf, ...
     'PaperOrientation', 'portrait', ...
     'PaperUnits', 'inches', ...
     'PaperPositionMode', 'manual', ...
+    'OuterPosition', [424, 305 - 50, 518, 465], ...
     'PaperPosition', [0, 0, figWidth, figHeight], ...
     'PaperSize', [figWidth, figHeight])
 
@@ -78,54 +79,74 @@ hold all
 closedLoops = bikeData.closedLoops;
 
 if strcmp(input, 'Steer')
-    linestyles = {'', '', '-.', '--', '-', '-.', '--', '-'};
+    linestyles = {'', '', '-.', '-.', '-', '-.', '-.', '-'};
+    gray = [0.6, 0.6, 0.6];
+    colors = {'k', 'k', 'k', gray, 'k', 'k', gray, 'k'}; 
     % the closed delta loop
-    num = closedLoops.Delta.num;
-    den = closedLoops.Delta.den;
-    bodeplot(tf(num, den), freq);
+    deltaNum = closedLoops.Delta.num;
+    deltaDen = closedLoops.Delta.den;
+    bodeplot(tf(deltaNum, deltaDen), freq);
     % a typical neuromuscular model
-    num = 2722.5;
-    den = [1, 13.96, 311.85, 2722.5];
-    bodeplot(tf(num, den), freq);
+    neuroNum = 2722.5;
+    neuroDen = [1, 13.96, 311.85, 2722.5];
+    bodeplot(tf(neuroNum, neuroDen), freq);
     whichLines = 5:-1:3;
 elseif strcmp(input, 'Roll')
     linestyles = {'', '', '-', '-'};
+    colors = {'k', 'k', 'k', 'k'};
     whichLines = 4:-1:2;
 else
     error('Bad input, use Steer or Roll')
 end
 
 % the closed phi dot loop
-num = closedLoops.PhiDot.num;
-den = closedLoops.PhiDot.den;
-closedBode = bodeplot(tf(num, den), freq);
+phiDotNum = closedLoops.PhiDot.num;
+phiDotDen = closedLoops.PhiDot.den;
+closedBode = bodeplot(tf(phiDotNum, phiDotDen), freq);
 
 hold off
 
 % clean it up
 opts = getoptions(closedBode);
-opts.Title.String = 'Closed Loop Bode Diagrams';
-opts.YLim = {[-45, 20], [-360, 90]};
+if strcmp(input, 'Steer')
+    opts.YLim = {[-45, 20], [-360, 90]};
+else
+    opts.YLim = {[-30, 10], [-180, 90]};
+end
 opts.PhaseMatching = 'on';
 opts.PhaseMatchingValue = 0;
+opts.Title.String = '';
 setoptions(closedBode, opts)
 
 % find all the lines in the current figure
 lines = findobj(gcf, 'type', 'line');
 for i = 3:length(lines)
     set(lines(i), 'LineStyle', linestyles{i}, ...
-                  'Color', 'k', ...
+                  'Color', colors{i}, ...
                   'LineWidth', 2.0)
 end
 
+% there seems to be a bug such that the xlabel is too low, this is a hack to
+% get it to work
+raise = 0.05;
 plotAxes = findobj(gcf, 'type', 'axes');
+set(plotAxes, 'XColor', 'k', 'YColor', 'k')
+curPos1 = get(plotAxes(1), 'Position');
+curPos2 = get(plotAxes(2), 'Position');
+set(plotAxes(1), 'Position', curPos1 + [0, raise, 0, 0])
+set(plotAxes(2), 'Position', curPos2 + [0, raise, 0, 0])
+xLab = get(plotAxes(1), 'Xlabel');
+set(xLab, 'Units', 'normalized')
+set(xLab, 'Position', get(xLab, 'Position') + [0, raise + 0.05, 0])
+
 % make the tick labels smaller
-set(plotAxes(1), 'Fontsize', 8)
-set(plotAxes(2), 'Fontsize', 8)
+set(plotAxes, 'Fontsize', 8)
 if strcmp(input, 'Steer')
-    legWords = {'$\delta$', '$\dot{\phi}$','Neuromuscular model from [27]'};
+    legWords = {'$\delta$ Loop',
+                'Neuromuscular model from [27]',
+                '$\dot{\phi}$ Loop'};
 elseif strcmp(input, 'Roll')
-    legWords = {'$\dot{\phi}$'};
+    legWords = {'$\dot{\phi}$ Loop'};
 end
 closeLeg = legend(lines(whichLines), ...
                   legWords, ...
@@ -133,9 +154,37 @@ closeLeg = legend(lines(whichLines), ...
                   'Interpreter', 'Latex', ...
                   'Fontsize', 8);
 
+% add the annotation showing a 10 dB peak
+if strcmp(input, 'Steer')
+    axes(plotAxes(2))
+    db1 = text(2.7, 5.0, '~10dB');
+    db2 = text(2.5, -10.0, '~10dB');
+    set([db1, db2], 'Fontsize', 8)
+    dArrow1 = annotation('doublearrow', ...
+                         [0.7, 0.7], ...
+                         [0.755 + raise, 0.818 + raise]);
+    annotation('line', [0.69, 0.87], [0.818 + raise, 0.818 + raise])
+    dArrow2 = annotation('doublearrow', ...
+                         [0.685, 0.685], ...
+                         [0.665 + raise, 0.725 + raise]);
+    annotation('line', [0.675, 0.87], [0.725 + raise, 0.725 + raise])
+    set([dArrow1, dArrow2], 'Head1width', 3, 'Head1length', 3, ...
+        'Head2width', 3, 'Head2length', 3)
+else
+    axes(plotAxes(2))
+    db1 = text(0.67, -3.7, '~10dB');
+    set(db1, 'Fontsize', 8)
+    dArrow = annotation('doublearrow', ...
+                        [0.5, 0.5], ...
+                        [0.697 + raise, 0.795 + raise]);
+    set(dArrow, 'Head1width', 3, 'Head1length', 3, ...
+        'Head2width', 3, 'Head2length', 3)
+    annotation('line', [0.49, 0.75], [0.795 + raise, 0.795 + raise])
+end
+
 filename = ['benchmark' input 'Closed'];
 pathToFile = ['plots' filesep filename];
-print(gcf, '-deps2', '-loose', [pathToFile '.eps'])
+print(gcf, '-deps2c', '-loose', [pathToFile '.eps'])
 fix_ps_linestyle([pathToFile '.eps'])
 
 % open loop plots
@@ -168,16 +217,15 @@ hold off
 
 % clean it up
 opts = getoptions(openBode);
-opts.Title.String = 'Open Loop Bode Diagrams';
-opts.YLim = {[-80, 20], [-540, -80]};
+opts.Title.String = '';
+opts.YLim = {[-80, 20], [-540, -60]};
 opts.PhaseMatching = 'on';
 opts.PhaseMatchingValue = 0;
-opts.Grid = 'on';
 setoptions(openBode, opts)
 
 % find all the lines in the current figure
 lines = findobj(gcf, 'type', 'line');
-linestyles = {'', '', '-.', '--', '-', '-.', '--', '-'};
+linestyles = {'', '', '-.', '-', '--', '-.', '-', '--'};
 for i = 3:length(lines)
     set(lines(i), 'LineStyle', linestyles{i}, ...
                   'Color', 'k', ...
@@ -186,12 +234,25 @@ end
 
 plotAxes = findobj(gcf, 'type', 'axes');
 % make the tick labels smaller
-set(plotAxes(1), 'Fontsize', 8)
-set(plotAxes(2), 'Fontsize', 8)
+set(plotAxes, 'Fontsize', 8)
 closeLeg = legend(lines(8:-1:6), ...
-                  {'$\phi$', '$\psi$','$y$'}, ...
+                  {'$\phi$ Loop', '$\psi$ Loop','$y$ Loop'}, ...
                   'Location', 'Southwest', ...
                   'Interpreter', 'Latex');
+
+% add zero crossing lines
+axes(plotAxes(1))
+line([0.1, 20], [-180, -180])
+axes(plotAxes(2))
+line([0.1, 20], [0, 0])
+
+curPos1 = get(plotAxes(1), 'Position');
+curPos2 = get(plotAxes(2), 'Position');
+set(plotAxes(1), 'Position', curPos1 + [0, raise, 0, 0])
+set(plotAxes(2), 'Position', curPos2 + [0, raise, 0, 0])
+xLab = get(plotAxes(1), 'Xlabel');
+set(xLab, 'Units', 'normalized')
+set(xLab, 'Position', get(xLab, 'Position') + [0, raise + 0.05, 0])
 
 filename = ['benchmark' input 'Open.eps'];
 pathToFile = ['plots' filesep filename];
@@ -240,14 +301,18 @@ function open_loop_all_bikes(data, linestyles, colors)
 
 global goldenRatio
 
-bikes = fieldnames(data)
+bikes = fieldnames(data);
 
 figure()
-figWidth = 4.0;
+figWidth = 5.0;
+figHeight = figWidth / goldenRatio;
 set(gcf, ...
+    'Color', [1, 1, 1], ...
+    'PaperOrientation', 'portrait', ...
     'PaperUnits', 'inches', ...
-    'PaperPosition', [0, 0, figWidth, figWidth / goldenRatio], ...
-    'PaperSize', [figWidth, figWidth / goldenRatio])
+    'PaperPositionMode', 'manual', ...
+    'PaperPosition', [0, 0, figWidth, figHeight], ...
+    'PaperSize', [figWidth, figHeight])
 
 freq = {0.1, 20.0};
 
@@ -261,8 +326,9 @@ hold off
 
 % clean it up
 opts = getoptions(openBode);
-opts.Title.String = '$\phi$ Open Loop Bode Diagrams at 5 m/s';
-opts.Title.Interpreter = 'Latex';
+%opts.Title.String = '$\phi$ Open Loop Bode Diagrams at 5 m/s';
+opts.Title.String = '';
+%opts.Title.Interpreter = 'Latex';
 opts.YLim = {[-30, 10], [-540, -90]};
 opts.PhaseMatching = 'on';
 opts.PhaseMatchingValue = 0;
@@ -284,35 +350,73 @@ for i = 2:length(magLines)
         'LineWidth', 1.0)
 end
 
-plotAxes = findobj(gcf, 'type', 'axes');
 closeLeg = legend(magLines(2:7), ...
-                  bikes(2:7), ...
-                  'Location', 'Southwest');
+                  {'1', '2', '3', '4', '5', '6'}, ...
+                  'Location', 'Southwest', ...
+                  'Fontsize', 8);
+
+set(plotAxes, 'YColor', 'k', 'XColor', 'k', 'Fontsize', 8)
+
+% add a zero lines
+axes(plotAxes(1))
+line([0.1, 20], [-180, -180], 'Color', 'k')
+axes(plotAxes(2))
+line([0.1, 20], [0, 0], 'Color', 'k')
+
+% raise the axes cause the xlabel is cut off
+raise = 0.05;
+curPos1 = get(plotAxes(1), 'Position');
+curPos2 = get(plotAxes(2), 'Position');
+set(plotAxes(1), 'Position', curPos1 + [0, raise, 0, 0])
+set(plotAxes(2), 'Position', curPos2 + [0, raise, 0, 0])
+xLab = get(plotAxes(1), 'Xlabel');
+set(xLab, 'Units', 'normalized')
+set(xLab, 'Position', get(xLab, 'Position') + [0, raise + 0.05, 0])
+
 filename = 'openBode.eps';
 pathToFile = ['plots' filesep filename];
-print(pathToFile, '-depsc')
+print(pathToFile, '-deps2c', '-loose')
 fix_ps_linestyle(pathToFile)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function handling_all_bikes(data, linestyles, colors)
+function handling_all_bikes(data, rollData, linestyles, colors)
 % Creates handling quality metric for all bikes.
+%
+% Parameters
+% ----------
+% data : structure
+%   Contains data for all bikes a the three speeds for steer input.
+% rollData : structure
+%   Contains the data for the benchmark bike with roll input at medium speed.
+% linestyles : cell array
+%   Linestyle strings, one for each of the six bikes.
+% colors : cell array
+%   Colorspecs for each of the six bikes.
 
 global goldenRatio
 
 bikes = fieldnames(data);
 figure()
-
-figWidth = 4.0;
+figWidth = 5.0;
+figHeight = figWidth / goldenRatio;
 set(gcf, ...
+    'Color', [1, 1, 1], ...
+    'PaperOrientation', 'portrait', ...
     'PaperUnits', 'inches', ...
-    'PaperPosition', [0, 0, figWidth, figWidth / goldenRatio], ...
-    'PaperSize', [figWidth, figWidth / goldenRatio])
+    'PaperPositionMode', 'manual', ...
+    'PaperPosition', [0, 0, figWidth, figHeight], ...
+    'PaperSize', [figWidth, figHeight])
 
 w = linspace(0.01, 20, 200);
 speedNames = fieldnames(data.Browser);
-fillColors = {[0.98, 0.98, 0.98], [0.93, 0.93, 0.93], [0.85, 0.85, 0.85]};
+fillColors = {[0.97, 0.97, 0.97],
+              [0.89, 0.89, 0.89],
+              [0.75, 0.75, 0.75]};
 hold all
+
+% plot the background area for each family of curves
 for j = 1:length(speedNames)
+    % get the max values for the set of curves
     magnitudes = zeros(length(w), length(bikes) - 1);
     for i = 2:length(bikes)
         num = data.(bikes{i}).(speedNames{j}).handlingMetric.num;
@@ -321,11 +425,16 @@ for j = 1:length(speedNames)
         magnitudes(:, i - 1) = mag(:)';
     end
     maxMag = max(magnitudes, [], 2);
+    % fill the area under the curve
     area(freq, maxMag, ...
          'Facecolor', fillColors{j}, ...
-         'Edgecolor', fillColors{j})
+         'Edgecolor', 'none')
 end
 
+% this makes sure that the edges of the fill area don't cover the axes
+set(gca, 'Layer', 'top')
+
+% plot the actual curves
 for j = 1:length(speedNames)
     metricLines = zeros(length(bikes) - 1, 1);
     for i = 2:length(bikes)
@@ -338,9 +447,21 @@ for j = 1:length(speedNames)
                                  'Linewidth', 2.0);
     end
 end
+
+% add the roll input bike
+num = rollData.handlingMetric.num;
+den = rollData.handlingMetric.den;
+[mag, phase, freq] = bode(tf(num, den), w);
+rollLine = plot(freq, mag(:)', 'k', 'Linewidth', 2.0, 'Linestyle', ':');
+
 hold off
 
-legend([{'2.5 m/s', '5.0 m/s', '7.5 m/s'}, bikes(2:end)'])
+% move the roll input line down so it shows on the legend
+chil = get(gca, 'Children');
+legLines = [chil(end:-1:14)', rollLine];
+legend(legLines, [{'2.5 m/s', '5.0 m/s', '7.5 m/s'}, ...
+        {'1', '2', '3', '4', '5', '6', 'Roll input @ 5 m/s'}], ...
+        'Fontsize', 8)
 
 ylim([0, 20]);
 level1 = line([0, 20], [5, 5]);
@@ -349,13 +470,16 @@ set(level1, 'Color', 'k', 'Linestyle', '--', 'Linewidth', 1.0)
 set(level2, 'Color', 'k', 'Linestyle', '--', 'Linewidth', 1.0)
 ylabel('Handling Quality Metric')
 xlabel('Frequency (rad/sec)')
-text(3.5, 4.25, 'Level 1')
-text(3, 6.5, 'Level 2')
-text(3, 9, 'Level 3')
+text(3.1, 4.3, 'Level 1')
+text(1.9, 6.5, 'Level 2')
+text(3, 15, 'Level 3')
 box on
+
+set(gca, 'YColor', 'k')
+
 filename = 'handling.eps';
 pathToFile = ['plots' filesep filename];
-print(pathToFile, '-depsc')
+print(pathToFile, '-deps2c', '-loose')
 fix_ps_linestyle(pathToFile)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -638,16 +762,22 @@ function phase_portraits(bikeData)
 global goldenRatio
 
 figure()
-figWidth = 5.0;
+figWidth = 6.0;
+figHeight = figWidth / goldenRatio;
 set(gcf, ...
+    'Color', [1, 1, 1], ...
+    'PaperOrientation', 'portrait', ...
     'PaperUnits', 'inches', ...
-    'PaperPosition', [0, 0, figWidth, figWidth / goldenRatio], ...
-    'PaperSize', [figWidth, figWidth / goldenRatio])
+    'PaperPositionMode', 'manual', ...
+    'OuterPosition', [424, 305 - 50, 518, 465], ...
+    'PaperPosition', [0, 0, figWidth, figHeight], ...
+    'PaperSize', [figWidth, figHeight])
 
 gainChanges = [0.8, 1, 1, 1, 1;
                1, 1.2, 1, 1, 1;
                1, 1, 1.2, 1, 1;
                1, 1, 1.2, 0.8, 0.8];
+
 loopNames = {'kDelta', 'kPhiDot', 'kPhi', 'kPhi'};
 xy = [7, 15;
       4, 12;
@@ -690,14 +820,19 @@ for i = 1:length(loopNames)
 
     box on
     axis tight
-    xlabel(xlabels{i}, 'Interpreter', 'Latex')
-    ylabel(ylabels{i}, 'Interpreter', 'Latex')
+    xlabel(xlabels{i}, 'Interpreter', 'Latex', 'Fontsize', 10)
+    ylabel(ylabels{i}, 'Interpreter', 'Latex', 'Fontsize', 10)
     leg1 = sprintf(floatSpec{i}, bikeData.modelPar.(loopNames{i}));
     leg2 = sprintf(floatSpec{i}, twentyPercent.modelPar.(loopNames{i}));
-    legend({[legends{i} leg1], [legends{i} leg2]} , 'Interpreter', 'Latex')
+    legend({[legends{i} leg1], [legends{i} leg2]} , ...
+           'Interpreter', 'Latex', ...
+           'Fontsize', 6)
 end
+
+plotAxes = findobj(gcf, 'Type', 'Axes');
+set(plotAxes, 'Fontsize', 8)
 
 % save the plot
 filename = 'phasePortraits.eps';
-print(['plots' filesep filename], '-depsc')
+print(gcf, ['plots' filesep filename], '-deps2c', '-loose')
 fix_ps_linestyle(['plots' filesep filename])
