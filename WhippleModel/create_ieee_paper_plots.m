@@ -20,12 +20,12 @@ if exist('plots/', 'dir') ~= 7
 end
 
 % Define some linestyles and colors for each of the six bicycles
-linestyles = {'-', '--', '--', ...
-              '-', '-.', '-.'};
+linestyles = {'-', '-', '-.', ...
+              '--', '-.', '--'};
 colors = {'k', ...
           [0.5, 0.5, 0.5], ...
-          'k', ...
           [0.5, 0.5, 0.5], ...
+          'k', ...
           'k', ...
           [0.5, 0.5, 0.5]};
 
@@ -33,8 +33,8 @@ colors = {'k', ...
 %loop_shape_example(rollData, 'Roll')
 %plot_io_roll(rollData, 'Distance')
 %plot_io_roll(rollData, 'Time')
-open_loop_all_bikes(data, linestyles, colors)
-%handling_all_bikes(data, linestyles, colors)
+%open_loop_all_bikes(data, linestyles, colors)
+handling_all_bikes(data, rollData, linestyles, colors)
 %path_plots(data, linestyles, colors)
 %var = {'delta', 'phi', 'psi', 'Tdelta'};
 %io = {'output', 'output', 'output', 'input'};
@@ -379,24 +379,39 @@ print(pathToFile, '-deps2c', '-loose')
 fix_ps_linestyle(pathToFile)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function handling_all_bikes(data, linestyles, colors)
+function handling_all_bikes(data, rollData, linestyles, colors)
 % Creates handling quality metric for all bikes.
+%
+% Parameters
+% ----------
+% data : structure
+%   Contains data for all bikes a the three speeds for steer input.
+% rollData : structure
+%   Contains the data for the benchmark bike with roll input at medium speed.
+% linestyles : cell array
+%   Linestyle strings, one for each of the six bikes.
+% colors : cell array
+%   Colorspecs for each of the six bikes.
 
 global goldenRatio
 
 bikes = fieldnames(data);
 figure()
-
-figWidth = 4.0;
+figWidth = 5.0;
+figHeight = figWidth / goldenRatio;
 set(gcf, ...
+    'Color', [1, 1, 1], ...
+    'PaperOrientation', 'portrait', ...
     'PaperUnits', 'inches', ...
-    'PaperPosition', [0, 0, figWidth, figWidth / goldenRatio], ...
-    'PaperSize', [figWidth, figWidth / goldenRatio])
+    'PaperPositionMode', 'manual', ...
+    'PaperPosition', [0, 0, figWidth, figHeight], ...
+    'PaperSize', [figWidth, figHeight])
 
 w = linspace(0.01, 20, 200);
 speedNames = fieldnames(data.Browser);
-fillColors = {[0.98, 0.98, 0.98], [0.93, 0.93, 0.93], [0.85, 0.85, 0.85]};
+fillColors = {[0.97, 0.97, 0.97], [0.89, 0.89, 0.89], [0.75, 0.75, 0.75]};
 hold all
+% plot the background area for each family of curves
 for j = 1:length(speedNames)
     magnitudes = zeros(length(w), length(bikes) - 1);
     for i = 2:length(bikes)
@@ -411,6 +426,7 @@ for j = 1:length(speedNames)
          'Edgecolor', fillColors{j})
 end
 
+% plot the actual curves
 for j = 1:length(speedNames)
     metricLines = zeros(length(bikes) - 1, 1);
     for i = 2:length(bikes)
@@ -423,9 +439,25 @@ for j = 1:length(speedNames)
                                  'Linewidth', 2.0);
     end
 end
+
+% add the roll input bike
+num = rollData.handlingMetric.num;
+den = rollData.handlingMetric.den;
+[mag, phase, freq] = bode(tf(num, den), w);
+rollLine = plot(freq, mag(:)', 'k', 'Linewidth', 2.0, 'Linestyle', ':');
+
 hold off
 
-legend([{'2.5 m/s', '5.0 m/s', '7.5 m/s'}, bikes(2:end)'])
+% move the roll input line down so it shows on the legend
+oldChil = get(gca, 'Children');
+newChil = oldChil;
+newChil(13) = rollLine;
+newChil(1) = oldChil(13);
+set(gca, 'Children', newChil)
+
+legend([{'2.5 m/s', '5.0 m/s', '7.5 m/s'}, ...
+        {'1', '2', '3', '4', '5', '6', 'Roll input @ 5 m/s'}], ...
+        'Fontsize', 8)
 
 ylim([0, 20]);
 level1 = line([0, 20], [5, 5]);
@@ -434,13 +466,16 @@ set(level1, 'Color', 'k', 'Linestyle', '--', 'Linewidth', 1.0)
 set(level2, 'Color', 'k', 'Linestyle', '--', 'Linewidth', 1.0)
 ylabel('Handling Quality Metric')
 xlabel('Frequency (rad/sec)')
-text(3.5, 4.25, 'Level 1')
-text(3, 6.5, 'Level 2')
-text(3, 9, 'Level 3')
+text(3.1, 4.3, 'Level 1')
+text(1.9, 6.5, 'Level 2')
+text(3, 15, 'Level 3')
 box on
+
+set(gca, 'YColor', 'k')
+
 filename = 'handling.eps';
 pathToFile = ['plots' filesep filename];
-print(pathToFile, '-depsc')
+print(pathToFile, '-deps2c', '-loose')
 fix_ps_linestyle(pathToFile)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
