@@ -14,7 +14,7 @@ Model {
       Name		      "Closed Loop Output"
     }
     ParameterArgumentNames  ""
-    ComputedModelVersion    "1.209"
+    ComputedModelVersion    "1.211"
     NumModelReferences	    0
     NumTestPointedSignals   0
   }
@@ -33,9 +33,9 @@ Model {
   ModifiedByFormat	  "%<Auto>"
   LastModifiedBy	  "moorepants"
   ModifiedDateFormat	  "%<Auto>"
-  LastModifiedDate	  "Mon May 30 23:52:35 2011"
-  RTWModifiedTimeStamp	  228699905
-  ModelVersionFormat	  "1.%<AutoIncrement:209>"
+  LastModifiedDate	  "Tue May 31 11:37:19 2011"
+  RTWModifiedTimeStamp	  228742637
+  ModelVersionFormat	  "1.%<AutoIncrement:211>"
   ConfigurationManager	  "None"
   SampleTimeColors	  off
   SampleTimeAnnotations	  off
@@ -532,7 +532,7 @@ Model {
       }
       Name		      "Configuration"
       CurrentDlgPage	      "Solver"
-      ConfigPrmDlgPosition    " [ 225, 105, 1141, 643 ] "
+      ConfigPrmDlgPosition    " [ 1777, 76, 2868, 800 ] "
     }
     PropName		    "ConfigurationSets"
   }
@@ -798,7 +798,7 @@ Model {
   }
   System {
     Name		    "WhippleModel"
-    Location		    [3, 75, 1369, 743]
+    Location		    [1366, 51, 3046, 1049]
     Open		    on
     ModelBrowserVisibility  off
     ModelBrowserWidth	    200

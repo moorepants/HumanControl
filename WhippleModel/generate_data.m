@@ -33,10 +33,9 @@ function data = generate_data(bike, speed, input, basicPlots, varargin)
 warning off
 
 % generate the path to track
-[pathX, pathY, pathT] = lane_change(35, 2, 0.2, 150, speed, ...
-                                    200, 'double', 60);
+[pathX, pathY, pathT] = lane_change(35, 2, 0.2, 250, speed, ...
+                                    500, 'double', 60);
 modelPar.track = [pathT, pathY];
-size(modelPar.track)
 modelPar.stopTime = pathT(end);
 
 % make the gain multipliers unity unless they are supplied
