@@ -34,7 +34,7 @@ colors = {'k', ...
 %plot_io_roll(rollData, 'Distance')
 %plot_io_roll(rollData, 'Time')
 %open_loop_all_bikes(data, linestyles, colors)
-%handling_all_bikes(data, rollData, linestyles, colors)
+handling_all_bikes(data, rollData, linestyles, colors)
 %path_plots(data, linestyles, colors)
 %var = {'delta', 'phi', 'psi', 'Tdelta'};
 %io = {'output', 'output', 'output', 'input'};
@@ -44,7 +44,7 @@ colors = {'k', ...
         %plot_io(var{i}, io{i}, typ{j}, data, linestyles, colors)
     %end
 %end
-phase_portraits(data.Benchmark.Medium)
+%phase_portraits(data.Benchmark.Medium)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function loop_shape_example(bikeData, input)
@@ -428,7 +428,7 @@ for j = 1:length(speedNames)
     % fill the area under the curve
     area(freq, maxMag, ...
          'Facecolor', fillColors{j}, ...
-         'Edgecolor', fillColors{j})
+         'Edgecolor', 'none') %fillColors{j})
 end
 
 % plot the actual curves
@@ -449,7 +449,7 @@ end
 num = rollData.handlingMetric.num;
 den = rollData.handlingMetric.den;
 [mag, phase, freq] = bode(tf(num, den), w);
-rollLine = plot(freq, mag(:)', 'k', 'Linewidth', 2.0, 'Linestyle', ':')
+rollLine = plot(freq, mag(:)', 'k', 'Linewidth', 2.0, 'Linestyle', ':');
 
 hold off
 
