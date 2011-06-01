@@ -29,10 +29,10 @@ colors = {'k', ...
           'k', ...
           [0.5, 0.5, 0.5]};
 
-%loop_shape_example(data.Benchmark.Medium, 'Steer')
-%loop_shape_example(rollData, 'Roll')
-plot_io_roll(rollData, 'Distance')
-plot_io_roll(rollData, 'Time')
+loop_shape_example(data.Benchmark.Medium, 'Steer')
+loop_shape_example(rollData, 'Roll')
+%plot_io_roll(rollData, 'Distance')
+%plot_io_roll(rollData, 'Time')
 %open_loop_all_bikes(data, linestyles, colors)
 %handling_all_bikes(data, rollData, linestyles, colors)
 %path_plots(data, linestyles, colors)
@@ -232,6 +232,7 @@ for i = 3:length(lines)
                   'LineWidth', 2.0)
 end
 
+
 plotAxes = findobj(gcf, 'type', 'axes');
 % make the tick labels smaller
 set(plotAxes, 'Fontsize', 8)
@@ -242,9 +243,30 @@ closeLeg = legend(lines(8:-1:6), ...
 
 % add zero crossing lines
 axes(plotAxes(1))
-line([0.1, 20], [-180, -180])
+line([0.1, 20], [-180, -180], 'Color', 'k')
 axes(plotAxes(2))
-line([0.1, 20], [0, 0])
+line([0.1, 20], [0, 0], 'Color', 'k')
+
+% add some line for the cross over frequencies
+if strcmp(input, 'Steer')
+    wc = 2;
+else strcmp(input, 'Roll')
+    wc = 1.75;
+end
+axes(plotAxes(2))
+hold on
+gray = [0.8, 0.8, 0.8];
+
+line([wc, wc], [-40, 0], 'Color', gray)
+text(wc - 0.4, -43, ['$\omega_c=' num2str(wc) '$'], 'Interpreter', 'Latex', 'Fontsize', 8)
+
+line([wc / 2, wc / 2], [-30, 0], 'Color', gray)
+text(wc / 2 - 0.3, -33, ['$\omega_c/2=' num2str(wc / 2) '$'], 'Interpreter', 'Latex', 'Fontsize', 8)
+
+line([wc / 4, wc / 4], [-20, 0], 'Color', gray)
+text(wc / 4 - 0.15, -23, ['$\omega_c/4=' num2str(wc / 4) '$'], 'Interpreter', 'Latex', 'Fontsize', 8)
+
+hold off
 
 curPos1 = get(plotAxes(1), 'Position');
 curPos2 = get(plotAxes(2), 'Position');
@@ -256,7 +278,7 @@ set(xLab, 'Position', get(xLab, 'Position') + [0, raise + 0.05, 0])
 
 filename = ['benchmark' input 'Open.eps'];
 pathToFile = ['plots' filesep filename];
-print(gcf, '-deps2', '-loose', pathToFile)
+print(gcf, '-deps2c', '-loose', pathToFile)
 fix_ps_linestyle(pathToFile)
 
 % handling qualities plot
