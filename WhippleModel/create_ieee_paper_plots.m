@@ -247,24 +247,26 @@ line([0.1, 20], [-180, -180], 'Color', 'k')
 axes(plotAxes(2))
 line([0.1, 20], [0, 0], 'Color', 'k')
 
-% add some line for the cross over frequencies
+% add some lines and labels for the cross over frequencies
 if strcmp(input, 'Steer')
     wc = 2;
+    wShift = [0.42, 0.35, 0.175];
 else strcmp(input, 'Roll')
-    wc = 1.75;
+    wc = 1.5;
+    wShift = [0.425, 0.26, 0.1325];
 end
 axes(plotAxes(2))
 hold on
 gray = [0.8, 0.8, 0.8];
 
 line([wc, wc], [-40, 0], 'Color', gray)
-text(wc - 0.4, -43, ['$\omega_c=' num2str(wc) '$'], 'Interpreter', 'Latex', 'Fontsize', 8)
+text(wc - wShift(1), -43, ['$\omega_c=' num2str(wc) '$'], 'Interpreter', 'Latex', 'Fontsize', 8)
 
 line([wc / 2, wc / 2], [-30, 0], 'Color', gray)
-text(wc / 2 - 0.3, -33, ['$\omega_c/2=' num2str(wc / 2) '$'], 'Interpreter', 'Latex', 'Fontsize', 8)
+text(wc / 2 - wShift(2), -33, ['$\omega_c/2=' num2str(wc / 2) '$'], 'Interpreter', 'Latex', 'Fontsize', 8)
 
 line([wc / 4, wc / 4], [-20, 0], 'Color', gray)
-text(wc / 4 - 0.15, -23, ['$\omega_c/4=' num2str(wc / 4) '$'], 'Interpreter', 'Latex', 'Fontsize', 8)
+text(wc / 4 - wShift(3), -23, ['$\omega_c/4=' num2str(wc / 4) '$'], 'Interpreter', 'Latex', 'Fontsize', 8)
 
 hold off
 
