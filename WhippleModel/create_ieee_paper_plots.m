@@ -31,21 +31,21 @@ colors = {'k', ...
 
 loop_shape_example(data.Benchmark.Medium, 'Steer')
 loop_shape_example(rollData, 'Roll')
-plot_io_roll(rollData, 'Distance')
-plot_io_roll(rollData, 'Time')
-open_loop_all_bikes(data, linestyles, colors)
-handling_all_bikes(data, rollData, linestyles, colors)
-path_plots(data, linestyles, colors)
-var = {'delta', 'phi', 'psi', 'Tdelta'};
-io = {'output', 'output', 'output', 'input'};
-typ = {'Distance', 'Time'};
-for i = 1:length(var)
-    for j = 1:length(typ)
-        plot_io(var{i}, io{i}, typ{j}, data, linestyles, colors)
-    end
-end
-phase_portraits(data.Benchmark.Medium)
-eigenvalues(data, linestyles, colors)
+%plot_io_roll(rollData, 'Distance')
+%plot_io_roll(rollData, 'Time')
+%open_loop_all_bikes(data, linestyles, colors)
+%handling_all_bikes(data, rollData, linestyles, colors)
+%path_plots(data, linestyles, colors)
+%var = {'delta', 'phi', 'psi', 'Tdelta'};
+%io = {'output', 'output', 'output', 'input'};
+%typ = {'Distance', 'Time'};
+%for i = 1:length(var)
+    %for j = 1:length(typ)
+        %plot_io(var{i}, io{i}, typ{j}, data, linestyles, colors)
+    %end
+%end
+%phase_portraits(data.Benchmark.Medium)
+%eigenvalues(data, linestyles, colors)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function loop_shape_example(bikeData, input)
@@ -235,16 +235,15 @@ end
 
 
 plotAxes = findobj(gcf, 'type', 'axes');
-% make the tick labels smaller
-set(plotAxes, 'Fontsize', 8)
+set(plotAxes, 'Fontsize', 8, 'XColor', 'k', 'YColor', 'k')
 closeLeg = legend(lines(8:-1:6), ...
                   {'$\phi$ Loop', '$\psi$ Loop','$y$ Loop'}, ...
                   'Location', 'Southwest', ...
                   'Interpreter', 'Latex');
 
 % add zero crossing lines
-axes(plotAxes(1))
-line([0.1, 20], [-180, -180], 'Color', 'k')
+%axes(plotAxes(1))
+%line([0.1, 20], [-180, -180], 'Color', 'k')
 axes(plotAxes(2))
 line([0.1, 20], [0, 0], 'Color', 'k')
 
@@ -254,20 +253,23 @@ if strcmp(input, 'Steer')
     wShift = [0.42, 0.35, 0.175];
 else strcmp(input, 'Roll')
     wc = 1.5;
-    wShift = [0.425, 0.26, 0.1325];
+    wShift = [0.31, 0.26, 0.1325];
 end
 axes(plotAxes(2))
 hold on
-gray = [0.8, 0.8, 0.8];
+gray = [0.5, 0.5, 0.5];
 
 line([wc, wc], [-40, 0], 'Color', gray)
-text(wc - wShift(1), -43, ['$\omega_c=' num2str(wc) '$'], 'Interpreter', 'Latex', 'Fontsize', 8)
+text(wc - wShift(1), -43, ['$\omega_c=' num2str(wc) '$'], ...
+     'Interpreter', 'Latex', 'Fontsize', 8)
 
 line([wc / 2, wc / 2], [-30, 0], 'Color', gray)
-text(wc / 2 - wShift(2), -33, ['$\omega_c/2=' num2str(wc / 2) '$'], 'Interpreter', 'Latex', 'Fontsize', 8)
+text(wc / 2 - wShift(2), -33, ['$\omega_c/2=' num2str(wc / 2) '$'], ...
+     'Interpreter', 'Latex', 'Fontsize', 8)
 
 line([wc / 4, wc / 4], [-20, 0], 'Color', gray)
-text(wc / 4 - wShift(3), -23, ['$\omega_c/4=' num2str(wc / 4) '$'], 'Interpreter', 'Latex', 'Fontsize', 8)
+text(wc / 4 - wShift(3), -23, ['$\omega_c/4=' num2str(wc / 4) '$'], ...
+     'Interpreter', 'Latex', 'Fontsize', 8)
 
 hold off
 
