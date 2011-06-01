@@ -10,9 +10,6 @@ IEEE Graphs
     - top of the phi loop phase is cut off even though I force the YLim
 - benchmarkSteerOpen.eps
     - add markers for crossover frequencies
-- rollDistance.eps
-    - make the path the solid line
-    - show enlargement of the countersteer
 - eigenvalues
     - add the riders
 
@@ -20,7 +17,4 @@ Other
 -----
 - Move the full force location parameters into the parameter text files.
 - Move all of the data generation into ieee.m (phase portrait in particular).
-- Make path generation from simulink file to m file.
-- Generate the lane change at the same distance instead of at the same
-  time.
 - Add the new values for the Browserins instead of the old.

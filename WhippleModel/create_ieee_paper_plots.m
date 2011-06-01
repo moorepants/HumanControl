@@ -31,19 +31,19 @@ colors = {'k', ...
 
 %loop_shape_example(data.Benchmark.Medium, 'Steer')
 %loop_shape_example(rollData, 'Roll')
-%plot_io_roll(rollData, 'Distance')
-%plot_io_roll(rollData, 'Time')
+plot_io_roll(rollData, 'Distance')
+plot_io_roll(rollData, 'Time')
 %open_loop_all_bikes(data, linestyles, colors)
 %handling_all_bikes(data, rollData, linestyles, colors)
 %path_plots(data, linestyles, colors)
-var = {'delta', 'phi', 'psi', 'Tdelta'};
-io = {'output', 'output', 'output', 'input'};
-typ = {'Distance', 'Time'};
-for i = 1:length(var)
-    for j = 1:length(typ)
-        plot_io(var{i}, io{i}, typ{j}, data, linestyles, colors)
-    end
-end
+%var = {'delta', 'phi', 'psi', 'Tdelta'};
+%io = {'output', 'output', 'output', 'input'};
+%typ = {'Distance', 'Time'};
+%for i = 1:length(var)
+    %for j = 1:length(typ)
+        %plot_io(var{i}, io{i}, typ{j}, data, linestyles, colors)
+    %end
+%end
 %phase_portraits(data.Benchmark.Medium)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -752,13 +752,13 @@ rollTorque = rollData.inputs(:, 1);
 subplot(2, 1, 1)
 hold all
 if strcmp(xAxis, 'Distance')
-    plot(speed * time, path, 'k--', 'Linewidth', 1.0)
-    plot(speed * time, frontWheel, 'k-', 'Linewidth', 1.0)
+    plot(speed * time, -path, 'k-', 'Linewidth', 1.0)
+    plot(speed * time, -frontWheel, 'k:', 'Linewidth', 1.0)
     xlabel('Distance (m)')
     xlim([30, 150])
 elseif strcmp(xAxis, 'Time')
-    plot(time, path, 'k--', 'Linewidth', 1.0)
-    plot(time, frontWheel, 'k-', 'Linewidth', 1.0)
+    plot(time, -path, 'k-', 'Linewidth', 1.0)
+    plot(time, -frontWheel, 'k:', 'Linewidth', 1.0)
     xlabel('Time (s)')
     xlim([30 / speed, 150 / speed])
 else
@@ -767,10 +767,12 @@ end
 hold off
 box on
 ylabel('Lateral Deviation (m)')
-ylim([-0.2, 2.2])
+ylim([-2.2, 0.2])
+set(gca, 'YTickLabel', {'2', '1', '0'})
 legend({'Path', '$x_Q$'}, ...
        'Interpreter', 'Latex', ...
-       'Fontsize', 8)
+       'Fontsize', 8, ...
+       'Location', 'Southeast')
 
 subplot(2, 1, 2)
 hold all
@@ -804,10 +806,43 @@ set(h2, 'Linestyle', '-.', 'Color', 'k', 'Linewidth', 1.0)
 legend({'$\phi$', '$\delta$', '$T_\phi$'}, ...
        'Interpreter', 'Latex', ...
        'Fontsize', 8, ...
-       'Location', 'Southeast')
+       'Location', 'Northeast')
+
+if strcmp(xAxis, 'Distance')
+    axes(ax(2))
+    % magnifier rectangle
+    x_r = 38; y_r = 0; w_r = 10; h_r = 0.3;
+    rectangle('Position', [x_r-w_r/2, y_r-h_r/2, w_r, h_r], ...
+              'EdgeColor', 'k');
+    % magnify it
+    x_a = 0.14; y_a = 0.432; w_a = 0.28; h_a = 0.12;
+    inset = axes('Units', 'Normalized', ...
+                 'Position', [x_a, y_a, w_a, h_a], ...
+                 'Box', 'on', ...
+                 'LineWidth', 0.5, ...
+                 'Color', [0.8, 0.8, 0.8]);
+    hold on
+    plot(inset, time, rollAngle, 'k-', 'Linewidth', 1.0)
+    [ax, h1, h2] = plotyy(inset, time, steerAngle, time, rollTorque);
+    set(ax, 'XTick', [], ...
+            'YTick', [], ...
+            'YColor', 'k')
+    set(h1, 'Linestyle', '--', 'Color', 'k', 'Linewidth', 1.0)
+    set(h2, 'Linestyle', '-.', 'Color', 'k', 'Linewidth', 1.0)
+    axis(ax(1), [7, 8.5, -0.0025, 0.0025])
+    axis(ax(2), [7, 8.5, -0.0025 / 0.02, 0.0025 / 0.02])
+
+    % draw some lines connecting the corners
+    annotation('line', [x_a, 0.149], [y_a, 0.287])
+    annotation('line', [x_a + w_a, 0.213], [y_a, 0.287])
+    annotation('textbox', [0.26, 0.47, 0.1, 0.02], ...
+               'String', 'Countersteer', ...
+               'Fontsize', 8, ...
+               'Edgecolor', 'none')
+end
 
 filename = ['roll' xAxis '.eps'];
-print(['plots' filesep filename], '-depsc', '-loose')
+print(['plots' filesep filename], '-deps2c', '-loose')
 fix_ps_linestyle(['plots' filesep filename])
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
