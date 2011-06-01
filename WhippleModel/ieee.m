@@ -1,3 +1,4 @@
+% This script loads in the data used for the IEEE paper and creates the plots.
 clc; close all;
 
 bikes = {'Benchmark', 'Browserins', 'Browser', 'Pista', ...

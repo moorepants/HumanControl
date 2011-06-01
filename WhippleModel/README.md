@@ -2,10 +2,10 @@ Description
 ===========
 This is a human operator control model for a person controlling a bicycle. The
 bicycle model is based on the Whipple bicycle dynamic model. The control
-portion is based on the crossover model and includes a crude preview. The model
+portion is based on the crossover model and includes basic preview. The model
 is capable of tracking a path.
 
-Source Descriptions
+File Descriptions
 ===================
 whipple_pull_force_abcd.m : Generates the linearized Whipple model about the
 upright constant velocity equilibrium point for various parameter sets. It
@@ -23,6 +23,21 @@ model.
 
 create_ieee_paper_plots.m : Generates most of the plots for our journal paper
 on the topic.
+
+fix_ps_linstyle.m : [A file from the Matlab file
+exchange](http://www.mathworks.com/matlabcentral/fileexchange/17928) for
+improving plot lines.
+
+load_bikes.m : Loads the data from generate_data for multiple bicycles and
+speeds into one structure.
+
+ieee.m : Loads the data needed for create_ieee_paper_plots and runs the
+function. This is not part of create_ieee_paper_plots to faciltate the
+separation of the data generation and the plotting mainly for debugging
+purposes.
+
+lane_change.m : Generates path data for a single or double lane change manuever
+at a particular speed.
 
 Requirements
 ============
@@ -48,4 +63,7 @@ data = generate_data('Benchmark', 5.0, 'Roll', 0);
 % generate the data set for the Browser bicycle at 2.5 m/s with steer as an
 % input and multiply the five gains by various values.
 data = generate_data('Browser', 2.5, 'Steer', 1, [1.1, 1.1, 0.9, 1.0, 0.8])
+
+% generate the plots for the paper on this model
+ieee
 ```
