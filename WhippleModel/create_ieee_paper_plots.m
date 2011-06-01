@@ -29,22 +29,22 @@ colors = {'k', ...
           'k', ...
           [0.5, 0.5, 0.5]};
 
-%loop_shape_example(data.Benchmark.Medium, 'Steer')
-%loop_shape_example(rollData, 'Roll')
-%plot_io_roll(rollData, 'Distance')
-%plot_io_roll(rollData, 'Time')
-%open_loop_all_bikes(data, linestyles, colors)
-%handling_all_bikes(data, rollData, linestyles, colors)
-%path_plots(data, linestyles, colors)
-%var = {'delta', 'phi', 'psi', 'Tdelta'};
-%io = {'output', 'output', 'output', 'input'};
-%typ = {'Distance', 'Time'};
-%for i = 1:length(var)
-    %for j = 1:length(typ)
-        %plot_io(var{i}, io{i}, typ{j}, data, linestyles, colors)
-    %end
-%end
-%phase_portraits(data.Benchmark.Medium)
+loop_shape_example(data.Benchmark.Medium, 'Steer')
+loop_shape_example(rollData, 'Roll')
+plot_io_roll(rollData, 'Distance')
+plot_io_roll(rollData, 'Time')
+open_loop_all_bikes(data, linestyles, colors)
+handling_all_bikes(data, rollData, linestyles, colors)
+path_plots(data, linestyles, colors)
+var = {'delta', 'phi', 'psi', 'Tdelta'};
+io = {'output', 'output', 'output', 'input'};
+typ = {'Distance', 'Time'};
+for i = 1:length(var)
+    for j = 1:length(typ)
+        plot_io(var{i}, io{i}, typ{j}, data, linestyles, colors)
+    end
+end
+phase_portraits(data.Benchmark.Medium)
 eigenvalues(data, linestyles, colors)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -990,8 +990,6 @@ end
 zeroIndices = find(abs(eVals) <= 0.000001);
 eVals(zeroIndices) = -100 * ones(size(zeroIndices));
 maxEvals = max(eVals, [], 3);
-eVals(zeroIndices) = 100 * ones(size(zeroIndices));
-minEvals = min(eVals, [], 3);
 
 lines = plot(speeds, maxEvals);
 
@@ -1006,13 +1004,27 @@ legend({'1', '2', '3', '4', '5', '6'})
 xlabel('Speed (m/s)')
 ylabel('Maximum real part of the eigenvalue (1/s)')
 
-%hold on
+hold on
+maxLine = max(maxEvals, [], 1);
+minLine = min(maxEvals, [], 1);
+lines = zeros(4, 1);
 speedInd = find(speeds == 2.5);
-line([2.5, 2.5], [minEvals(speedInd), maxEvals(speedInd)])
+lines(1) = line([2.5, 2.5], ...
+                [minLine(speedInd) - 0.4, maxLine(speedInd) + 0.4]);
+text(2, maxLine(speedInd) + 0.7, '2.5 m/s')
 speedInd = find(speeds == 5.0);
-line([5.0, 5.0], [minEvals(speedInd), maxEvals(speedInd)])
+lines(2) = line([5.0, 5.0], ...
+                [minLine(speedInd) - 0.4, maxLine(speedInd) + 0.4]);
+text(4.5, maxLine(speedInd) + 0.7, '5.0 m/s')
 speedInd = find(speeds == 7.5);
-line([7.5, 7.5], [minEvals(speedInd), maxEvals(speedInd)])
+lines(3) = line([7.5, 7.5], ...
+                [minLine(speedInd) - 0.4, maxLine(speedInd) + 0.4]);
+text(7, maxLine(speedInd) + 0.7, '7.5 m/s')
+
+lines(4) = line([0, 10], [0, 0]);
+hold off
+
+set(lines, 'Color', 'k', 'Linewidth', 2)
 
 % save the plot
 filename = 'eigenvalues.eps';

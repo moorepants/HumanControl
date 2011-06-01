@@ -6,8 +6,6 @@ IEEE Graphs
 - benchmarkRollOpen.eps
     - psi may look better with solid line (switch with phi)
     - top of the phi loop phase is cut off even though I force the YLim
-- eigenvalues
-    - add the riders
 
 Other
 -----
