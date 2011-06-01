@@ -29,8 +29,8 @@ colors = {'k', ...
           'k', ...
           [0.5, 0.5, 0.5]};
 
-loop_shape_example(data.Benchmark.Medium, 'Steer')
-loop_shape_example(rollData, 'Roll')
+%loop_shape_example(data.Benchmark.Medium, 'Steer')
+%loop_shape_example(rollData, 'Roll')
 %plot_io_roll(rollData, 'Distance')
 %plot_io_roll(rollData, 'Time')
 %open_loop_all_bikes(data, linestyles, colors)
@@ -45,6 +45,7 @@ loop_shape_example(rollData, 'Roll')
     %end
 %end
 %phase_portraits(data.Benchmark.Medium)
+eigenvalues(data, linestyles, colors)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function loop_shape_example(bikeData, input)
@@ -948,5 +949,72 @@ set(plotAxes, 'Fontsize', 8)
 
 % save the plot
 filename = 'phasePortraits.eps';
+print(gcf, ['plots' filesep filename], '-deps2c', '-loose')
+fix_ps_linestyle(['plots' filesep filename])
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+function eigenvalues(data, linestyles, colors)
+
+global goldenRatio
+
+figure()
+figWidth = 5.0;
+figHeight = figWidth / goldenRatio;
+set(gcf, ...
+    'Color', [1, 1, 1], ...
+    'PaperOrientation', 'portrait', ...
+    'PaperUnits', 'inches', ...
+    'PaperPositionMode', 'manual', ...
+    'PaperPosition', [0, 0, figWidth, figHeight], ...
+    'PaperSize', [figWidth, figHeight])
+
+bikes = fieldnames(data);
+bikes(1) = [];
+speeds = 0:0.1:10;
+eVals = zeros(length(bikes), length(speeds), 11);
+for i = 1:length(bikes)
+    % load the bicycle parameters
+    pathToParFile = ['parameters' filesep bikes{i} 'Par.txt'];
+    par = par_text_to_struct(pathToParFile);
+    str = 'Calculating eigenvalues for the %s bicycle and rider.';
+    display(sprintf(str, bikes{i}))
+    for j = 1:length(speeds)
+        % calculate the A, B, C, and D matrices of the bicycle model
+        [A, B, C, D] = whipple_pull_force_abcd(par, speeds(j));
+        eigenValues = eig(A);
+        eVals(i, j, :) = real(eig(A));
+    end
+end
+
+% reduce to the maximum values
+zeroIndices = find(abs(eVals) <= 0.000001);
+eVals(zeroIndices) = -100 * ones(size(zeroIndices));
+maxEvals = max(eVals, [], 3);
+eVals(zeroIndices) = 100 * ones(size(zeroIndices));
+minEvals = min(eVals, [], 3);
+
+lines = plot(speeds, maxEvals);
+
+for i = 1:length(lines)
+    set(lines(i), ...
+        'Linestyle', linestyles{i}, ...
+        'Color', colors{i}, ...
+        'Linewidth', 1)
+end
+
+legend({'1', '2', '3', '4', '5', '6'})
+xlabel('Speed (m/s)')
+ylabel('Maximum real part of the eigenvalue (1/s)')
+
+%hold on
+speedInd = find(speeds == 2.5);
+line([2.5, 2.5], [minEvals(speedInd), maxEvals(speedInd)])
+speedInd = find(speeds == 5.0);
+line([5.0, 5.0], [minEvals(speedInd), maxEvals(speedInd)])
+speedInd = find(speeds == 7.5);
+line([7.5, 7.5], [minEvals(speedInd), maxEvals(speedInd)])
+
+% save the plot
+filename = 'eigenvalues.eps';
 print(gcf, ['plots' filesep filename], '-deps2c', '-loose')
 fix_ps_linestyle(['plots' filesep filename])
