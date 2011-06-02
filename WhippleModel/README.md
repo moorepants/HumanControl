@@ -52,18 +52,22 @@ bicycle in a lane change maneuver and plot basic time histories of the inputs
 and outputs along with bode plots of the various transfer functions.
 
 ```matlab
-% generate the data set for the Fisher bicycle at 7.5 m/s with steer input
-% and show the graphs.
-data = generate_data('Fisher', 7.5, 'Steer', 1);
+ % Generate the data set for the Benchmark bicycle at 5.0 m/s with roll as the
+ % input.
+ >>data = generate_data('Benchmark', 5.0, 'Roll');
+%
+ % Generate the data set for the Fisher bicycle at 7.5 m/s with steer input
+ % and show the graphs.
+ >>data = generate_data('Fisher', 7.5, 'Steer', 'plot', 1);
 
-% generate the data set for the Benchmark bicycle at 5.0 m/s with roll as the
-% input and don't show the graphs.
-data = generate_data('Benchmark', 5.0, 'Roll', 0);
+ % Generate the data set for the Browser bicycle at 2.5 m/s with steer as an
+ % input and multiply the five gains by various values and show the graphs.
+ >>data = generate_data('Browser', 2.5, 'Steer', 'plot', 1, 'gains', [1.1, 1.1, 0.9, 1.0, 0.8])
 
-% generate the data set for the Browser bicycle at 2.5 m/s with steer as an
-% input and multiply the five gains by various values.
-data = generate_data('Browser', 2.5, 'Steer', 1, [1.1, 1.1, 0.9, 1.0, 0.8])
+ % Generate the data set for the Bianchi Pista bicycle at 7.5 m/s with steer as the
+ % input and a single lane change as the manuever.
+ >>data = generate_data('Pista', 7.5, 'Steer', 'laneType', 'single');
 
-% generate the plots for the paper on this model
+ generate the plots for the paper on this model
 ieee
 ```
