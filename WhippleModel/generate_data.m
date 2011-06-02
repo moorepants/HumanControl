@@ -1,4 +1,4 @@
-function data = generate_data(bike, speed, input, basicPlots, varargin)
+function data = generate_data(bike, speed, varargin)
 % Generates data files for the human operator control model.
 %
 % Parameters
@@ -7,13 +7,17 @@ function data = generate_data(bike, speed, input, basicPlots, varargin)
 %   The shortname of the bicycle model to use.
 % speed : float
 %   The speed of the bicycle.
-% input : string
-%   'Steer' or 'Roll'
-% basicPlots : boolean
-%   If 1 basic plots will be shown, if 0 no plots will be shown.
+% input : string, optional
+%   'Steer' or 'Roll', 'Steer' is the default.
+% plot : boolean, optional
+%   If 1 basic plots will be shown, if 0 no plots will be shown. 0 is the
+%   default.
 % gains : matrix (5, 1), optional
 %   General gain multipliers. The gains are applied starting at the inner loop
-%   going out.
+%   going out. [1, 1, 1, 1, 1] is the default.
+% laneType : string, optional
+%   'single' or 'double' for a single or double lange change manuever. 'double'
+%   is the default.
 %
 % Returns
 % -------
@@ -48,33 +52,55 @@ function data = generate_data(bike, speed, input, basicPlots, varargin)
 %
 % Examples
 % --------
-% %generate the data set for the Fisher bicycle at 7.5 m/s with steer input
-% %and show the graphs.
-% >>data = generate_data('Fisher', 7.5, 'Steer', 1);
+% % Generate the data set for the Benchmark bicycle at 5.0 m/s with roll as the
+% % input.
+% >>data = generate_data('Benchmark', 5.0, 'Roll');
+
+% % Generate the data set for the Fisher bicycle at 7.5 m/s with steer input
+% % and show the graphs.
+% >>data = generate_data('Fisher', 7.5, 'Steer', 'plot', 1);
 %
-% % generate the data set for the Benchmark bicycle at 5.0 m/s with roll as the
-% % input and don't show the graphs.
-% >>data = generate_data('Benchmark', 5.0, 'Roll', 0);
+% % Generate the data set for the Browser bicycle at 2.5 m/s with steer as an
+% % input and multiply the five gains by various values and show the graphs.
+% >>data = generate_data('Browser', 2.5, 'Steer', 'plot', 1, 'gains', [1.1, 1.1, 0.9, 1.0, 0.8])
 %
-% % generate the data set for the Browser bicycle at 2.5 m/s with steer as an
-% % input and multiply the five gains by various values.
-% >>data = generate_data('Browser', 2.5, 'Steer', 1, [1.1, 1.1, 0.9, 1.0, 0.8])
+% % Generate the data set for the Bianchi Pista bicycle at 7.5 m/s with steer as the
+% % input and a single lane change as the manuever.
+% >>data = generate_data('Pista', 7.5, 'Steer', 'laneType', 'single');
 
 % there are some unconnected ports in the simulink modelthat send out warnings
 warning off
 
+% set the defaults for the optional arguments
+defaults.input = 'Steer';
+defaults.laneType = 'double';
+defaults.plot = 0;
+defaults.gains = [1, 1, 1, 1, 1];
+
+% load in varargin
+if size(varargin, 2) >= 1
+    options = varargin_to_structure(varargin);
+else
+    options = struct();
+end
+
+optionNames = fieldnames(options);
+defaultNames = fieldnames(defaults);
+notGiven = setxor(optionNames, defaultNames);
+if length(notGiven) > 0
+    for i = 1:length(notGiven)
+        options.(notGiven{i}) = defaults.(notGiven{i});
+    end
+end
+
 % generate the path to track
 [pathX, pathY, pathT] = lane_change(35, 2, 0.2, 250, speed, ...
-                                    500, 'double', 60);
+                                    500, options.laneType, 60);
 modelPar.track = [pathT, pathY];
 modelPar.stopTime = pathT(end);
 
 % make the gain multipliers unity unless they are supplied
-if size(varargin) > 0
-    gains = varargin{1};
-else
-    gains = ones(5, 1);
-end
+gains = options.gains;
 
 modelPar.speed = speed;
 
@@ -125,7 +151,7 @@ modelPar.pathFilterDen = [1, 2 * 2.4 * gains(5), (2.4 * gains(5))^2];
 
 % load the gains, set to zero if gains aren't available
 try
-    pathToGainFile = ['gains' filesep bike input 'Gains.txt'];
+    pathToGainFile = ['gains' filesep bike options.input 'Gains.txt'];
     [modelPar.kDelta, modelPar.kPhiDot, modelPar.kPhi, ...
      modelPar.kPsi, modelPar.kY] = load_gains(pathToGainFile, speed);
 catch
@@ -151,12 +177,12 @@ perturbTable = [zeros(1, 5); eye(5)];
 % all the loops are closed at first
 closedTable = ones(6, 5);
 
-if strcmp(input, 'Steer')
+if strcmp(options.input, 'Steer')
     startLoop = 1;
     modelPar.isRollInput = 0;
     % preview time delay
     modelPar.timeDelay = 2.75;
-elseif strcmp(input, 'Roll')
+elseif strcmp(options.input, 'Roll')
     % skip the first loop
     startLoop = 2;
     % use the roll torque input
@@ -190,7 +216,7 @@ end
 closedTable = ~perturbTable;
 
 % don't feed back delta if looking at roll control
-if strcmp(input, 'Roll')
+if strcmp(options.input, 'Roll')
     closedTable(:, 1) = zeros(6, 1);
 end
 
@@ -213,7 +239,7 @@ display('Finding the handling quality metric.')
 % the handling qualities must be calculated with the phi loop at 2 rad/sec
 % crossover, so this modifies the transfer function !!!Currently only works for
 % the Benchmark bike at medium speed!!! Needs to be smarter to work generally.
-if strcmp(input, 'Roll')
+if strcmp(options.input, 'Roll')
     origkPhi = modelPar.kPhi;
     modelPar.kPhi = 1.259 * origkPhi;
 end
@@ -228,7 +254,7 @@ handlingMetric.num = num;
 handlingMetric.den = den;
 
 % change the gain back for simulation
-if strcmp(input, 'Roll')
+if strcmp(options.input, 'Roll')
     modelPar.kPhi = origkPhi;
 end
 
@@ -266,7 +292,7 @@ data.gains = gains;
 display(sprintf('Data written. \n'))
 
 % plot
-if basicPlots
+if options.plot
     display('Making basic plots.')
     figure(1)
     % go through each loop and plot the bode plot for the closed loops

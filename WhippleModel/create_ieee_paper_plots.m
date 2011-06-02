@@ -31,21 +31,21 @@ colors = {'k', ...
 
 loop_shape_example(data.Benchmark.Medium, 'Steer')
 loop_shape_example(rollData, 'Roll')
-%plot_io_roll(rollData, 'Distance')
-%plot_io_roll(rollData, 'Time')
-%open_loop_all_bikes(data, linestyles, colors)
-%handling_all_bikes(data, rollData, linestyles, colors)
-%path_plots(data, linestyles, colors)
-%var = {'delta', 'phi', 'psi', 'Tdelta'};
-%io = {'output', 'output', 'output', 'input'};
-%typ = {'Distance', 'Time'};
-%for i = 1:length(var)
-    %for j = 1:length(typ)
-        %plot_io(var{i}, io{i}, typ{j}, data, linestyles, colors)
-    %end
-%end
-%phase_portraits(data.Benchmark.Medium)
-%eigenvalues(data, linestyles, colors)
+plot_io_roll(rollData, 'Distance')
+plot_io_roll(rollData, 'Time')
+open_loop_all_bikes(data, linestyles, colors)
+handling_all_bikes(data, rollData, linestyles, colors)
+path_plots(data, linestyles, colors)
+var = {'delta', 'phi', 'psi', 'Tdelta'};
+io = {'output', 'output', 'output', 'input'};
+typ = {'Distance', 'Time'};
+for i = 1:length(var)
+    for j = 1:length(typ)
+        plot_io(var{i}, io{i}, typ{j}, data, linestyles, colors)
+    end
+end
+phase_portraits(data.Benchmark.Medium)
+eigenvalues(data, linestyles, colors)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function loop_shape_example(bikeData, input)
@@ -920,8 +920,7 @@ for i = 1:length(loopNames)
     end
     display(['Calculating gains as ' a{1} '*kDelta, ' a{2} ...
              '*kPhiDot, ' a{3} '*kPhi, ' a{4} '*kPsi, ' a{5} '*kY.'])
-    twentyPercent = generate_data('Benchmark', 5.0, 'Steer', 0, ...
-                                  gainChanges(i, :));
+    twentyPercent = generate_data('Benchmark', 5.0, 'gains', gainChanges(i, :));
     subplot(2, 2, i)
     hold on
 
