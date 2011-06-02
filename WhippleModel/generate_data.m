@@ -11,25 +11,56 @@ function data = generate_data(bike, speed, input, basicPlots, varargin)
 %   'Steer' or 'Roll'
 % basicPlots : boolean
 %   If 1 basic plots will be shown, if 0 no plots will be shown.
-% gains : matrix, size(5, 1), optional
+% gains : matrix (5, 1), optional
 %   General gain multipliers. The gains are applied starting at the inner loop
 %   going out.
 %
 % Returns
 % -------
 % data : structure
-%   Complete data output from the model. Includes:
-%   - speed : float, speed of bicycle
-%   - par : structure, bicycle parameters
-%   - modelPar : structure, model input parameters
-%   - closedLoops : structure, closed loop transfer functions
-%   - openLoops : structure, open loop transfer functions
-%   - time : vector (n, 1), time
-%   - command : matrix (n, 5), commanded control
-%   - inputs : matrix (n, 3), inputs to the bicycle system
-%   - outputs : matrix (n, 18), outputs of the bicycle system
+%   Complete data set from the model and simulations:
+%   closedLoops : structure
+%       Closed loop transfer functions for each loop.
+%   command : matrix (n, 5)
+%       The commanded input to each loop.
+%   gains : matrix (5, 1)
+%       Multipliers for each gain.
+%   handlingMetric : structure
+%       Transfer function for the handling quality metric.
+%   inputs : matrix (n, 3)
+%       Inputs to the bicycle model.
+%   modelPar : structure
+%       Simulink model input variables.
+%   openLoops : structure
+%       Open loop transfer functions.
+%   outputs : matrix (n, 18)
+%       Outputs of the bicycle system.
+%   outputsDots : matrix (n, 18)
+%       Time derivatives of the outputs.
+%   par : structure
+%       Bicycle parameters.
+%   path : matrix (n, 1)
+%       Time delay adjusted path.
+%   speed : float
+%       Speed of bicycle.
+%   time : matrix (n, 1)
+%       Time.
+%
+% Examples
+% --------
+% %generate the data set for the Fisher bicycle at 7.5 m/s with steer input
+% %and show the graphs.
+% >>data = generate_data('Fisher', 7.5, 'Steer', 1);
+%
+% % generate the data set for the Benchmark bicycle at 5.0 m/s with roll as the
+% % input and don't show the graphs.
+% >>data = generate_data('Benchmark', 5.0, 'Roll', 0);
+%
+% % generate the data set for the Browser bicycle at 2.5 m/s with steer as an
+% % input and multiply the five gains by various values.
+% >>data = generate_data('Browser', 2.5, 'Steer', 1, [1.1, 1.1, 0.9, 1.0, 0.8])
 
-% there are some unconnected ports that send out warnings
+% there are some unconnected ports in the simulink modelthat send out warnings
 warning off
 
 % generate the path to track
@@ -90,7 +121,7 @@ modelPar.handlingFilterDen = [1, 40, 400];
 
 % path filter
 modelPar.pathFilterNum = (2.4 * gains(5))^2;
-modelPar.pathFilterDen = [1, 2 * 2.4 * gains(5)  (2.4 * gains(5))^2];
+modelPar.pathFilterDen = [1, 2 * 2.4 * gains(5), (2.4 * gains(5))^2];
 
 % load the gains, set to zero if gains aren't available
 try
@@ -101,7 +132,7 @@ catch
     display('No Gains found, all set to zero. No feedback.')
     modelPar.kDelta = 0.0;
     % the following two are just a hack to get around the 1/kPhi and 1/kPhiDot,
-    % this can be handled better with some logic
+    % this should be handled better with some logic
     modelPar.kPhiDot = 1E-10;
     modelPar.kPhi = 1E-10;
     modelPar.kPsi = 0.0;
@@ -243,7 +274,7 @@ if basicPlots
     for i = startLoop:length(loopNames)
         num = closedLoops.(loopNames{i}).num;
         den = closedLoops.(loopNames{i}).den;
-        bode(tf(num, den), {0.1, 20.0})
+        bode(tf(num, den), {0.1, 100.0})
     end
     legend(loopNames(startLoop:end))
     hold off
@@ -254,7 +285,7 @@ if basicPlots
     for i = startLoop:length(loopNames)
         num = openLoops.(loopNames{i}).num;
         den = openLoops.(loopNames{i}).den;
-        bode(tf(num, den), {0.1, 20.0})
+        bode(tf(num, den), {0.1, 100.0})
     end
     legend(loopNames(startLoop:end))
     hold off
@@ -262,7 +293,7 @@ if basicPlots
     figure(3)
     num = handlingMetric.num;
     den = handlingMetric.den;
-    wl = linspace(0.01, 20, 200);
+    wl = linspace(0.01, 20, 100);
     [mag, phase, freq] = bode(tf(num, den), wl);
     plot(wl, mag(:)')
 
@@ -346,7 +377,7 @@ for i = 1:numPlots
     end
     hold off
     leg = legend(outputs{plt.(pltFields{i})});
-    %set(leg, 'interpreter', 'latex')
+    set(leg, 'interpreter', 'latex')
 end
 
 function [kDelta, kPhiDot, kPhi, kPsi, kY] = load_gains(pathToGains, speed)
