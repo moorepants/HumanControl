@@ -29,23 +29,23 @@ colors = {'k', ...
           'k', ...
           [0.5, 0.5, 0.5]};
 
-loop_shape_example(data.Benchmark.Medium, 'Steer')
-loop_shape_example(rollData, 'Roll')
-plot_io_roll(rollData, 'Distance')
-plot_io_roll(rollData, 'Time')
-open_loop_all_bikes(data, linestyles, colors)
-handling_all_bikes(data, rollData, linestyles, colors)
-path_plots(data, linestyles, colors)
-var = {'delta', 'phi', 'psi', 'Tdelta'};
-io = {'output', 'output', 'output', 'input'};
-typ = {'Distance', 'Time'};
-for i = 1:length(var)
-    for j = 1:length(typ)
-        plot_io(var{i}, io{i}, typ{j}, data, linestyles, colors)
-    end
-end
+%loop_shape_example(data.Benchmark.Medium, 'Steer')
+%loop_shape_example(rollData, 'Roll')
+%plot_io_roll(rollData, 'Distance')
+%plot_io_roll(rollData, 'Time')
+%open_loop_all_bikes(data, linestyles, colors)
+%handling_all_bikes(data, rollData, linestyles, colors)
+%path_plots(data, linestyles, colors)
+%var = {'delta', 'phi', 'psi', 'Tdelta'};
+%io = {'output', 'output', 'output', 'input'};
+%typ = {'Distance', 'Time'};
+%for i = 1:length(var)
+    %for j = 1:length(typ)
+        %plot_io(var{i}, io{i}, typ{j}, data, linestyles, colors)
+    %end
+%end
 phase_portraits(data.Benchmark.Medium)
-eigenvalues(data, linestyles, colors)
+%eigenvalues(data, linestyles, colors)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function loop_shape_example(bikeData, input)
@@ -796,7 +796,7 @@ box on
 ylabel('Lateral Deviation (m)')
 ylim([-2.2, 0.2])
 set(gca, 'YTickLabel', {'2', '1', '0'})
-legend({'Path', '$x_Q$'}, ...
+legend({'Path', '$y_Q$'}, ...
        'Interpreter', 'Latex', ...
        'Fontsize', 8, ...
        'Location', 'Southeast')
@@ -890,12 +890,12 @@ set(gcf, ...
     'PaperPosition', [0, 0, figWidth, figHeight], ...
     'PaperSize', [figWidth, figHeight])
 
-gainChanges = [0.8, 1, 1, 1, 1;
+gainChanges = [1.2, 1, 1, 1, 1;
                1, 1.2, 1, 1, 1;
                1, 1, 1.2, 1, 1;
-               1, 1, 1.2, 0.8, 0.8];
+               1, 1, 1, 0.8, 0.8];
 
-loopNames = {'kDelta', 'kPhiDot', 'kPhi', 'kPhi'};
+loopNames = {'kDelta', 'kPhiDot', 'kPhi', 'kPsi'};
 xy = [7, 15;
       4, 12;
       4, 12;
@@ -910,7 +910,7 @@ ylabels = {'$\dot{\delta}$ (rad/s)',
            '$\dot{\phi}$ (rad/s)',
            '$\dot{\phi}$ (rad/s)'};
 legends = {'$k_\delta$ = ', '$k_{\dot{\phi}}$ = ',
-           '$k_\phi$ = ', '$k_\phi$ = '};
+           '$k_\phi$ = ', '$k_\psi$ = '};
 floatSpec = {'%1.1f', '%1.3f', '%1.1f', '%1.1f'};
 
 for i = 1:length(loopNames)
@@ -920,7 +920,10 @@ for i = 1:length(loopNames)
     end
     display(['Calculating gains as ' a{1} '*kDelta, ' a{2} ...
              '*kPhiDot, ' a{3} '*kPhi, ' a{4} '*kPsi, ' a{5} '*kY.'])
-    twentyPercent = generate_data('Benchmark', 5.0, 'gains', gainChanges(i, :));
+
+    % adjust the gains and get the data
+    twentyPercent = generate_data('Benchmark', 5.0, ...
+                                  'gains', gainChanges(i, :));
     subplot(2, 2, i)
     hold on
 
