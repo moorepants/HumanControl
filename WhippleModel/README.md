@@ -39,6 +39,9 @@ purposes.
 lane_change.m : Generates path data for a single or double lane change manuever
 at a particular speed.
 
+benchmark_geometry_figure.m : Generates a postscript drawing of the bicycle
+dimenions. Requires [pshacker](http://bicycle.tudelft.nl/schwab/pshacker/).
+
 Requirements
 ============
 - Matlab 2010a (7.10.0)
