@@ -874,7 +874,8 @@ fix_ps_linestyle(['plots' filesep filename])
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function phase_portraits(bikeData)
-% Creates four phase portrait plots.
+% Creates four phase portrait plots to demonstrate the effects on the phase
+% portraits when adjusting the gains.
 
 global goldenRatio
 
@@ -901,17 +902,17 @@ xy = [7, 15;
       4, 12;
       4, 12];
 xySource = {'outputs', 'outputsDot', 'outputs', 'outputs'};
-xlabels = {'$\delta$ (rad)',
-           '$\dot{\phi}$ (rad/s)',
-           '$\phi$ (rad)',
-           '$\phi$ (rad)'};
+xlabels = {'(a) $\delta$ (rad)',
+           '(b) $\dot{\phi}$ (rad/s)',
+           '(c) $\phi$ (rad)',
+           '(d) $\phi$ (rad)'};
 ylabels = {'$\dot{\delta}$ (rad/s)',
            '$\ddot{\phi}$ (rad/s$^2$)',
            '$\dot{\phi}$ (rad/s)',
            '$\dot{\phi}$ (rad/s)'};
 legends = {'$k_\delta$ = ', '$k_{\dot{\phi}}$ = ',
            '$k_\phi$ = ', '$k_\psi$ = '};
-floatSpec = {'%1.1f', '%1.3f', '%1.1f', '%1.1f'};
+floatSpec = {'%1.1f', '%1.3f', '%1.1f', '%1.2f'};
 
 for i = 1:length(loopNames)
     a = {};
@@ -941,9 +942,18 @@ for i = 1:length(loopNames)
     axis tight
     xlabel(xlabels{i}, 'Interpreter', 'Latex', 'Fontsize', 10)
     ylabel(ylabels{i}, 'Interpreter', 'Latex', 'Fontsize', 10)
+    if i == 4
+        leg3 = sprintf('%1.2f', bikeData.modelPar.kY);
+        leg4 = sprintf('%1.2f', twentyPercent.modelPar.kY);
+        extra1 = [', $k_Y$ = ' leg3];
+        extra2 = [', $k_Y$ = ' leg4];
+    else
+        extra1 = '';
+        extra2 = '';
+    end
     leg1 = sprintf(floatSpec{i}, bikeData.modelPar.(loopNames{i}));
     leg2 = sprintf(floatSpec{i}, twentyPercent.modelPar.(loopNames{i}));
-    legend({[legends{i} leg1], [legends{i} leg2]} , ...
+    legend({[legends{i} leg1 extra1], [legends{i} leg2 extra2]} , ...
            'Interpreter', 'Latex', ...
            'Fontsize', 6)
 end
