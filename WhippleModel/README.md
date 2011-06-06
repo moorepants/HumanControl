@@ -70,6 +70,6 @@ data = generate_data('Browser', 2.5, 'plot', 1, 'gains', [1.1, 1.1, 0.9, 1.0, 0.
 % input and a single lane change as the manuever.
 data = generate_data('Pista', 7.5, 'laneType', 'single');
 
- generate the plots for the paper on this model
+% Generate the plots for the paper on this model.
 ieee
 ```

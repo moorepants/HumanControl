@@ -1,5 +1,5 @@
-% example file take from http://bicycle.tudelft.nl/schwab/pshacker/ and
-% modified slighty
+% example file taken from http://bicycle.tudelft.nl/schwab/pshacker/ and
+% modified slighty, requires pshacker
 global PSFID
 
 PSFID=fopen(['plots' filesep 'benchmarkBicycle.ps'],'w')
