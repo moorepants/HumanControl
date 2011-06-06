@@ -31,8 +31,8 @@ colors = {'k', ...
 
 %loop_shape_example(data.Benchmark.Medium, 'Steer')
 %loop_shape_example(rollData, 'Roll')
-%plot_io_roll(rollData, 'Distance')
-%plot_io_roll(rollData, 'Time')
+plot_io_roll(rollData, 'Distance')
+plot_io_roll(rollData, 'Time')
 %open_loop_all_bikes(data, linestyles, colors)
 %handling_all_bikes(data, rollData, linestyles, colors)
 %path_plots(data, linestyles, colors)
@@ -44,7 +44,7 @@ colors = {'k', ...
         %plot_io(var{i}, io{i}, typ{j}, data, linestyles, colors)
     %end
 %end
-phase_portraits(data.Benchmark.Medium)
+%phase_portraits(data.Benchmark.Medium)
 %eigenvalues(data, linestyles, colors)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -436,9 +436,9 @@ set(gcf, ...
 
 w = linspace(0.01, 20, 200);
 speedNames = fieldnames(data.Browser);
-fillColors = {[0.97, 0.97, 0.97],
-              [0.89, 0.89, 0.89],
-              [0.75, 0.75, 0.75]};
+fillColors = {[0.82, 0.82, 0.82]
+              [0.68, 0.68, 0.68]
+              [0.95, 0.95, 0.95]};
 hold all
 
 % plot the background area for each family of curves
@@ -796,7 +796,7 @@ box on
 ylabel('Lateral Deviation (m)')
 ylim([-2.2, 0.2])
 set(gca, 'YTickLabel', {'2', '1', '0'})
-legend({'Path', '$y_Q$'}, ...
+legend({'Path'}, ...
        'Interpreter', 'Latex', ...
        'Fontsize', 8, ...
        'Location', 'Southeast')
@@ -869,7 +869,7 @@ if strcmp(xAxis, 'Distance')
 end
 
 filename = ['roll' xAxis '.eps'];
-print(['plots' filesep filename], '-deps2c', '-loose')
+print(gcf, ['plots' filesep filename], '-deps2c', '-loose')
 fix_ps_linestyle(['plots' filesep filename])
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
