@@ -44,6 +44,8 @@ Requirements
 - Matlab 2010a (7.10.0)
 - Matlab Control Systems Toolbox
 - Simulink
+- [pshacker](http://bicycle.tudelft.nl/schwab/pshacker/) (for the bicycle
+  geometry plot)
 
 Example Use
 ===========
