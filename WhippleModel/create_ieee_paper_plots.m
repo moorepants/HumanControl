@@ -785,6 +785,14 @@ if strcmp(variable, 'delta') && strcmp(xAxis, 'Distance')
     hold off
     axis([x_r-w_r/2, x_r+w_r/2, y_r-h_r/2, y_r+h_r/2]);
     text(35.3, -0.003, 'Countersteer', 'Fontsize', 8)
+    % bottom left
+    annotation('line', [x_a, 0.129], [y_a, 0.235])
+    % top left
+    annotation('line', [x_a, 0.132], [y_a + h_a, 0.26])
+    % bottom right
+    annotation('line', [x_a + w_a, 0.15], [y_a, 0.235])
+    % top right
+    annotation('line', [x_a, 0.15], [y_a + 0.02, 0.26])
 end
 
 % save the file
