@@ -29,15 +29,14 @@ colors = {'k', ...
           'k', ...
           [0.5, 0.5, 0.5]};
 
-%loop_shape_example(data.Benchmark.Medium, 'Steer')
-%loop_shape_example(rollData, 'Roll')
-%plot_io_roll(rollData, 'Distance')
-%plot_io_roll(rollData, 'Time')
-%open_loop_all_bikes(data, linestyles, colors)
-%handling_all_bikes(data, rollData, linestyles, colors)
-%path_plots(data, linestyles, colors)
-%var = {'delta', 'phi', 'psi', 'Tdelta'};
-var = {'delta'};
+loop_shape_example(data.Benchmark.Medium, 'Steer')
+loop_shape_example(rollData, 'Roll')
+plot_io_roll(rollData, 'Distance')
+plot_io_roll(rollData, 'Time')
+open_loop_all_bikes(data, linestyles, colors)
+handling_all_bikes(data, rollData, linestyles, colors)
+path_plots(data, linestyles, colors)
+var = {'delta', 'phi', 'psi', 'Tdelta'};
 io = {'output', 'output', 'output', 'input'};
 typ = {'Distance', 'Time'};
 for i = 1:length(var)
@@ -45,8 +44,8 @@ for i = 1:length(var)
         plot_io(var{i}, io{i}, typ{j}, data, linestyles, colors)
     end
 end
-%phase_portraits(data.Benchmark.Medium)
-%eigenvalues(data, linestyles, colors)
+phase_portraits(data.Benchmark.Medium)
+eigenvalues(data, linestyles, colors)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function loop_shape_example(bikeData, input)
