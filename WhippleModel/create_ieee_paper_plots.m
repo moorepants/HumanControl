@@ -31,11 +31,11 @@ colors = {'k', ...
 
 %loop_shape_example(data.Benchmark.Medium, 'Steer')
 %loop_shape_example(rollData, 'Roll')
-plot_io_roll(rollData, 'Distance')
-plot_io_roll(rollData, 'Time')
+%plot_io_roll(rollData, 'Distance')
+%plot_io_roll(rollData, 'Time')
 %open_loop_all_bikes(data, linestyles, colors)
-%handling_all_bikes(data, rollData, linestyles, colors)
-%path_plots(data, linestyles, colors)
+handling_all_bikes(data, rollData, linestyles, colors)
+path_plots(data, linestyles, colors)
 %var = {'delta', 'phi', 'psi', 'Tdelta'};
 %io = {'output', 'output', 'output', 'input'};
 %typ = {'Distance', 'Time'};
@@ -547,6 +547,10 @@ for j = 1:length(speedNames)
              'Color', colors{i - 1}, ...
              'Linewidth', 0.75)
     end
+    [minPath, minPathI] = min(-path * j);
+    dis = time * speed + shift(j);
+    lab = sprintf('%1.1f m/s', speed);
+    text(dis(minPathI) - 15, minPath - 0.4, lab)
 end
 
 hold off
