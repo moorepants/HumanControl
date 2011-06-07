@@ -34,16 +34,17 @@ colors = {'k', ...
 %plot_io_roll(rollData, 'Distance')
 %plot_io_roll(rollData, 'Time')
 %open_loop_all_bikes(data, linestyles, colors)
-handling_all_bikes(data, rollData, linestyles, colors)
-path_plots(data, linestyles, colors)
+%handling_all_bikes(data, rollData, linestyles, colors)
+%path_plots(data, linestyles, colors)
 %var = {'delta', 'phi', 'psi', 'Tdelta'};
-%io = {'output', 'output', 'output', 'input'};
-%typ = {'Distance', 'Time'};
-%for i = 1:length(var)
-    %for j = 1:length(typ)
-        %plot_io(var{i}, io{i}, typ{j}, data, linestyles, colors)
-    %end
-%end
+var = {'delta'};
+io = {'output', 'output', 'output', 'input'};
+typ = {'Distance', 'Time'};
+for i = 1:length(var)
+    for j = 1:length(typ)
+        plot_io(var{i}, io{i}, typ{j}, data, linestyles, colors)
+    end
+end
 %phase_portraits(data.Benchmark.Medium)
 %eigenvalues(data, linestyles, colors)
 
@@ -693,7 +694,7 @@ m = round(maxValue * 100) / 100;
 pad = 0.15 * m;
 yShift = [0, 2 * (m + pad), 4 * (m + pad)];
 
-% shifts the paths by this many meters
+% shifts the paths by this many meters along the x axis
 xShift = [0, 15, 35];
 hold all
 for j = 1:length(speedNames)
@@ -702,23 +703,23 @@ for j = 1:length(speedNames)
         time = oneSpeed.time;
         speed = oneSpeed.speed;
         distance = time * speed + xShift(j);
+        % time history of the value
         history = oneSpeed.([io 's'])(:, index) + yShift(j);
         if strcmp(xAxis, 'Distance')
-            plot(distance, history, ...
-                 'Linestyle', linestyles{i - 1}, ...
-                 'Color', colors{i - 1}, ...
-                 'Linewidth', 0.75)
+            xData = distance;
             textX = 165;
         elseif strcmp(xAxis, 'Time')
-            plot(time, history, ...
-                 'Linestyle', linestyles{i - 1}, ...
-                 'Color', colors{i - 1}, ...
-                 'Linewidth', 0.75)
+            xData = time;
             textX = 2;
         else
             error('Choose Time or Distance, no other')
         end
+        plot(xData, history, ...
+             'Linestyle', linestyles{i - 1}, ...
+             'Color', colors{i - 1}, ...
+             'Linewidth', 0.75)
     end
+    % add labels for the speeds
     text(textX, yShift(j) + 4 * pad, [num2str(speed) ' m/s'])
 end
 
@@ -750,6 +751,43 @@ first = [prettyNames{index} ' ' units{index}];
 ylabel(first, 'Interpreter', 'Latex')
 box on
 legend({'1', '2', '3', '4', '5', '6'}, 'Fontsize', 8, 'Location', loc)
+
+% if it is the steer angle plot for distance, add a magnifier for the
+% countersteer
+if strcmp(variable, 'delta') && strcmp(xAxis, 'Distance')
+    % Specify the position and the size of the rectangle
+    x_r = 37; y_r = 0; w_r = 4; h_r = 0.01;
+    rectangle('Position', [x_r-w_r/2, y_r-h_r/2, w_r, h_r], ...
+              'EdgeColor', 'k');
+    % Specify the position and the size of the 2. axis
+    x_a = 0.2; y_a = 0.29; w_a = 0.15; h_a = w_a * h_r / w_r * 20 / 0.05;
+    ax = axes('Units', 'Normalized', ...
+              'Position', [x_a, y_a, w_a, h_a], ...
+              'XTick', [], ...
+              'YTick', [], ...
+              'Box', 'on', ...
+              'LineWidth', 0.5, ...
+              'Color', 'w');
+    hold on
+    j = 1;
+    for i = 2:length(bikes)
+        oneSpeed = data.(bikes{i}).(speedNames{j});
+        time = oneSpeed.time;
+        speed = oneSpeed.speed;
+        distance = time * speed + xShift(j);
+        % time history of the value
+        history = oneSpeed.([io 's'])(:, index) + yShift(j);
+        plot(distance, history, ...
+             'Linestyle', linestyles{i - 1}, ...
+             'Color', colors{i - 1}, ...
+             'Linewidth', 0.75)
+    end
+    hold off
+    axis([x_r-w_r/2, x_r+w_r/2, y_r-h_r/2, y_r+h_r/2]);
+    text(35.3, -0.003, 'Countersteer', 'Fontsize', 8)
+end
+
+% save the file
 filename = [variable xAxis '.eps'];
 print(['plots' filesep filename], '-deps2c', '-loose')
 fix_ps_linestyle(['plots' filesep filename])
