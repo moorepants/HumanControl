@@ -18,11 +18,11 @@ WhippleModel.mdl : The simulink model which is used to calculate the
 gains, the various transfer function for the open and closed loops, and the
 handling qualities metric for both steer torque and roll torque inputs.
 
-generate_data.m : Generates the data by simulating and perturbing the Simulink
-model.
+generate_data.m : Generates the data (transfer functions, simulation results,
+and handling quality metric) by simulating and perturbing the Simulink model.
 
-create_ieee_paper_plots.m : Generates most of the plots for our journal paper
-on the topic.
+create_ieee_paper_plots.m : Generates most of the plots for our first journal
+paper on the topic.
 
 fix_ps_linstyle.m : [A file from the Matlab file
 exchange](http://www.mathworks.com/matlabcentral/fileexchange/17928) for
@@ -52,9 +52,9 @@ Requirements
 
 Example Use
 ===========
-This will generate the transfer function and simulation data for the Fisher
-bicycle in a lane change maneuver and plot basic time histories of the inputs
-and outputs along with bode plots of the various transfer functions.
+This will generate the transfer function and simulation data for the a bicycle
+in a lane change maneuver and plot basic time histories of the inputs and
+outputs along with bode plots of the various transfer functions.
 
 ```matlab
 % Generate the data set for the Benchmark bicycle at 5.0 m/s with roll as the

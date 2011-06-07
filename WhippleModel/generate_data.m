@@ -68,7 +68,7 @@ function data = generate_data(bike, speed, varargin)
 % % input and a single lane change as the manuever.
 % >>data = generate_data('Pista', 7.5, 'laneType', 'single');
 
-% there are some unconnected ports in the simulink modelthat send out warnings
+% there are some unconnected ports in the simulink model that send out warnings
 warning off
 
 % set the defaults for the optional arguments
@@ -84,6 +84,7 @@ else
     options = struct();
 end
 
+% add the default options if not specified by the user
 optionNames = fieldnames(options);
 defaultNames = fieldnames(defaults);
 notGiven = setxor(optionNames, defaultNames);
@@ -92,6 +93,9 @@ if length(notGiven) > 0
         options.(notGiven{i}) = defaults.(notGiven{i});
     end
 end
+
+% set the speed
+modelPar.speed = speed;
 
 % generate the path to track
 [pathX, pathY, pathT] = lane_change(35, 2, 0.2, 250, speed, ...
@@ -102,8 +106,7 @@ modelPar.stopTime = pathT(end);
 % make the gain multipliers unity unless they are supplied
 gains = options.gains;
 
-modelPar.speed = speed;
-
+% show some output on the screen
 display(sprintf(repmat('-', 1, 79)))
 display(sprintf('%s at %1.2f m/s.', bike, speed))
 display(sprintf(repmat('-', 1, 79)))
@@ -146,8 +149,8 @@ modelPar.handlingFilterNum = 400;
 modelPar.handlingFilterDen = [1, 40, 400];
 
 % path filter
-modelPar.pathFilterNum = (2.4 * gains(5))^2;
-modelPar.pathFilterDen = [1, 2 * 2.4 * gains(5), (2.4 * gains(5))^2];
+modelPar.pathFilterNum = 2.4^2;
+modelPar.pathFilterDen = [1, 2 * 2.4, 2.4^2];
 
 % load the gains, set to zero if gains aren't available
 try

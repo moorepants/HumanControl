@@ -3,6 +3,9 @@ Description
 These are a set of tools for developing models of a person controlling a
 bicycle.
 
+Models
+======
+
 WhippleModel
 ------------
 Contains code for generating and analyzing a simple human operator control for
