@@ -29,23 +29,23 @@ colors = {'k', ...
           'k', ...
           [0.5, 0.5, 0.5]};
 
-loop_shape_example(data.Benchmark.Medium, 'Steer')
-loop_shape_example(rollData, 'Roll')
-plot_io_roll(rollData, 'Distance')
-plot_io_roll(rollData, 'Time')
-open_loop_all_bikes(data, linestyles, colors)
-handling_all_bikes(data, rollData, linestyles, colors)
-path_plots(data, linestyles, colors)
-var = {'delta', 'phi', 'psi', 'Tdelta'};
-io = {'output', 'output', 'output', 'input'};
-typ = {'Distance', 'Time'};
-for i = 1:length(var)
-    for j = 1:length(typ)
-        plot_io(var{i}, io{i}, typ{j}, data, linestyles, colors)
-    end
-end
+%loop_shape_example(data.Benchmark.Medium, 'Steer')
+%loop_shape_example(rollData, 'Roll')
+%plot_io_roll(rollData, 'Distance')
+%plot_io_roll(rollData, 'Time')
+%open_loop_all_bikes(data, linestyles, colors)
+%handling_all_bikes(data, rollData, linestyles, colors)
+%path_plots(data, linestyles, colors)
+%var = {'delta', 'phi', 'psi', 'Tdelta'};
+%io = {'output', 'output', 'output', 'input'};
+%typ = {'Distance', 'Time'};
+%for i = 1:length(var)
+    %for j = 1:length(typ)
+        %plot_io(var{i}, io{i}, typ{j}, data, linestyles, colors)
+    %end
+%end
 phase_portraits(data.Benchmark.Medium)
-eigenvalues(data, linestyles, colors)
+%eigenvalues(data, linestyles, colors)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function loop_shape_example(bikeData, input)
@@ -940,17 +940,22 @@ set(gcf, ...
     'PaperPosition', [0, 0, figWidth, figHeight], ...
     'PaperSize', [figWidth, figHeight])
 
+% this is the gain multiplier for the non-nominal plot
 gainChanges = [1.2, 1, 1, 1, 1;
                1, 1.2, 1, 1, 1;
                1, 1, 1.2, 1, 1;
-               1, 1, 1, 0.8, 0.8];
+               1, 1, 1.2, 0.8, 0.8];
 
-loopNames = {'kDelta', 'kPhiDot', 'kPhi', 'kPsi'};
+loopNames = {'kDelta', 'kPhiDot', 'kPhi', 'kPhi'};
+% the x and y indices for each plot
 xy = [7, 15;
       4, 12;
       4, 12;
       4, 12];
+% where to get the x and y data from
 xySource = {'outputs', 'outputsDot', 'outputs', 'outputs'};
+
+% axis labels
 xlabels = {'(a) $\delta$ (rad)',
            '(b) $\dot{\phi}$ (rad/s)',
            '(c) $\phi$ (rad)',
@@ -959,17 +964,18 @@ ylabels = {'$\dot{\delta}$ (rad/s)',
            '$\ddot{\phi}$ (rad/s$^2$)',
            '$\dot{\phi}$ (rad/s)',
            '$\dot{\phi}$ (rad/s)'};
-legends = {'$k_\delta$ = ', '$k_{\dot{\phi}}$ = ',
-           '$k_\phi$ = ', '$k_\psi$ = '};
-floatSpec = {'%1.1f', '%1.3f', '%1.1f', '%1.2f'};
+
+% legend starts
+legends = {'$k_\delta$ = ',
+           '$k_{\dot{\phi}}$ = ',
+           '$k_\phi$ = ',
+           '$k_\phi$ = '};
+% how many decimals to show for each legend
+floatSpec = {'%1.1f', '%1.3f', '%1.1f', '%1.1f'};
 
 for i = 1:length(loopNames)
-    a = {};
-    for j = 1:length(gainChanges)
-        a{j} = sprintf('%1.1f', gainChanges(i, j));
-    end
-    display(['Calculating gains as ' a{1} '*kDelta, ' a{2} ...
-             '*kPhiDot, ' a{3} '*kPhi, ' a{4} '*kPsi, ' a{5} '*kY.'])
+
+    display(sprintf('Calculating phase portrait %d', i))
 
     % adjust the gains and get the data
     twentyPercent = generate_data('Benchmark', 5.0, ...
@@ -977,8 +983,16 @@ for i = 1:length(loopNames)
     subplot(2, 2, i)
     hold on
 
-    x = bikeData.(xySource{i})(:, xy(i, 1));
-    y = bikeData.(xySource{i})(:, xy(i, 2));
+    if i == 4
+        display('Phase portrait 4 comparison data.')
+        nominalData = generate_data('Benchmark', 5.0, ...
+                                  'gains', [1, 1, 1, 0.8, 0.8]);
+        x = nominalData.(xySource{i})(:, xy(i, 1));
+        y = nominalData.(xySource{i})(:, xy(i, 2));
+    else
+        x = bikeData.(xySource{i})(:, xy(i, 1));
+        y = bikeData.(xySource{i})(:, xy(i, 2));
+    end
     plot(x, y, 'k-', 'Linewidth', 1.0)
 
     x = twentyPercent.(xySource{i})(:, xy(i, 1));
@@ -988,21 +1002,14 @@ for i = 1:length(loopNames)
     hold off
 
     box on
-    axis tight
-    xlabel(xlabels{i}, 'Interpreter', 'Latex', 'Fontsize', 10)
-    ylabel(ylabels{i}, 'Interpreter', 'Latex', 'Fontsize', 10)
-    if i == 4
-        leg3 = sprintf('%1.2f', bikeData.modelPar.kY);
-        leg4 = sprintf('%1.2f', twentyPercent.modelPar.kY);
-        extra1 = [', $k_Y$ = ' leg3];
-        extra2 = [', $k_Y$ = ' leg4];
-    else
-        extra1 = '';
-        extra2 = '';
-    end
+    axis equal
+    xlabel(xlabels{i}, 'Interpreter', 'Latex', 'Fontsize', 8)
+    ylabel(ylabels{i}, 'Interpreter', 'Latex', 'Fontsize', 8)
+
+    % make the legend
     leg1 = sprintf(floatSpec{i}, bikeData.modelPar.(loopNames{i}));
     leg2 = sprintf(floatSpec{i}, twentyPercent.modelPar.(loopNames{i}));
-    legend({[legends{i} leg1 extra1], [legends{i} leg2 extra2]} , ...
+    legend({[legends{i} leg1], [legends{i} leg2]} , ...
            'Interpreter', 'Latex', ...
            'Fontsize', 6)
 end

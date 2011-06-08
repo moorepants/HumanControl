@@ -170,9 +170,12 @@ end
 
 % scale the gains
 k = {'kDelta', 'kPhiDot', 'kPhi', 'kPsi', 'kY'};
+kString = '';
 for i = 1:length(k)
     modelPar.(k{i}) = gains(i) * modelPar.(k{i});
+    kString = [kString sprintf('%s = %1.3f, ', k{i}, modelPar.(k{i}))];
 end
+display(['Gains are set to: ', kString])
 
 % make a truth table for perturbing the loops
 % the first row is default setup
