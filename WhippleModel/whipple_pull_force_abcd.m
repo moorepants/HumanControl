@@ -1,4 +1,4 @@
-function [aMat, bMat, cMat, dMat] = whipple_pull_force_abcd(par, varargin)
+function [aMat, bMat, cMat, dMat] = whipple_pull_force_abcd(par, speed)
 % Returns the A, B, C, and D matrices for the linear Whipple Pull Force model
 % given a set of parameters and a speed.
 %
@@ -8,7 +8,7 @@ function [aMat, bMat, cMat, dMat] = whipple_pull_force_abcd(par, varargin)
 %   A matlab structure that contains the values of the bicycle parameters.
 %   (i.e. par.c = 0.08). These should be named according to the Meijaard 2007
 %   paper.
-% speed : float, optional
+% speed : float
 %   The speed at which to linearize about. This overrides any speed parameter
 %   contained in the par structure.
 %
@@ -57,7 +57,7 @@ for i = 1:length(parFields)
 end
 
 % add two parameters for the location of the pull force
-% these values are approximate
+% these values are approximate for the rigid rider instrumented bicycle
 xpf = 0.23;
 zpf = -0.91;
 
@@ -69,13 +69,8 @@ q6 = 0.0;
 q7 = 0.0;
 q8 = 0.0;
 u4 = 0.0;
-u6 = -v/rR;
+u6 = -speed/rR;
 u7 = 0.0;
-
-% if a speed is specified, use it instead
-if size(varargin, 2) == 1
-    u6 = -varargin{1}/rR;
-end
 
 % Reserve space and initialize matrices
 z = zeros(4231,1);
