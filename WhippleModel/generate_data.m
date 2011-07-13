@@ -7,17 +7,18 @@ function data = generate_data(bike, speed, varargin)
 %   The shortname of the bicycle model to use.
 % speed : float
 %   The speed of the bicycle.
-% input : string, optional
-%   'Steer' or 'Roll', 'Steer' is the default.
-% plot : boolean, optional
-%   If 1 basic plots will be shown, if 0 no plots will be shown. 0 is the
-%   default.
-% gains : matrix (5, 1), optional
-%   General gain multipliers. The gains are applied starting at the inner loop
-%   going out. [1, 1, 1, 1, 1] is the default.
-% laneType : string, optional
-%   'single' or 'double' for a single or double lange change manuever. 'double'
-%   is the default.
+% varargin : pair of string and value
+%   input : string, optional
+%       'Steer' or 'Roll', 'Steer' is the default.
+%   plot : boolean, optional
+%       If 1 basic plots will be shown, if 0 no plots will be shown. 0 is the
+%       default.
+%   gains : matrix (5, 1), optional
+%       General gain multipliers. The gains are applied starting at the inner
+%       loop going out. [1, 1, 1, 1, 1] is the default.
+%   laneType : string, optional
+%       'single' or 'double' for a single or double lange change manuever.
+%       'double' is the default.
 %
 % Returns
 % -------
