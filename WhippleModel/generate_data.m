@@ -7,7 +7,7 @@ function data = generate_data(bike, speed, varargin)
 %   The shortname of the bicycle model to use.
 % speed : float
 %   The speed of the bicycle.
-% varargin : pair of string and value
+% varargin : pairs of strings and values
 %   input : string, optional
 %       'Steer' or 'Roll', 'Steer' is the default.
 %   plot : boolean, optional
@@ -152,6 +152,74 @@ modelPar.handlingFilterDen = [1, 40, 400];
 % path filter
 modelPar.pathFilterNum = 2.4^2;
 modelPar.pathFilterDen = [1, 2 * 2.4, 2.4^2];
+
+% calculate feedback gains using successive loop closure
+% make a truth table for perturbing the loops
+% the first row is default setup
+% make a truth table for perturbing the loops
+% the first row is default setup
+perturbTable = [zeros(1, 5); eye(5)];
+% all the loops are closed at first
+closedTable = [1 1 1 1 1
+               1 0 0 0 0
+               1 1 0 0 0
+               1 1 0 0 0
+               1 1 1 0 0
+               1 1 1 1 0];
+% get the transfer functions for the closed loops
+if strcmp(input, 'Steer')
+    startLoop = 1
+    modelPar.isRollInput = 0;
+    % preview time delay
+    modelPar.timeDelay = 2.75
+elseif strcmp(input, 'Roll')
+    % skip the first loop
+    startLoop = 2;
+    % use the roll torque input
+    modelPar.isRollInput = 1;
+    % preview time delay
+    modelPar.timeDelay = 3.5;
+    % don't feed back delta
+    closedTable(:, 1) = zeros(6, 1);
+else
+    error('Choose Steer or Roll as the input')
+end
+
+loopNames = {'Delta', 'PhiDot', 'Phi', 'Psi', 'Y'}
+
+modelPar.isHandling = 0;
+try
+    % try to use the 5 m/s gains for the intial guesses for the gains
+    pathToGainFile = ['gains' filesep bike input 'Gains.txt'];
+    [modelPar.kDelta, modelPar.kPhiDot, modelPar.kPhi, ...
+     modelPar.kPsi, modelPar.kY] = load_gains(pathToGainFile, 5.0);
+catch
+    % but if they don't exist, use these
+    modelPar.kDelta = 106.375;
+    modelPar.kPhiDot = -0.07;
+    modelPar.kPhi = 1E-10;
+    modelPar.kPsi = 0.0;
+    modelPar.kY = 0.0;
+end
+
+% actually calculate feedback gains using successive loop closure
+for i = startLoop:length(loopNames)
+    str = 'Finding the loop transfer function of the %s loop.';
+    display(sprintf(str, loopNames{i}))
+    modelPar.loopNumber = i;
+    modelPar.perturb = perturbTable(i + 1, :);
+    modelPar.closed = closedTable(i + 1, :);
+    update_model_variables(modelPar);
+    if i < 3
+        modelPar = findClosedK(modelPar,i)
+    else
+        modelPar = findOpenK(modelPar,i)
+    end
+    update_model_variables(modelPar);
+    [num, den] = linmod('WhippleModel');
+    closedLoops.(loopNames{i}).num = num;
+    closedLoops.(loopNames{i}).den = den;
+end
 
 % load the gains, set to zero if gains aren't available
 try
@@ -455,3 +523,121 @@ kPhiDot = gains(2);
 kPhi = gains(3);
 kPsi = gains(4);
 kY = gains(5);
+
+function modelPar = findClosedK(modelPar,i)
+% This function finds the gains kDelta (i=1) or kPhiDot (i=2) that give a 10 dB
+% overshoot magnitude for the closed loop transfer functions
+    perturbTable = [zeros(1, 5); eye(5)];
+    % all the loops are closed at first
+    closedTable = [1 1 1 1 1; 1 0 0 0 0; 1 1 0 0 0;1 1 0 0 0;1 1 1 0 0;1 1 1 1 0];
+    loopNames = {'Delta', 'PhiDot', 'Phi', 'Psi', 'Y'};
+    str = 'Finding the closed loop transfer function of the %s loop.';
+    display(sprintf(str, loopNames{i}))
+    modelPar.loopNumber = i;
+    modelPar.perturb = perturbTable(i + 1, :);
+    modelPar.closed = closedTable(i + 1, :);
+    update_model_variables(modelPar);
+
+    if i == 1
+        guess=modelPar.kDelta;
+    else
+        guess=modelPar.kPhiDot;
+    end
+    x = fzero(@(x) deltaMagClosed(x,modelPar,i),guess)
+    if i == 1
+        modelPar.kDelta=x;
+    else
+         modelPar.kPhiDot=x;
+    end
+
+function modelPar = findOpenK(modelPar, i)
+% This function finds gains kPhi(i=3),kPsi(i=4) or kY(i=5)
+% that give a crossover frequency for the open loop transfer
+% functions of the prescribed values
+    perturbTable = [zeros(1, 5); eye(5)];
+    % all the loops are closed at first
+    closedTable = [1 1 1 1 1
+                   1 0 0 0 0
+                   1 1 0 0 0
+                   1 1 0 0 0
+                   1 1 1 0 0
+                   1 1 1 1 0];
+    loopNames = {'Delta', 'PhiDot', 'Phi', 'Psi', 'Y'};
+    str = 'Finding the open loop transfer function of the %s loop.';
+    display(sprintf(str, loopNames{i}))
+    modelPar.loopNumber = i;
+    modelPar.perturb = perturbTable(i + 1, :);
+    modelPar.closed = closedTable(i + 1, :);
+    modelPar=modelPar;
+    i=i
+    if i == 3
+        wBW = 2
+        modelPar.kPhi = 1;
+    elseif i == 4
+        wBW = 1
+        modelPar.kPsi = 1;
+    else
+        wBW = 0.5
+        modelPar.kY=1;
+    end
+    update_model_variables(modelPar);
+    [num, den] = linmod('WhippleModel');
+    sys = tf(num,den);
+    w = logspace(-1,2,1000);
+    bode(sys,w);
+    [mag,phase] = bode(sys,w);
+    mag = mag(:)';
+    phase = phase(:)';
+    MagCO = interp1(w,mag,wBW);
+    x = 1 / MagCO;
+    if i == 3
+        modelPar.kPhi = x
+    elseif i == 4
+        modelPar.kPsi = x
+    elseif i == 5
+        modelPar.kY = x
+    end
+    update_model_variables(modelPar);
+
+function delta = deltaMagClosed(K,modelPar,i )
+% this function calculates the difference between a 10 db
+%overshoot and what K provides
+%   Detailed explanation goes here
+    format long
+    K = K;
+    if i == 1
+        modelPar.kDelta = K;
+    else
+        modelPar.kPhiDot=K;
+    end
+    update_model_variables(modelPar);
+    modelPar = modelPar;
+    [num, den] = linmod('WhippleModel');
+    sys = tf(num, den);
+    w = logspace(-1, 2, 1000);
+    bode(sys, w);
+    [mag, phase] = bode(sys, w);
+    mag = mag(:)';
+    phase = phase(:)';
+    magmax = max(mag);  % maximum magitude
+    kmax = find(mag == magmax); % index at maximum magitude
+    magtrunc = mag(1:kmax);  % truncated magnitude array below resonance
+    wtrunc = w(1:kmax);  % truncated frequency array below resonance
+    [m,n] = size(wtrunc);
+    [m,n] = size(magtrunc);
+    wmax = w(kmax);
+    dmag = [0 diff(magtrunc)];
+    figure(14);
+    plot(dmag);
+    mindmag = min(dmag);
+    kmin = find(dmag == mindmag); % % index of minimum magnitude array below resonance
+    wmin = w(kmin);  % frequency of minimum magnitude array below resonance
+    magmin = magtrunc(kmin);
+    rmag = magmax/magmin;
+    sss = sqrt(10);
+    i = i;
+    delta = rmag-sqrt(10);  % 10 dB corresponds to a magnitude ratio of sqrt(10)
+    format short;
+
+
+
