@@ -70,42 +70,37 @@ function data = generate_data(bike, speed, varargin)
 % >>data = generate_data('Pista', 7.5, 'laneType', 'single');
 
 % there are some unconnected ports in the simulink model that send out warnings
-warning off
+%warning off
 
+%% parse function arguments
 % set the defaults for the optional arguments
 defaults.input = 'Steer';
 defaults.laneType = 'double';
 defaults.plot = 0;
 defaults.gains = [1, 1, 1, 1, 1];
 
-% load in varargin
+% load in user supplied settings
 if size(varargin, 2) >= 1
-    options = varargin_to_structure(varargin);
+    userSettings = varargin_to_structure(varargin);
 else
-    options = struct();
+    userSettings = struct();
 end
 
-% add the default options if not specified by the user
-optionNames = fieldnames(options);
-defaultNames = fieldnames(defaults);
-notGiven = setxor(optionNames, defaultNames);
-if length(notGiven) > 0
-    for i = 1:length(notGiven)
-        options.(notGiven{i}) = defaults.(notGiven{i});
-    end
-end
+% combine the defaults with the user settings
+settings = overwrite_settings(defaults, userSettings);
 
+%% set model parameters
 % set the speed
 modelPar.speed = speed;
 
 % generate the path to track
 [pathX, pathY, pathT] = lane_change(35, 2, 0.2, 250, speed, ...
-                                    500, options.laneType, 60);
+                                    500, settings.laneType, 60);
 modelPar.track = [pathT, pathY];
 modelPar.stopTime = pathT(end);
 
 % make the gain multipliers unity unless they are supplied
-gains = options.gains;
+gains = settings.gains;
 
 % show some output on the screen
 display(sprintf(repmat('-', 1, 79)))
@@ -145,138 +140,118 @@ modelPar.initialConditions = [-par.w, ... rear wheel contact x
 modelPar.neuroNum = 900;
 modelPar.neuroDen = [1, 2 * 0.707 * 30, 900];
 
-% handling qualities metric filter
-modelPar.handlingFilterNum = 400;
-modelPar.handlingFilterDen = [1, 40, 400];
-
 % path filter
 modelPar.pathFilterNum = 2.4^2;
 modelPar.pathFilterDen = [1, 2 * 2.4, 2.4^2];
 
-% calculate feedback gains using successive loop closure
-% make a truth table for perturbing the loops
-% the first row is default setup
-% make a truth table for perturbing the loops
-% the first row is default setup
-perturbTable = [zeros(1, 5); eye(5)];
-% all the loops are closed at first
-closedTable = [1 1 1 1 1
-               1 0 0 0 0
-               1 1 0 0 0
-               1 1 0 0 0
-               1 1 1 0 0
-               1 1 1 1 0];
-% get the transfer functions for the closed loops
-if strcmp(input, 'Steer')
-    startLoop = 1
+% handling qualities metric filter
+modelPar.handlingFilterNum = 400;
+modelPar.handlingFilterDen = [1, 40, 400];
+
+% handling quality calculation flag
+modelPar.isHandling = 0;
+
+% set parameters for steer or roll inputs
+if strcmp(settings.input, 'Steer')
+    % start at the delta loop
+    startLoop = 1;
+    % use steer torque control
     modelPar.isRollInput = 0;
     % preview time delay
-    modelPar.timeDelay = 2.75
-elseif strcmp(input, 'Roll')
-    % skip the first loop
+    modelPar.timeDelay = 2.75;
+elseif strcmp(settings.input, 'Roll')
+    % start at the phiDot loop
     startLoop = 2;
-    % use the roll torque input
+    % use the roll torque control
     modelPar.isRollInput = 1;
     % preview time delay
     modelPar.timeDelay = 3.5;
-    % don't feed back delta
-    closedTable(:, 1) = zeros(6, 1);
 else
     error('Choose Steer or Roll as the input')
 end
 
-loopNames = {'Delta', 'PhiDot', 'Phi', 'Psi', 'Y'}
+% the name of the loops starting with the inner loop
+loopNames = {'Delta', 'PhiDot', 'Phi', 'Psi', 'Y'};
 
-modelPar.isHandling = 0;
+%% calculate feedback gains using successive loop closure
+% make truth tables for perturbing and closing the loops
+% the first row is default setup
+perturbTable = [zeros(1, 5) % do not perturb any loop
+                eye(5)]; % perturb each loop individually
+closedTable = [1 1 1 1 1 % all loops closed
+               1 0 0 0 0 % delta loop closed
+               1 1 0 0 0 % delta, phidot loops closed
+               1 1 0 0 0 % delta, phidot loops closed
+               1 1 1 0 0 % delta, phidot, phi loops closed
+               1 1 1 1 0]; % delta, phidot, phi, psi loops closed
+
+if strcmp(settings.input, 'Roll')
+    % don't feed back delta
+    closedTable(:, 1) = zeros(6, 1);
+end
+
 try
-    % try to use the 5 m/s gains for the intial guesses for the gains
-    pathToGainFile = ['gains' filesep bike input 'Gains.txt'];
+    pathToGainFile = ['gains' filesep bike settings.input 'Gains.txt'];
     [modelPar.kDelta, modelPar.kPhiDot, modelPar.kPhi, ...
-     modelPar.kPsi, modelPar.kY] = load_gains(pathToGainFile, 5.0);
+     modelPar.kPsi, modelPar.kY] = lookup_gains(pathToGainFile, speed);
 catch
+    pathToGainFile = ['gains' filesep 'Benchmark' settings.input 'Gains.txt'];
+    [modelPar.kDelta, modelPar.kPhiDot, modelPar.kPhi, ...
+     modelPar.kPsi, modelPar.kY] = lookup_gains(pathToGainFile, 5.0);
     % but if they don't exist, use these
-    modelPar.kDelta = 106.375;
-    modelPar.kPhiDot = -0.07;
-    modelPar.kPhi = 1E-10;
-    modelPar.kPsi = 0.0;
-    modelPar.kY = 0.0;
+    %modelPar.kDelta = 106.375;
+    %modelPar.kPhiDot = -0.07;
+    %modelPar.kPhi = 1E-10;
+    %modelPar.kPsi = 0.0;
+    %modelPar.kY = 0.0;
 end
 
 % actually calculate feedback gains using successive loop closure
 for i = startLoop:length(loopNames)
-    str = 'Finding the loop transfer function of the %s loop.';
-    display(sprintf(str, loopNames{i}))
+    guess = modelPar.(['k' loopNames{i}]);
+    str = ['Finding the loop transfer function ' ...
+           'of the %s loop with a start guess of %1.4f.'];
+    display(sprintf(str, loopNames{i}, guess))
+    % set the logic for this loop calculation
     modelPar.loopNumber = i;
     modelPar.perturb = perturbTable(i + 1, :);
     modelPar.closed = closedTable(i + 1, :);
     update_model_variables(modelPar);
-    if i < 3
-        modelPar = findClosedK(modelPar,i)
+    if i == 1 || i == 2
+        gain = find_closed_gain(loopNames{i}, guess);
+    elseif i == 3 || i == 4 || i == 5
+        gain = find_open_gain(loopNames{i}, settings.input);
     else
-        modelPar = findOpenK(modelPar,i)
+        error(sprintf('%s loop not found', loopNames{i}))
     end
-    update_model_variables(modelPar);
-    [num, den] = linmod('WhippleModel');
-    closedLoops.(loopNames{i}).num = num;
-    closedLoops.(loopNames{i}).den = den;
+    modelPar.(['k' loopNames{i}]) = gain;
+    str = '%s loop gain set to %1.4f.';
+    display(sprintf(str, loopNames{i}, gain))
 end
 
-% load the gains, set to zero if gains aren't available
-try
-    pathToGainFile = ['gains' filesep bike options.input 'Gains.txt'];
-    [modelPar.kDelta, modelPar.kPhiDot, modelPar.kPhi, ...
-     modelPar.kPsi, modelPar.kY] = load_gains(pathToGainFile, speed);
-catch
-    display('No Gains found, all set to zero. No feedback.')
-    modelPar.kDelta = 0.0;
-    % the following two are just a hack to get around the 1/kPhi and 1/kPhiDot,
-    % this should be handled better with some logic
-    modelPar.kPhiDot = 1E-10;
-    modelPar.kPhi = 1E-10;
-    modelPar.kPsi = 0.0;
-    modelPar.kY = 0.0;
-end
+update_model_variables(modelPar)
 
 % scale the gains
 k = {'kDelta', 'kPhiDot', 'kPhi', 'kPsi', 'kY'};
 kString = '';
 for i = 1:length(k)
     modelPar.(k{i}) = gains(i) * modelPar.(k{i});
-    kString = [kString sprintf('%s = %1.3f, ', k{i}, modelPar.(k{i}))];
+    kString = [kString sprintf('%s = %1.3f\n                  ', ...
+               k{i}, modelPar.(k{i}))];
 end
-display(['Gains are set to: ', kString])
+display(['Gains are set to: ', strtrim(kString)])
 
-% make a truth table for perturbing the loops
-% the first row is default setup
-perturbTable = [zeros(1, 5); eye(5)];
 % all the loops are closed at first
 closedTable = ones(6, 5);
 
-if strcmp(options.input, 'Steer')
-    startLoop = 1;
-    modelPar.isRollInput = 0;
-    % preview time delay
-    modelPar.timeDelay = 2.75;
-elseif strcmp(options.input, 'Roll')
-    % skip the first loop
-    startLoop = 2;
-    % use the roll torque input
-    modelPar.isRollInput = 1;
-    % preview time delay
-    modelPar.timeDelay = 3.5;
+if strcmp(settings.input, 'Roll')
     % don't feed back delta
     closedTable(:, 1) = zeros(6, 1);
-else
-    error('Choose Steer or Roll as the input')
 end
-
-loopNames = {'Delta', 'PhiDot', 'Phi', 'Psi', 'Y'};
-
-modelPar.isHandling = 0;
 
 % get the transfer functions for the closed loops
 for i = startLoop:length(loopNames)
-    str = 'Finding the closed loop transfer function of the %s loop.';
+    str = 'Finding the %s closed loop transfer function.';
     display(sprintf(str, loopNames{i}))
     modelPar.loopNumber = i;
     modelPar.perturb = perturbTable(i + 1, :);
@@ -291,13 +266,13 @@ end
 closedTable = ~perturbTable;
 
 % don't feed back delta if looking at roll control
-if strcmp(options.input, 'Roll')
+if strcmp(settings.input, 'Roll')
     closedTable(:, 1) = zeros(6, 1);
 end
 
 % get the transfer functions for the open loops
 for i = startLoop:length(loopNames)
-    str = 'Finding the open loop transfer function of the %s loop.';
+    str = 'Finding the %s open loop transfer function.';
     display(sprintf(str, loopNames{i}));
     modelPar.loopNumber = i;
     modelPar.perturb = perturbTable(i + 1, :);
@@ -314,7 +289,7 @@ display('Finding the handling quality metric.')
 % the handling qualities must be calculated with the phi loop at 2 rad/sec
 % crossover, so this modifies the transfer function !!!Currently only works for
 % the Benchmark bike at medium speed!!! Needs to be smarter to work generally.
-if strcmp(options.input, 'Roll')
+if strcmp(settings.input, 'Roll')
     origkPhi = modelPar.kPhi;
     modelPar.kPhi = 1.259 * origkPhi;
 end
@@ -329,7 +304,7 @@ handlingMetric.num = num;
 handlingMetric.den = den;
 
 % change the gain back for simulation
-if strcmp(options.input, 'Roll')
+if strcmp(settings.input, 'Roll')
     modelPar.kPhi = origkPhi;
 end
 
@@ -366,8 +341,8 @@ data.gains = gains;
 
 display(sprintf('Data written. \n'))
 
-% plot
-if options.plot
+%% plot
+if settings.plot
     display('Making basic plots.')
     figure(1)
     % go through each loop and plot the bode plot for the closed loops
@@ -378,10 +353,11 @@ if options.plot
         bode(tf(num, den), {0.1, 100.0})
     end
     legend(loopNames(startLoop:end))
+    title('Closed loop transfer functions')
     hold off
 
     figure(2)
-    % go through each loop and plot the bode plot
+    % go through each loop and plot the open loop bode plot
     hold all
     for i = startLoop:length(loopNames)
         num = openLoops.(loopNames{i}).num;
@@ -389,6 +365,7 @@ if options.plot
         bode(tf(num, den), {0.1, 100.0})
     end
     legend(loopNames(startLoop:end))
+    title('Open loop transfer functions')
     hold off
 
     figure(3)
@@ -397,11 +374,15 @@ if options.plot
     wl = linspace(0.01, 20, 100);
     [mag, phase, freq] = bode(tf(num, den), wl);
     plot(wl, mag(:)')
+    title('Handling quality metric')
 
     outputPlot = plot_outputs(t, y, yc);
 
     figure()
     plot(t, u)
+    title('Inputs')
+    xlabel('Time [s]')
+    legend({'Roll Torque', 'Steer Torque', 'Pull Force'})
     display('Plotting finished.')
 end
 
@@ -481,15 +462,16 @@ for i = 1:numPlots
     set(leg, 'interpreter', 'latex')
 end
 
-function [kDelta, kPhiDot, kPhi, kPsi, kY] = load_gains(pathToGains, speed)
-% Returns the gains from a file for a particular speed.
+function [kDelta, kPhiDot, kPhi, kPsi, kY] = lookup_gains(pathToGains, speed)
+% Returns a guess for the gains based on precomputed gains at various speeds
+% using linear interpolation/extrapolation.
 %
 % Parameters
 % ----------
 % pathToGains : string
 %   Path to a csv file with the gains for one bike at various speeds.
 % speed : float
-%   Speed associated with the desired gains.
+%   Speed at which to guess the gains for.
 %
 % Returns
 % -------
@@ -503,33 +485,61 @@ function [kDelta, kPhiDot, kPhi, kPsi, kY] = load_gains(pathToGains, speed)
 %   The gain for the heading loop.
 % kY : float
 %   The gain for the lateral deviation loop.
+%
+% Notes
+% -----
+% If there is only one speed in the file, then the function returns the value
+% of those gains no matter which speed you specify.
 
 contents = importdata(pathToGains);
-
-% find the row with the corresponding speed
 speeds = contents.data(:, 1);
-row = find(speeds == speed);
-if isempty(row)
-    exception = MException('Eeeeeh:SpeedNotFound', ...
-                           'No gain for speed %f', ...
-                           speed);
-    throw(exception)
+
+if length(speeds) == 1
+    guesses = contents.data(2:end);
 else
-    gains = contents.data(row, 2:end);
+    guesses = zeros(5);
+    % interpolate/extrapolate the data
+    for i = 2:6
+        gains = contents.data(:, i);
+        % use extrapolation if needed
+        if speed > speeds(end) || speed < speeds(1)
+            guesses(i - 1) = interp1(speeds, gains, speed, 'linear', 'extrap');
+        else
+            guesses(i - 1) = interp1(speeds, gains, speed, 'linear');
+        end
+    end
 end
 
-kDelta = gains(1);
-kPhiDot = gains(2);
-kPhi = gains(3);
-kPsi = gains(4);
-kY = gains(5);
+kDelta = guesses(1);
+kPhiDot = guesses(2);
+kPhi = guesses(3);
+kPsi = guesses(4);
+kY = guesses(5);
 
-function modelPar = findClosedK(modelPar,i)
+function k = find_closed_gain(loop, guess)
+% Returns the gain required for a 10dB resonant peak in the closed loop
+% transfer function.
+%
+% Parameters
+% ----------
+% loop : str
+%   The name of the loop.
+% guess : float
+%   An initial guess for the gain.
+
+k = fzero(@(x) delta_mag_closed(x, loop), guess);
+
+function modelPar = findClosedK(modelPar, i)
 % This function finds the gains kDelta (i=1) or kPhiDot (i=2) that give a 10 dB
 % overshoot magnitude for the closed loop transfer functions
     perturbTable = [zeros(1, 5); eye(5)];
     % all the loops are closed at first
-    closedTable = [1 1 1 1 1; 1 0 0 0 0; 1 1 0 0 0;1 1 0 0 0;1 1 1 0 0;1 1 1 1 0];
+    closedTable = [1 1 1 1 1;
+                   1 0 0 0 0;
+                   1 1 0 0 0;
+                   1 1 0 0 0;
+                   1 1 1 0 0;
+                   1 1 1 1 0];
     loopNames = {'Delta', 'PhiDot', 'Phi', 'Psi', 'Y'};
     str = 'Finding the closed loop transfer function of the %s loop.';
     display(sprintf(str, loopNames{i}))
@@ -539,105 +549,112 @@ function modelPar = findClosedK(modelPar,i)
     update_model_variables(modelPar);
 
     if i == 1
-        guess=modelPar.kDelta;
+        guess = modelPar.kDelta;
     else
-        guess=modelPar.kPhiDot;
+        guess = modelPar.kPhiDot;
     end
-    x = fzero(@(x) deltaMagClosed(x,modelPar,i),guess)
+
+    x = fzero(@(x) deltaMagClosed(x, modelPar, i), guess)
+
     if i == 1
         modelPar.kDelta=x;
     else
-         modelPar.kPhiDot=x;
+        modelPar.kPhiDot=x;
     end
 
-function modelPar = findOpenK(modelPar, i)
-% This function finds gains kPhi(i=3),kPsi(i=4) or kY(i=5)
-% that give a crossover frequency for the open loop transfer
-% functions of the prescribed values
-    perturbTable = [zeros(1, 5); eye(5)];
-    % all the loops are closed at first
-    closedTable = [1 1 1 1 1
-                   1 0 0 0 0
-                   1 1 0 0 0
-                   1 1 0 0 0
-                   1 1 1 0 0
-                   1 1 1 1 0];
-    loopNames = {'Delta', 'PhiDot', 'Phi', 'Psi', 'Y'};
-    str = 'Finding the open loop transfer function of the %s loop.';
-    display(sprintf(str, loopNames{i}))
-    modelPar.loopNumber = i;
-    modelPar.perturb = perturbTable(i + 1, :);
-    modelPar.closed = closedTable(i + 1, :);
-    modelPar=modelPar;
-    i=i
-    if i == 3
-        wBW = 2
-        modelPar.kPhi = 1;
-    elseif i == 4
-        wBW = 1
-        modelPar.kPsi = 1;
-    else
-        wBW = 0.5
-        modelPar.kY=1;
+function k = find_open_gain(loop, input)
+% Returns the gain needed to set the crossover frequency at a desired value.
+%
+% Parameters
+% ----------
+% loop : string
+%   The name of the loop.
+% input : string
+%   Whether this is 'Steer' or 'Roll' torque input
+%
+% Returns
+% -------
+% k : float
+%   The gain needed for the desired crossover frequency.
+%
+% Notes
+% -----
+% This function assumes that all model parameters are set in the base workspace
+% for the 'WhippleModel'.
+
+% set the gain for this loop to unity
+assignin('base', ['k' loop], 1)
+% get the transfer function
+[num, den] = linmod('WhippleModel');
+w = logspace(-1,2,1000);
+[mag,phase] = bode(tf(num,den), w);
+mag = mag(:)';
+phase = phase(:)';
+
+% set the desirsed open loop crossover frequency
+if loop == 'Phi'
+    if input == 'Steer'
+        wBW = 2.0;
+    elseif input == 'Roll'
+        wBW = 1.5;
     end
-    update_model_variables(modelPar);
-    [num, den] = linmod('WhippleModel');
-    sys = tf(num,den);
-    w = logspace(-1,2,1000);
-    bode(sys,w);
-    [mag,phase] = bode(sys,w);
-    mag = mag(:)';
-    phase = phase(:)';
-    MagCO = interp1(w,mag,wBW);
-    x = 1 / MagCO;
-    if i == 3
-        modelPar.kPhi = x
-    elseif i == 4
-        modelPar.kPsi = x
-    elseif i == 5
-        modelPar.kY = x
+elseif loop == 'Psi'
+    if input == 'Steer'
+        wBW = 1.0;
+    elseif input == 'Roll'
+        wBW = 0.75;
     end
-    update_model_variables(modelPar);
-
-function delta = deltaMagClosed(K,modelPar,i )
-% this function calculates the difference between a 10 db
-%overshoot and what K provides
-%   Detailed explanation goes here
-    format long
-    K = K;
-    if i == 1
-        modelPar.kDelta = K;
-    else
-        modelPar.kPhiDot=K;
+elseif loop == 'Y'
+    if input == 'Steer'
+        wBW = 0.5;
+    elseif input == 'Roll'
+        wBW = 0.375;
     end
-    update_model_variables(modelPar);
-    modelPar = modelPar;
-    [num, den] = linmod('WhippleModel');
-    sys = tf(num, den);
-    w = logspace(-1, 2, 1000);
-    bode(sys, w);
-    [mag, phase] = bode(sys, w);
-    mag = mag(:)';
-    phase = phase(:)';
-    magmax = max(mag);  % maximum magitude
-    kmax = find(mag == magmax); % index at maximum magitude
-    magtrunc = mag(1:kmax);  % truncated magnitude array below resonance
-    wtrunc = w(1:kmax);  % truncated frequency array below resonance
-    [m,n] = size(wtrunc);
-    [m,n] = size(magtrunc);
-    wmax = w(kmax);
-    dmag = [0 diff(magtrunc)];
-    figure(14);
-    plot(dmag);
-    mindmag = min(dmag);
-    kmin = find(dmag == mindmag); % % index of minimum magnitude array below resonance
-    wmin = w(kmin);  % frequency of minimum magnitude array below resonance
-    magmin = magtrunc(kmin);
-    rmag = magmax/magmin;
-    sss = sqrt(10);
-    i = i;
-    delta = rmag-sqrt(10);  % 10 dB corresponds to a magnitude ratio of sqrt(10)
-    format short;
+end
 
+% get the magnitude at the desired crossover frequency
+MagCO = interp1(w, mag, wBW);
+% calculate the gain needed to get the desired crossover frequency
+k = 1 / MagCO;
 
+function delta = delta_mag_closed(gain, loop)
+% Returns the difference between a 10db overshoot and the overshoot calculated
+% with the given gain.
+%
+% Parameters
+% ----------
+% gain : float
+%   The gain for the closed loop.
+% loop : str
+%   The name of the loop.
+%
+% Returns
+% -------
+% delta : float
+%   The difference in the resonant peak height and the desired height of 10db.
 
+% set the gain for this loop
+assignin('base', ['k' loop], gain)
+% get the closed loop transfer function
+[num, den] = linmod('WhippleModel');
+w = logspace(-1, 2, 1000);
+[mag, phase] = bode(tf(num, den), w);
+% rewrite mag and phase so the dimension is reduced
+mag = mag(:)';
+phase = phase(:)';
+% get the maximum magitude and index
+[magmax, iMaxMag] = max(mag);
+% truncate the magnitude and frequency below resonance
+magtrunc = mag(1:iMaxMag);
+wtrunc = w(1:iMaxMag);
+% differentiate the truncated magnitude
+dmag = [0 diff(magtrunc)];
+% find the minimum of the differentiated magnitude
+[mindmag, iMinDmag] = min(dmag);
+% get the magnitude at the minimum
+magmin = magtrunc(iMinDmag);
+% the ratio of magnitude of the resonant peak to the valley just left of the
+% peak
+rmag = magmax / magmin;
+% the difference in the magnitude and the desired 10db peak
+delta = rmag - sqrt(10);  % 10 dB corresponds to a magnitude ratio of sqrt(10)
