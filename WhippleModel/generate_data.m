@@ -1,4 +1,5 @@
 function data = generate_data(bike, speed, varargin)
+% function data = generate_data(bike, speed, varargin)
 % Generates data files for the human operator control model.
 %
 % Parameters
@@ -13,12 +14,15 @@ function data = generate_data(bike, speed, varargin)
 %   plot : boolean, optional
 %       If 1 basic plots will be shown, if 0 no plots will be shown. 0 is the
 %       default.
-%   gains : matrix (5, 1), optional
+%   gainMuls : matrix (5, 1), optional
 %       General gain multipliers. The gains are applied starting at the inner
 %       loop going out. [1, 1, 1, 1, 1] is the default.
 %   laneType : string, optional
 %       'single' or 'double' for a single or double lange change manuever.
 %       'double' is the default.
+%   gains : matrix (5, 1), optional
+%       If gains are given this will manually override the search for the
+%       optimal gains.
 %
 % Returns
 % -------
@@ -28,7 +32,7 @@ function data = generate_data(bike, speed, varargin)
 %       Closed loop transfer functions for each loop.
 %   command : matrix (n, 5)
 %       The commanded input to each loop.
-%   gains : matrix (5, 1)
+%   gainMuls : matrix (5, 1)
 %       Multipliers for each gain.
 %   handlingMetric : structure
 %       Transfer function for the handling quality metric.
@@ -63,21 +67,22 @@ function data = generate_data(bike, speed, varargin)
 %
 % % Generate the data set for the Browser bicycle at 2.5 m/s with steer as an
 % % input and multiply the five gains by various values and show the graphs.
-% >>data = generate_data('Browser', 2.5, 'plot', 1, 'gains', [1.1, 1.1, 0.9, 1.0, 0.8])
+% >>data = generate_data('Browser', 2.5, 'plot', 1, 'gainMuls', [1.1, 1.1, 0.9, 1.0, 0.8])
 %
 % % Generate the data set for the Bianchi Pista bicycle at 7.5 m/s with steer as the
 % % input and a single lane change as the manuever.
 % >>data = generate_data('Pista', 7.5, 'laneType', 'single');
 
 % there are some unconnected ports in the simulink model that send out warnings
-%warning off
+warning off
 
 %% parse function arguments
 % set the defaults for the optional arguments
 defaults.input = 'Steer';
 defaults.laneType = 'double';
 defaults.plot = 0;
-defaults.gains = [1, 1, 1, 1, 1];
+defaults.gainMuls = [1, 1, 1, 1, 1];
+defaults.gains = [];
 
 % load in user supplied settings
 if size(varargin, 2) >= 1
@@ -98,9 +103,6 @@ modelPar.speed = speed;
                                     500, settings.laneType, 60);
 modelPar.track = [pathT, pathY];
 modelPar.stopTime = pathT(end);
-
-% make the gain multipliers unity unless they are supplied
-gains = settings.gains;
 
 % show some output on the screen
 display(sprintf(repmat('-', 1, 79)))
@@ -235,7 +237,7 @@ update_model_variables(modelPar)
 k = {'kDelta', 'kPhiDot', 'kPhi', 'kPsi', 'kY'};
 kString = '';
 for i = 1:length(k)
-    modelPar.(k{i}) = gains(i) * modelPar.(k{i});
+    modelPar.(k{i}) = settings.gainMuls(i) * modelPar.(k{i});
     kString = [kString sprintf('%s = %1.3f\n                  ', ...
                k{i}, modelPar.(k{i}))];
 end
@@ -337,7 +339,7 @@ data.inputs = u;
 data.outputs = y;
 data.outputsDot = yDot;
 data.path = yc;
-data.gains = gains;
+data.gainMuls = settings.gainMuls;
 
 display(sprintf('Data written. \n'))
 
@@ -529,39 +531,6 @@ function k = find_closed_gain(loop, guess)
 
 k = fzero(@(x) delta_mag_closed(x, loop), guess);
 
-function modelPar = findClosedK(modelPar, i)
-% This function finds the gains kDelta (i=1) or kPhiDot (i=2) that give a 10 dB
-% overshoot magnitude for the closed loop transfer functions
-    perturbTable = [zeros(1, 5); eye(5)];
-    % all the loops are closed at first
-    closedTable = [1 1 1 1 1;
-                   1 0 0 0 0;
-                   1 1 0 0 0;
-                   1 1 0 0 0;
-                   1 1 1 0 0;
-                   1 1 1 1 0];
-    loopNames = {'Delta', 'PhiDot', 'Phi', 'Psi', 'Y'};
-    str = 'Finding the closed loop transfer function of the %s loop.';
-    display(sprintf(str, loopNames{i}))
-    modelPar.loopNumber = i;
-    modelPar.perturb = perturbTable(i + 1, :);
-    modelPar.closed = closedTable(i + 1, :);
-    update_model_variables(modelPar);
-
-    if i == 1
-        guess = modelPar.kDelta;
-    else
-        guess = modelPar.kPhiDot;
-    end
-
-    x = fzero(@(x) deltaMagClosed(x, modelPar, i), guess)
-
-    if i == 1
-        modelPar.kDelta=x;
-    else
-        modelPar.kPhiDot=x;
-    end
-
 function k = find_open_gain(loop, input)
 % Returns the gain needed to set the crossover frequency at a desired value.
 %
@@ -638,19 +607,32 @@ assignin('base', ['k' loop], gain)
 % get the closed loop transfer function
 [num, den] = linmod('WhippleModel');
 w = logspace(-1, 2, 1000);
+
+% uncomment to show the bode diagram at each step
+%figure(25)
+%bode(tf(num, den), w)
+
 [mag, phase] = bode(tf(num, den), w);
 % rewrite mag and phase so the dimension is reduced
 mag = mag(:)';
 phase = phase(:)';
 % get the maximum magitude and index
 [magmax, iMaxMag] = max(mag);
+% find lower cutoff of 2 rad/sec
+lowi = min(find(w > 2));
 % truncate the magnitude and frequency below resonance
-magtrunc = mag(1:iMaxMag);
-wtrunc = w(1:iMaxMag);
+magtrunc = mag(lowi:iMaxMag);
+wtrunc = w(lowi:iMaxMag);
 % differentiate the truncated magnitude
 dmag = [0 diff(magtrunc)];
+
+% uncomment to show the derivative of the magnitude at each step
+%figure(20)
+%plot(wtrunc, dmag)
+%pause
+
 % find the minimum of the differentiated magnitude
-[mindmag, iMinDmag] = min(dmag);
+[mindmag, iMinDmag] = min(dmag(20:end));
 % get the magnitude at the minimum
 magmin = magtrunc(iMinDmag);
 % the ratio of magnitude of the resonant peak to the valley just left of the
