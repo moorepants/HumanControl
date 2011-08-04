@@ -1,4 +1,5 @@
 function settings = overwrite_settings(defaultSettings, overrideSettings)
+% function settings = overwrite_settings(defaultSettings, overrideSettings)
 % Returns the settings based on a combination of the defaults and the override settings.
 %
 % Parameters

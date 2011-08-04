@@ -1,4 +1,5 @@
 function data = load_bikes(bikes, input)
+% function data = load_bikes(bikes, input)
 % Returns the data for a set of bicycles at three speeds.
 %
 % Parameters

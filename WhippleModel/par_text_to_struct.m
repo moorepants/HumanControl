@@ -1,4 +1,5 @@
 function par = par_text_to_struct(pathToFile)
+% function par = par_text_to_struct(pathToFile)
 % Returns a structure of the parameters that were stored in a csv text file.
 %
 % Parameters

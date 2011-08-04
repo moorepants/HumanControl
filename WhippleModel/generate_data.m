@@ -1,5 +1,6 @@
 function data = generate_data(bike, speed, varargin)
 % function data = generate_data(bike, speed, varargin)
+% function data = generate_data(bike, speed, varargin)
 % Generates data files for the human operator control model.
 %
 % Parameters
@@ -606,7 +607,7 @@ function delta = delta_mag_closed(gain, loop)
 assignin('base', ['k' loop], gain)
 % get the closed loop transfer function
 [num, den] = linmod('WhippleModel');
-w = logspace(-1, 2, 1000);
+w = logspace(-2, 2, 1000);
 
 % uncomment to show the bode diagram at each step
 %figure(25)
@@ -619,21 +620,41 @@ phase = phase(:)';
 % get the maximum magitude and index
 [magmax, iMaxMag] = max(mag);
 % find lower cutoff of 2 rad/sec
-lowi = min(find(w > 2));
+%lowi = min(find(w > 2));
 % truncate the magnitude and frequency below resonance
-magtrunc = mag(lowi:iMaxMag);
-wtrunc = w(lowi:iMaxMag);
+magtrunc = mag(1:iMaxMag);
+wtrunc = w(1:iMaxMag);
 % differentiate the truncated magnitude
 dmag = [0 diff(magtrunc)];
+% differentiate it again
+ddmag = [0 diff(dmag)];
+% find the zero crossing in ddmag just left of its peak
+[maxDD, indMaxDD] = max(ddmag)
+found = 0;
+for i = indMaxDD:-1:2
+    if ddmag(i - 1) < 0 && ddmag(i) > 0
+        iMinDmag = i;
+        found = 1;
+        break
+    end
+end
+
+if found == 0
+    [ee, iMinDmag] = min(dmag)
+end
 
 % uncomment to show the derivative of the magnitude at each step
-%figure(20)
-%plot(wtrunc, dmag)
-%pause
+figure(20)
+subplot(3, 1, 1)
+plot(wtrunc, magtrunc)
+subplot(3, 1, 2)
+plot(wtrunc, dmag)
+subplot(3, 1, 3)
+plot(wtrunc, ddmag, wtrunc(iMinDmag), ddmag(iMinDmag), 'o')
+grid on
+pause
 
-% find the minimum of the differentiated magnitude
-[mindmag, iMinDmag] = min(dmag(20:end));
-% get the magnitude at the minimum
+% get the magnitude at the flat part on the slope
 magmin = magtrunc(iMinDmag);
 % the ratio of magnitude of the resonant peak to the valley just left of the
 % peak

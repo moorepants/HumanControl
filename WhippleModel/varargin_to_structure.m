@@ -1,4 +1,5 @@
 function options = varargin_to_structure(arguments)
+% function options = varargin_to_structure(arguments)
 % Returns a structure from a cell array of pairs.
 %
 % Parameters

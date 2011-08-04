@@ -1,4 +1,5 @@
 function [aMat, bMat, cMat, dMat] = whipple_pull_force_abcd(par, speed)
+% function [aMat, bMat, cMat, dMat] = whipple_pull_force_abcd(par, speed)
 % Returns the A, B, C, and D matrices for the linear Whipple Pull Force model
 % given a set of parameters and a speed.
 %
