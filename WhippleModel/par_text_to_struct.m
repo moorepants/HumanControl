@@ -6,8 +6,10 @@ function par = par_text_to_struct(pathToFile)
 % ----------
 % pathToFile : string
 %   Path to a text file containing the benchmark parameters for a single
-%   bicycle. The parameters should be on seperate lines and comma seperated
-%   (i.e. c,0.08 or lambda,pi/10)
+%   bicycle. The parameters should be on seperate lines and take this form:
+%
+%   c = 0.08+/-0.01
+%   lam = 0.31
 %
 % Returns
 % -------
@@ -15,10 +17,11 @@ function par = par_text_to_struct(pathToFile)
 %   A structure containing the bicycle parameters.
 
 fid = fopen(pathToFile);
-data = textscan(fid, '%s %s', 'delimiter', ',');
+data = textscan(fid, '%s %s', 'delimiter', '=');
 fclose(fid);
-names = data{1};
-vals = data{2};
+names = strtrim(data{1});
+vals = strtrim(regexp(data{2}, '+/-', 'split'));
 for i = 1:length(names)
-    par.(names{i}) = str2num(vals{i});
+    v = vals{i};
+    par.(names{i}) = str2num(v{1});
 end
