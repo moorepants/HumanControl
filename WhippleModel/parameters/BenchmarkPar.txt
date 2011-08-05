@@ -1,6 +1,6 @@
 w=1.02
 c=0.08
-lambda=pi/10
+lam=pi/10
 g=9.81
 v=1
 rR=0.3
