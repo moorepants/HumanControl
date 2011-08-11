@@ -10,3 +10,6 @@ To Do List
 - Make warnings if the gains don't converge
 - Save correctly found kains to a file
 - If gains didn't get found, give user the option to set them
+- Add a way for the user to graphicall chose where to measure the PhiDot neuro
+  peak height from.
+- Fix xlim to match all plots on the basic plots from generate_data.m

@@ -142,11 +142,11 @@ loopNames = {'Delta', 'PhiDot', 'Phi', 'Psi', 'Y'};
 %% set the gains
 % if the user did not supply the gains, try to calculate them
 if isempty(settings.gains)
-    if speed < 2
+    if speed < 2.5
         display(sprintf(repmat('*', 1, 76)))
         display('Warning')
         display(sprintf(repmat('*', 1, 76)))
-        s = ['The speed, %f m/s, is less than 2 m/s. The PhiDot ', ...
+        s = ['The speed, %1.2f m/s, is less than 2.5 m/s. The PhiDot ', ...
              'loop often has a\nhard time converging. It is suggested ', ...
              'to supply the gains manually for these\nlower speeds.'];
         display(sprintf(s, speed))
