@@ -1,29 +1,29 @@
 function data = generate_data(bike, speed, varargin)
 % function data = generate_data(bike, speed, varargin)
-% function data = generate_data(bike, speed, varargin)
 % Generates data files for the human operator control model.
 %
 % Parameters
 % ----------
 % bike : string
-%   The shortname of the bicycle model to use.
+%   The name of the bicycle model to use. This corresponds to a file in the
+%   ./parameters directory named <bike>Par.txt.
 % speed : float
 %   The speed of the bicycle.
 % varargin : pairs of strings and values
 %   input : string, optional
-%       'Steer' or 'Roll', 'Steer' is the default.
+%       'Steer' or 'Roll'. 'Steer' is the default.
 %   plot : boolean, optional
 %       If 1 basic plots will be shown, if 0 no plots will be shown. 0 is the
 %       default.
+%   gains : matrix (5, 1), optional
+%       If gains are given this will manually override the search for the
+%       optimal gains.
 %   gainMuls : matrix (5, 1), optional
 %       General gain multipliers. The gains are applied starting at the inner
 %       loop going out. [1, 1, 1, 1, 1] is the default.
 %   laneType : string, optional
-%       'single' or 'double' for a single or double lange change manuever.
+%       'single' or 'double' for a single or double lane change maneuver.
 %       'double' is the default.
-%   gains : matrix (5, 1), optional
-%       If gains are given this will manually override the search for the
-%       optimal gains.
 %
 % Returns
 % -------
@@ -41,6 +41,38 @@ function data = generate_data(bike, speed, varargin)
 %       Inputs to the bicycle model.
 %   modelPar : structure
 %       Simulink model input variables.
+%       A : matrix (11, 11)
+%           The state matrix. Refer to the documentation in
+%           whipple_pull_force_abdc.m for details.
+%       B : matrix (11, 3)
+%           The input matrix.
+%       C : matrix
+%           The output matrix.
+%       D : matrix
+%           The feed forward matrix.
+%       speed : float
+%           The forward speed of the bicycle.
+%       track : vector
+%           The lateral coordinates of the desired track.
+%       stoptime : float
+%           The final time of the simulation.
+%       initialConditions : matrix (11, 1)
+%           The initial conditions for the simulation.
+%       neuroNum : float
+%           The numerator of the neuromuscular transfer function.
+%       neuroDen : matrix (1, 3)
+%           The coefficients to the denominator of the neuromuscular transfer
+%           function.
+%       pathFilterNum : float
+%           The numerator of the path filter transfer function.
+%       pathFileterDen : matrix (1, 3)
+%           The coefficients to the denominator of the path filter transfer
+%           function.
+%       handlingFilterNum : float
+%           The numerator of the handling quality metric filter transfer function.
+%       handlingFileterDen : matrix (1, 3)
+%           The coefficients to the denominator of the handling quality
+%           metric filter transfer function.
 %   openLoops : structure
 %       Open loop transfer functions.
 %   outputs : matrix (n, 18)
@@ -61,7 +93,7 @@ function data = generate_data(bike, speed, varargin)
 % % Generate the data set for the Benchmark bicycle at 5.0 m/s with roll as the
 % % input.
 % >>data = generate_data('Benchmark', 5.0, 'input', 'Roll');
-
+%
 % % Generate the data set for the Fisher bicycle at 7.5 m/s with steer input
 % % and show the graphs.
 % >>data = generate_data('Fisher', 7.5, 'input', 'Steer', 'plot', 1);
@@ -75,7 +107,12 @@ function data = generate_data(bike, speed, varargin)
 % >>data = generate_data('Pista', 7.5, 'laneType', 'single');
 
 % there are some unconnected ports in the simulink model that send out warnings
-warning off
+%warning off
+
+% show some output on the screen
+display(sprintf(repmat('-', 1, 79)))
+display(sprintf('%s at %1.2f m/s.', bike, speed))
+display(sprintf(repmat('-', 1, 79)))
 
 %% parse function arguments
 % set the defaults for the optional arguments
@@ -96,143 +133,37 @@ end
 settings = overwrite_settings(defaults, userSettings);
 
 %% set model parameters
-% set the speed
-modelPar.speed = speed;
-
-% generate the path to track
-[pathX, pathY, pathT] = lane_change(35, 2, 0.2, 250, speed, ...
-                                    500, settings.laneType, 60);
-modelPar.track = [pathT, pathY];
-modelPar.stopTime = pathT(end);
-
-% show some output on the screen
-display(sprintf(repmat('-', 1, 79)))
-display(sprintf('%s at %1.2f m/s.', bike, speed))
-display(sprintf(repmat('-', 1, 79)))
-
-% load the bicycle parameters
-pathToParFile = ['parameters' filesep bike 'Par.txt'];
-par = par_text_to_struct(pathToParFile);
-str = 'Parameters for the %s bicycle and rider have been loaded.';
-display(sprintf(str, bike))
-
-% calculate the A, B, C, and D matrices of the bicycle model
-display(sprintf('Calculating the A, B, C, D matrices for %1.2f m/s', speed))
-tic
-[modelPar.A, modelPar.B, modelPar.C, modelPar.D] = ...
-    whipple_pull_force_abcd(par, speed);
-elapsedTime = toc;
-display(sprintf('A, B, C, D calculated in %1.4f seconds.', elapsedTime))
-
-% Keep in mind that the there is a function that relates steer angle, roll
-% angle and pitch angle that must be enforced when setting any three of those
-% initial conditions.
-modelPar.initialConditions = [-par.w, ... rear wheel contact x
-                               0, ... rear wheel contact y
-                               0, ... yaw angle
-                               0, ... roll angle
-                               0, ... pitch angle
-                               0, ... rear wheel rotation
-                               0, ... steer angle
-                               0, ... front wheel rotation
-                               0, ... roll rate
-                               -speed / par.rR, ... rear wheel rate
-                               0]; % steer rate
-
-% human neuromuscular system
-modelPar.neuroNum = 900;
-modelPar.neuroDen = [1, 2 * 0.707 * 30, 900];
-
-% path filter
-modelPar.pathFilterNum = 2.4^2;
-modelPar.pathFilterDen = [1, 2 * 2.4, 2.4^2];
-
-% handling qualities metric filter
-modelPar.handlingFilterNum = 400;
-modelPar.handlingFilterDen = [1, 40, 400];
-
-% handling quality calculation flag
-modelPar.isHandling = 0;
-
-% set parameters for steer or roll inputs
-if strcmp(settings.input, 'Steer')
-    % start at the delta loop
-    startLoop = 1;
-    % use steer torque control
-    modelPar.isRollInput = 0;
-    % preview time delay
-    modelPar.timeDelay = 2.75;
-elseif strcmp(settings.input, 'Roll')
-    % start at the phiDot loop
-    startLoop = 2;
-    % use the roll torque control
-    modelPar.isRollInput = 1;
-    % preview time delay
-    modelPar.timeDelay = 3.5;
-else
-    error('Choose Steer or Roll as the input')
-end
+[modelPar, startLoop, par] = ...
+    set_initial_model_parameters(bike, speed, settings);
 
 % the name of the loops starting with the inner loop
 loopNames = {'Delta', 'PhiDot', 'Phi', 'Psi', 'Y'};
 
-%% calculate feedback gains using successive loop closure
-% make truth tables for perturbing and closing the loops
-% the first row is default setup
-perturbTable = [zeros(1, 5) % do not perturb any loop
-                eye(5)]; % perturb each loop individually
-closedTable = [1 1 1 1 1 % all loops closed
-               1 0 0 0 0 % delta loop closed
-               1 1 0 0 0 % delta, phidot loops closed
-               1 1 0 0 0 % delta, phidot loops closed
-               1 1 1 0 0 % delta, phidot, phi loops closed
-               1 1 1 1 0]; % delta, phidot, phi, psi loops closed
-
-if strcmp(settings.input, 'Roll')
-    % don't feed back delta
-    closedTable(:, 1) = zeros(6, 1);
-end
-
-try
+%% set the gains
+% if the user did not supply the gains, try to calculate them
+if isempty(settings.gains)
+    if speed < 2
+        display(sprintf(repmat('*', 1, 76)))
+        display('Warning')
+        display(sprintf(repmat('*', 1, 76)))
+        s = ['The speed, %f m/s, is less than 2 m/s. The PhiDot ', ...
+             'loop often has a\nhard time converging. It is suggested ', ...
+             'to supply the gains manually for these\nlower speeds.'];
+        display(sprintf(s, speed))
+        display(sprintf(repmat('*', 1, 76)))
+    end
     pathToGainFile = ['gains' filesep bike settings.input 'Gains.txt'];
     [modelPar.kDelta, modelPar.kPhiDot, modelPar.kPhi, ...
      modelPar.kPsi, modelPar.kY] = lookup_gains(pathToGainFile, speed);
-catch
-    pathToGainFile = ['gains' filesep 'Benchmark' settings.input 'Gains.txt'];
-    [modelPar.kDelta, modelPar.kPhiDot, modelPar.kPhi, ...
-     modelPar.kPsi, modelPar.kY] = lookup_gains(pathToGainFile, 5.0);
-    % but if they don't exist, use these
-    %modelPar.kDelta = 106.375;
-    %modelPar.kPhiDot = -0.07;
-    %modelPar.kPhi = 1E-10;
-    %modelPar.kPsi = 0.0;
-    %modelPar.kY = 0.0;
+    % now calculate exact feedback gains using successive loop closure
+    modelPar = exact_gains(startLoop, loopNames, modelPar, settings);
+else % set the gains as the user specified
+    modelPar.kDelta = settings.gains(1);
+    modelPar.kPhiDot = settings.gains(2);
+    modelPar.kPhi = settings.gains(3);
+    modelPar.kPsi = settings.gains(4);
+    modelPar.kY = settings.gains(5);
 end
-
-% actually calculate feedback gains using successive loop closure
-for i = startLoop:length(loopNames)
-    guess = modelPar.(['k' loopNames{i}]);
-    str = ['Finding the loop transfer function ' ...
-           'of the %s loop with a start guess of %1.4f.'];
-    display(sprintf(str, loopNames{i}, guess))
-    % set the logic for this loop calculation
-    modelPar.loopNumber = i;
-    modelPar.perturb = perturbTable(i + 1, :);
-    modelPar.closed = closedTable(i + 1, :);
-    update_model_variables(modelPar);
-    if i == 1 || i == 2
-        gain = find_closed_gain(loopNames{i}, guess);
-    elseif i == 3 || i == 4 || i == 5
-        gain = find_open_gain(loopNames{i}, settings.input);
-    else
-        error(sprintf('%s loop not found', loopNames{i}))
-    end
-    modelPar.(['k' loopNames{i}]) = gain;
-    str = '%s loop gain set to %1.4f.';
-    display(sprintf(str, loopNames{i}, gain))
-end
-
-update_model_variables(modelPar)
 
 % scale the gains
 k = {'kDelta', 'kPhiDot', 'kPhi', 'kPsi', 'kY'};
@@ -244,6 +175,9 @@ for i = 1:length(k)
 end
 display(['Gains are set to: ', strtrim(kString)])
 
+%% store transfer function data
+perturbTable = [zeros(1, 5) % do not perturb any loop
+                eye(5)]; % perturb each loop individually
 % all the loops are closed at first
 closedTable = ones(6, 5);
 
@@ -252,7 +186,9 @@ if strcmp(settings.input, 'Roll')
     closedTable(:, 1) = zeros(6, 1);
 end
 
-% get the transfer functions for the closed loops
+update_model_variables(modelPar)
+
+% store the transfer functions for the closed loops
 for i = startLoop:length(loopNames)
     str = 'Finding the %s closed loop transfer function.';
     display(sprintf(str, loopNames{i}))
@@ -286,7 +222,7 @@ for i = startLoop:length(loopNames)
     openLoops.(loopNames{i}).den = den;
 end
 
-% get the handling quality metric
+%% get the handling quality metric
 display('Finding the handling quality metric.')
 
 % the handling qualities must be calculated with the phi loop at 2 rad/sec
@@ -306,9 +242,26 @@ update_model_variables(modelPar);
 handlingMetric.num = num;
 handlingMetric.den = den;
 
+
+%% Simulate the system
 % change the gain back for simulation
 if strcmp(settings.input, 'Roll')
     modelPar.kPhi = origkPhi;
+end
+
+% check to see if the final system is stable
+G = tf(closedLoops.Y.num, closedLoops.Y.den);
+if any(real(roots(G.den{:})) > 0)
+    display(sprintf(repmat('*', 1, 76)))
+    display('Warning')
+    display(sprintf(repmat('*', 1, 76)))
+    s = ['The system is not stable with these gains. If the ', ...
+             'simulation completes, the\ndata may be invalid. ', ...
+             'Please give better gain guesses or supply the gains\n', ...
+             'manually.'];
+    display(sprintf(s))
+    display(sprintf(repmat('*', 1, 76)))
+    roots(G.den{:});
 end
 
 % close all the loops and simulate
@@ -499,6 +452,8 @@ speeds = contents.data(:, 1);
 
 if length(speeds) == 1
     guesses = contents.data(2:end);
+    display(sprintf(['Gain guess may be bad, please provide more than one ' ...
+                    'speed of gain guesses in %s'], pathToGains))
 else
     guesses = zeros(5);
     % interpolate/extrapolate the data
@@ -605,9 +560,17 @@ function delta = delta_mag_closed(gain, loop)
 
 % set the gain for this loop
 assignin('base', ['k' loop], gain)
+
 % get the closed loop transfer function
 [num, den] = linmod('WhippleModel');
 w = logspace(-2, 2, 1000);
+
+% check for stability
+%G = tf(num, den);
+%if any(real(roots(G.den{:})) > 0)
+    %display('Loop is not stable with this gain.')
+    %roots(G.den{:})
+%end
 
 % uncomment to show the bode diagram at each step
 %figure(25)
@@ -617,7 +580,7 @@ w = logspace(-2, 2, 1000);
 % rewrite mag and phase so the dimension is reduced
 mag = mag(:)';
 phase = phase(:)';
-% get the maximum magitude and index
+% get the maximum magitude and index, this is the peak of the neurmuscular mode
 [magmax, iMaxMag] = max(mag);
 % find lower cutoff of 2 rad/sec
 %lowi = min(find(w > 2));
@@ -628,31 +591,49 @@ wtrunc = w(1:iMaxMag);
 dmag = [0 diff(magtrunc)];
 % differentiate it again
 ddmag = [0 diff(dmag)];
-% find the zero crossing in ddmag just left of its peak
-[maxDD, indMaxDD] = max(ddmag)
-found = 0;
+% find the maximum which is just left of the far right zero crossing
+[maxDD, indMaxDD] = max(ddmag);
+% find the zero crossing in ddmag just left of its peak, this should occur
+% at the local minima of dmag that corresponds to the flat point in mag, but
+% sometimes it doesn't cross the zero line so just choose a point a certain
+% distance from the peak (4 rad/sec to the left of the peak)
 for i = indMaxDD:-1:2
     if ddmag(i - 1) < 0 && ddmag(i) > 0
         iMinDmag = i;
-        found = 1;
+        %display(sprintf(['Found a zero crossing in ddmag ' ...
+                        %'at the inflection point at %f.'], ...
+                        %wtrunc(iMinDmag)))
         break
+    else
+        iMinDmag = 1;
     end
 end
 
-if found == 0
-    [ee, iMinDmag] = min(dmag)
+if iMinDmag == 1
+    %display('Did not find a zero crossing in ddmag at the inflection point.')
+    if strcmp(loop, 'Delta')
+        [tmp, iMinDmag] = min(dmag);
+        %display(sprintf('Setting the Delta low point to %f', ...
+                        %wtrunc(iMinDmag)))
+    elseif strcmp(loop, 'PhiDot')
+        wMid = wtrunc(end) - 4;
+        wMid = 3;
+        [tmp, iMinDmag] = min(abs(wMid - wtrunc));
+        %display(sprintf('Setting the PhiDot low point to %f', ...
+                        %wtrunc(iMinDmag)))
+    end
 end
 
 % uncomment to show the derivative of the magnitude at each step
-figure(20)
-subplot(3, 1, 1)
-plot(wtrunc, magtrunc)
-subplot(3, 1, 2)
-plot(wtrunc, dmag)
-subplot(3, 1, 3)
-plot(wtrunc, ddmag, wtrunc(iMinDmag), ddmag(iMinDmag), 'o')
-grid on
-pause
+%figure(20)
+%subplot(3, 1, 1)
+%plot(wtrunc, magtrunc, wtrunc(iMinDmag), magtrunc(iMinDmag), 'o')
+%subplot(3, 1, 2)
+%plot(wtrunc, dmag, wtrunc(iMinDmag), dmag(iMinDmag), 'o')
+%subplot(3, 1, 3)
+%plot(wtrunc, ddmag, wtrunc(iMinDmag), ddmag(iMinDmag), 'o')
+%grid on
+%pause
 
 % get the magnitude at the flat part on the slope
 magmin = magtrunc(iMinDmag);
@@ -661,3 +642,158 @@ magmin = magtrunc(iMinDmag);
 rmag = magmax / magmin;
 % the difference in the magnitude and the desired 10db peak
 delta = rmag - sqrt(10);  % 10 dB corresponds to a magnitude ratio of sqrt(10)
+
+function modelPar = exact_gains(startLoop, loopNames, modelPar, settings)
+% function modelPar = exact_gains(startLoop, loopNames, modelPar, settings)
+% Finds the exact values for the gains for each loop given the guesses
+% provided in modelPar.
+%
+% Parameters
+% ----------
+% startLoop : integer
+%   Either 1 or 2. If 1, all loops are set and if the Delta loop is skipped.
+% loopNames : cell array of strings
+%   The names of the loops starting with the Delta loop.
+% modelPar : structure
+%   The complete model parametes with the gains set as initial guesses.
+% settings : structure
+%   The combined default and user supplied optional settings.
+%
+% Returns
+% -------
+% modelPar : structure
+%   The complete model parameters with the exact gains.
+
+% make truth tables for perturbing and closing the loops
+% the first row is default setup
+perturbTable = [zeros(1, 5) % do not perturb any loop
+                eye(5)]; % perturb each loop individually
+closedTable = [1 1 1 1 1 % all loops closed
+               1 0 0 0 0 % delta loop closed
+               1 1 0 0 0 % delta, phidot loops closed
+               1 1 0 0 0 % delta, phidot loops closed
+               1 1 1 0 0 % delta, phidot, phi loops closed
+               1 1 1 1 0]; % delta, phidot, phi, psi loops closed
+
+if strcmp(settings.input, 'Roll')
+    % don't feed back delta
+    closedTable(:, 1) = zeros(6, 1);
+end
+
+for i = startLoop:length(loopNames)
+    guess = modelPar.(['k' loopNames{i}]);
+    str = ['Finding the loop transfer function ' ...
+           'of the %s loop with a start guess of %1.4f.'];
+    display(sprintf(str, loopNames{i}, guess))
+    % set the logic for this loop calculation
+    modelPar.loopNumber = i;
+    modelPar.perturb = perturbTable(i + 1, :);
+    modelPar.closed = closedTable(i + 1, :);
+    update_model_variables(modelPar);
+    if i == 1 || i == 2
+        gain = find_closed_gain(loopNames{i}, guess);
+    elseif i == 3 || i == 4 || i == 5
+        gain = find_open_gain(loopNames{i}, settings.input);
+    else
+        error(sprintf('%s loop not found', loopNames{i}))
+    end
+    modelPar.(['k' loopNames{i}]) = gain;
+    str = '%s loop gain set to %1.4f.';
+    display(sprintf(str, loopNames{i}, gain))
+end
+
+function [modelPar, startLoop, par] = ...
+    set_initial_model_parameters(bike, speed, settings)
+% function [modelPar, startLoop, par] = set_initial_model_parameters(bike, speed, settings)
+% Sets the model parameters based on the user input.
+%
+% Parameters
+% ----------
+% bike : string
+%   The name of the bicycle model to use. This corresponds to a file in the
+%   ./Parameters directory named <bike>Par.txt.
+% speed : float
+%   The speed of the bicycle.
+% settings : structure
+%   The combine default and user supplied optional settings.
+%
+% Returns
+% -------
+% modelPar : structure
+%   The initial parameters for the simulink model.
+% startLoop : integer
+%   Either 1 or 2 depending if the input is steer or roll.
+% par : structure
+%   The physical parameters of the bicycle and rider.
+
+% set the speed
+modelPar.speed = speed;
+
+% generate the path to track
+[pathX, pathY, pathT] = lane_change(35, 2, 0.2, 250, speed, ...
+                                    500, settings.laneType, 60);
+modelPar.track = [pathT, pathY];
+modelPar.stopTime = pathT(end);
+
+% load the bicycle parameters
+pathToParFile = ['parameters' filesep bike 'Par.txt'];
+par = par_text_to_struct(pathToParFile);
+str = 'Parameters for the %s bicycle and rider have been loaded.';
+display(sprintf(str, bike))
+
+% calculate the A, B, C, and D matrices of the bicycle model
+display(sprintf('Calculating the A, B, C, D matrices for %1.2f m/s', speed))
+tic
+[modelPar.A, modelPar.B, modelPar.C, modelPar.D] = ...
+    whipple_pull_force_abcd(par, speed);
+elapsedTime = toc;
+display(sprintf('A, B, C, D calculated in %1.4f seconds.', elapsedTime))
+
+% Keep in mind that the there is a function that relates steer angle, roll
+% angle and pitch angle that must be enforced when setting any three of those
+% initial conditions.
+modelPar.initialConditions = [-par.w, ... rear wheel contact x
+                               0, ... rear wheel contact y
+                               0, ... yaw angle
+                               0, ... roll angle
+                               0, ... pitch angle
+                               0, ... rear wheel rotation
+                               0, ... steer angle
+                               0, ... front wheel rotation
+                               0, ... roll rate
+                               -speed / par.rR, ... rear wheel rate
+                               0]; % steer rate
+
+% human neuromuscular system
+modelPar.neuroNum = 900;
+modelPar.neuroDen = [1, 2 * 0.707 * 30, 900];
+
+% path filter
+modelPar.pathFilterNum = 2.4^2;
+modelPar.pathFilterDen = [1, 2 * 2.4, 2.4^2];
+
+% handling qualities metric filter
+modelPar.handlingFilterNum = 400;
+modelPar.handlingFilterDen = [1, 40, 400];
+
+% handling quality calculation flag
+modelPar.isHandling = 0;
+
+% set parameters for steer or roll inputs
+if strcmp(settings.input, 'Steer')
+    % start at the delta loop
+    startLoop = 1;
+    % use steer torque control
+    modelPar.isRollInput = 0;
+    % preview time delay
+    modelPar.timeDelay = 2.75;
+elseif strcmp(settings.input, 'Roll')
+    % start at the phiDot loop
+    startLoop = 2;
+    % use the roll torque control
+    modelPar.isRollInput = 1;
+    % preview time delay
+    modelPar.timeDelay = 3.5;
+else
+    error('Choose Steer or Roll as the input')
+end
