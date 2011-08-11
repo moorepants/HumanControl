@@ -447,7 +447,13 @@ function [kDelta, kPhiDot, kPhi, kPsi, kY] = lookup_gains(pathToGains, speed)
 % If there is only one speed in the file, then the function returns the value
 % of those gains no matter which speed you specify.
 
-contents = importdata(pathToGains);
+try
+    contents = importdata(pathToGains);
+catch err
+    display(sprintf('There is no gain file: %s.', pathToGains))
+    rethrow(err)
+end
+
 speeds = contents.data(:, 1);
 
 if length(speeds) == 1
