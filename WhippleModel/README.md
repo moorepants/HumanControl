@@ -67,7 +67,7 @@ data = generate_data('Fisher', 7.5, 'input', 'Steer', 'plot', 1);
 
 % Generate the data set for the Browser bicycle at 2.5 m/s with steer as an
 % input and multiply the five gains by various values and show the graphs.
-data = generate_data('Browser', 2.5, 'plot', 1, 'gains', [1.1, 1.1, 0.9, 1.0, 0.8])
+data = generate_data('Browser', 2.5, 'plot', 1, 'gainMuls', [1.1, 1.1, 0.9, 1.0, 0.8])
 
 % Generate the data set for the Bianchi Pista bicycle at 7.5 m/s with steer as the
 % input and a single lane change as the manuever.
