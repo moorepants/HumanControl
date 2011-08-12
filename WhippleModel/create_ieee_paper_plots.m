@@ -979,14 +979,14 @@ for i = 1:length(loopNames)
 
     % adjust the gains and get the data
     twentyPercent = generate_data('Benchmark', 5.0, ...
-                                  'gains', gainChanges(i, :));
+                                  'gainMuls', gainChanges(i, :));
     subplot(2, 2, i)
     hold on
 
     if i == 4
         display('Phase portrait 4 comparison data.')
         nominalData = generate_data('Benchmark', 5.0, ...
-                                  'gains', [1, 1, 1, 0.8, 0.8]);
+                                  'gainMuls', [1, 1, 1, 0.8, 0.8]);
         x = nominalData.(xySource{i})(:, xy(i, 1));
         y = nominalData.(xySource{i})(:, xy(i, 2));
     else
