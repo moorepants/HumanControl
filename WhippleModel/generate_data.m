@@ -109,7 +109,7 @@ function data = generate_data(bike, speed, varargin)
 % there are some unconnected ports in the simulink model that send out warnings
 %warning off
 
-% show some output on the screen
+% show the bike and speed on the screen
 display(sprintf(repmat('-', 1, 79)))
 display(sprintf('%s at %1.2f m/s.', bike, speed))
 display(sprintf(repmat('-', 1, 79)))
@@ -142,6 +142,7 @@ loopNames = {'Delta', 'PhiDot', 'Phi', 'Psi', 'Y'};
 %% set the gains
 % if the user did not supply the gains, try to calculate them
 if isempty(settings.gains)
+    % give a warning that the program doesn't work well for low speeds
     if speed < 2.5
         display(sprintf(repmat('*', 1, 76)))
         display('Warning')
@@ -152,6 +153,7 @@ if isempty(settings.gains)
         display(sprintf(s, speed))
         display(sprintf(repmat('*', 1, 76)))
     end
+    % load the gain guesses
     pathToGainFile = ['gains' filesep bike settings.input 'Gains.txt'];
     [modelPar.kDelta, modelPar.kPhiDot, modelPar.kPhi, ...
      modelPar.kPsi, modelPar.kY] = lookup_gains(pathToGainFile, speed);
@@ -230,7 +232,17 @@ display('Finding the handling quality metric.')
 % the Benchmark bike at medium speed!!! Needs to be smarter to work generally.
 if strcmp(settings.input, 'Roll')
     origkPhi = modelPar.kPhi;
-    modelPar.kPhi = 1.259 * origkPhi;
+    % find the gain needed to move the current phi loop to a crossover of 2
+    num = openLoops.Phi.num;
+    den = openLoops.Phi.den;
+    w = logspace(-1, 2, 1000);
+    [mag,phase] = bode(tf(num,den), w);
+    mag = mag(:)';
+    phase = phase(:)';
+    % get the magnitude at the desired crossover frequency
+    MagCO = interp1(w, mag, 2.0);
+    % calculate the gain needed to get the desired crossover frequency
+    modelPar.kPhi = 1 / MagCO * origkPhi;
 end
 
 modelPar.isHandling = 1;
@@ -241,7 +253,6 @@ update_model_variables(modelPar);
 [num, den] = linmod('WhippleModel');
 handlingMetric.num = num;
 handlingMetric.den = den;
-
 
 %% Simulate the system
 % change the gain back for simulation
@@ -523,22 +534,22 @@ mag = mag(:)';
 phase = phase(:)';
 
 % set the desirsed open loop crossover frequency
-if loop == 'Phi'
-    if input == 'Steer'
+if strcmp(loop, 'Phi')
+    if strcmp(input, 'Steer')
         wBW = 2.0;
-    elseif input == 'Roll'
+    elseif strcmp(input, 'Roll')
         wBW = 1.5;
     end
-elseif loop == 'Psi'
-    if input == 'Steer'
+elseif strcmp(loop, 'Psi')
+    if strcmp(input, 'Steer')
         wBW = 1.0;
-    elseif input == 'Roll'
+    elseif strcmp(input, 'Roll')
         wBW = 0.75;
     end
-elseif loop == 'Y'
-    if input == 'Steer'
+elseif strcmp(loop, 'Y')
+    if strcmp(input, 'Steer')
         wBW = 0.5;
-    elseif input == 'Roll'
+    elseif strcmp(input, 'Roll')
         wBW = 0.375;
     end
 end
