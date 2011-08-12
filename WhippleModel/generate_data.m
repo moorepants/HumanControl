@@ -107,7 +107,7 @@ function data = generate_data(bike, speed, varargin)
 % >>data = generate_data('Pista', 7.5, 'laneType', 'single');
 
 % there are some unconnected ports in the simulink model that send out warnings
-%warning off
+warning off
 
 % show the bike and speed on the screen
 display(sprintf(repmat('-', 1, 79)))
