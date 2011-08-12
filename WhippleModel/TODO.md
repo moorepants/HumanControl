@@ -7,9 +7,11 @@ To Do List
 - Add the new values for the Browserins instead of the old.
 - Make the varargin_to_structure take the default structure and add the
   varargins to the default stucture. This may need to be done recursively.
-- Make warnings if the gains don't converge
-- Save correctly found kains to a file
-- If gains didn't get found, give user the option to set them
-- Add a way for the user to graphicall chose where to measure the PhiDot neuro
+- Save correctly found gains to a file
+- Add a way for the user to graphically choose where to measure the PhiDot neuro
   peak height from.
 - Fix xlim to match all plots on the basic plots from generate_data.m
+- Setup load_bikes to use Ron's gains instead of the one found by our autok
+  routine
+- Allow the user to set the neuro transfer function parameters as an option
+  argument to generata_data
