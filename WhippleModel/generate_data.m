@@ -273,6 +273,12 @@ if any(real(roots(G.den{:})) > 0)
     display(sprintf(s))
     display(sprintf(repmat('*', 1, 76)))
     roots(G.den{:});
+else
+    % write the gains to file
+    pathToGainFile = ['gains' filesep bike settings.input 'Gains.txt'];
+    newGains = [modelPar.kDelta, modelPar.kPhiDot, modelPar.kPhi, ...
+    modelPar.kPsi, modelPar.kY];
+    write_gains(pathToGainFile, newGains, speed) 
 end
 
 % close all the loops and simulate
@@ -533,7 +539,7 @@ w = logspace(-1,2,1000);
 mag = mag(:)';
 phase = phase(:)';
 
-% set the desirsed open loop crossover frequency
+% set the desired open loop crossover frequency
 if strcmp(loop, 'Phi')
     if strcmp(input, 'Steer')
         wBW = 2.0;
