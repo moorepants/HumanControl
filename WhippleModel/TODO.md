@@ -15,3 +15,4 @@ To Do List
   routine
 - Allow the user to set the neuro transfer function parameters as an option
   argument to generata_data
+- Add more detailed examples in the readme.
