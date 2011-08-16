@@ -58,11 +58,15 @@ appropriate gains for a stable model, compute all of the loop transfer
 functions and simulate a double lane change manuever. The function outputs all
 of this data for easy plotting and analysis.
 
-Generate data for the Benchmark bicyle at 4.8 m/s and explore some of the
-output.
+Generate data for the Benchmark bicyle at 4.8 m/s.
 
 ```matlab
 >> data = generate_data('Benchmark', 4.8);
+```
+
+You should see this basic output:
+
+```
 -------------------------------------------------------------------------------
 Benchmark at 4.80 m/s.
 -------------------------------------------------------------------------------
@@ -99,7 +103,11 @@ Gains written to gains/BenchmarkSteerGains.txt
 Simulating the tracking task.
 Simulation finished in 0.185 seconds.
 Done.
+```
 
+`data` is now a structure that contains all of the output from the function.
+
+```matlab
 >> data
 
 data =
@@ -120,6 +128,44 @@ data =
 
 ```
 
+You can check the eigenvalues of the bicycle model:
+
+```matlab
+>> eig(data.modelPar.A)
+```
+
+The loop transfer functions (open and closed) can be visualized with a Bode
+plot:
+
+```matlab
+>> bode(tf(data.closedLoops.delta.num, data.closedLoops.delta.den))
+```
+
+The handling quality metric can be accessed by:
+
+```matlab
+>> tf(handlingMetric.num, handlingMetric.den)
+```
+
+The inputs and outputs from the simulation can be be visualized with:
+
+```matlab
+>> figure(1)
+>> plot(data.time, data.inputs)
+>> figure(2)
+>> plot(data.time, data.outputs)
+```
+
+The model gains can be accessed with:
+
+```matlab
+>> data.modelPar.kDelta
+>> data.modelPar.kPhiDot
+>> data.modelPar.kPhi
+>> data.modelPar.kPsi
+>> data.modelPar.kY
+```
+
 `generate_data.m` can also take many optional arguments.
 
 ```matlab
@@ -138,7 +184,14 @@ data = generate_data('Browser', 2.5, 'plot', 1, 'gainMuls', [1.1, 1.1, 0.9, 1.0,
 % Generate the data set for the Bianchi Pista bicycle at 7.5 m/s with steer as the
 % input and a single lane change as the manuever.
 data = generate_data('Pista', 7.5, 'laneType', 'single');
+```
 
+We used `generate_data.m` to create the data and plots for the journal paper on
+the subject. Run `ieee.m` to generate all of the plots. This code has examples
+of how to extract and plot all of the data that is made available from
+`generate_data.m`
+
+```matlab
 % Generate the plots for the paper on this model.
 ieee
 ```
