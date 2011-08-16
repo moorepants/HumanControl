@@ -52,9 +52,20 @@ Requirements
 
 Example Use
 ===========
-This will generate the transfer function and simulation data for the a bicycle
-in a lane change maneuver and plot basic time histories of the inputs and
-outputs along with bode plots of the various transfer functions.
+The core function in this package is `generate_data.m`. The simplest method of
+using it is to supply it with a bicycle name and a speed. It will then find the
+appropriate gains for a stable model, compute all of the loop transfer
+functions and simulate a double lane change manuever. The function outputs all
+of this data for easy plotting and analysis.
+
+Generate data for the Benchmark bicyle at 4.8 m/s and explore some of the
+output.
+
+```matlab
+>> data = generate_data('Benchmark', 4.8);
+```
+
+`generate_data.m` can also take many optional arguments.
 
 ```matlab
 % Generate the data set for the Benchmark bicycle at 5.0 m/s with roll as the

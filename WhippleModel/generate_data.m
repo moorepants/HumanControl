@@ -274,11 +274,11 @@ if any(real(roots(G.den{:})) > 0)
     display(sprintf(repmat('*', 1, 76)))
     roots(G.den{:});
 else
-    % write the gains to file
+    % write the gains to file if the system is stable
     pathToGainFile = ['gains' filesep bike settings.input 'Gains.txt'];
     newGains = [modelPar.kDelta, modelPar.kPhiDot, modelPar.kPhi, ...
     modelPar.kPsi, modelPar.kY];
-    write_gains(pathToGainFile, newGains, speed) 
+    write_gains(pathToGainFile, speed, newGains)
 end
 
 % close all the loops and simulate
