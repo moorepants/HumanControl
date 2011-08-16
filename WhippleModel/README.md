@@ -63,6 +63,61 @@ output.
 
 ```matlab
 >> data = generate_data('Benchmark', 4.8);
+-------------------------------------------------------------------------------
+Benchmark at 4.80 m/s.
+-------------------------------------------------------------------------------
+Parameters for the Benchmark bicycle and rider have been loaded.
+Calculating the A, B, C, D matrices for 4.80 m/s
+A, B, C, D calculated in 0.0291 seconds.
+Finding the loop transfer function of the Delta loop with a start guess of 44.6406.
+Delta loop gain set to 44.6406.
+Finding the loop transfer function of the PhiDot loop with a start guess of -0.0529.
+PhiDot loop gain set to -0.0529.
+Finding the loop transfer function of the Phi loop with a start guess of 13.2253.
+Phi loop gain set to 13.2253.
+Finding the loop transfer function of the Psi loop with a start guess of 0.1720.
+Psi loop gain set to 0.1720.
+Finding the loop transfer function of the Y loop with a start guess of 0.1001.
+Y loop gain set to 0.1001.
+Gains are set to: kDelta = 44.641
+                  kPhiDot = -0.053
+                  kPhi = 13.225
+                  kPsi = 0.172
+                  kY = 0.100
+Finding the Delta closed loop transfer function.
+Finding the PhiDot closed loop transfer function.
+Finding the Phi closed loop transfer function.
+Finding the Psi closed loop transfer function.
+Finding the Y closed loop transfer function.
+Finding the Delta open loop transfer function.
+Finding the PhiDot open loop transfer function.
+Finding the Phi open loop transfer function.
+Finding the Psi open loop transfer function.
+Finding the Y open loop transfer function.
+Finding the handling quality metric.
+Gains written to gains/BenchmarkSteerGains.txt
+Simulating the tracking task.
+Simulation finished in 0.185 seconds.
+Done.
+
+>> data
+
+data =
+
+             speed: 4.8000
+               par: [1x1 struct]
+          modelPar: [1x1 struct]
+       closedLoops: [1x1 struct]
+         openLoops: [1x1 struct]
+    handlingMetric: [1x1 struct]
+              time: [209x1 double]
+           command: [209x5 double]
+            inputs: [209x3 double]
+           outputs: [209x18 double]
+        outputsDot: [209x18 double]
+              path: [209x1 double]
+          gainMuls: [1 1 1 1 1]
+
 ```
 
 `generate_data.m` can also take many optional arguments.

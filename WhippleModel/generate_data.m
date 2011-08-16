@@ -279,6 +279,7 @@ else
     newGains = [modelPar.kDelta, modelPar.kPhiDot, modelPar.kPhi, ...
     modelPar.kPsi, modelPar.kY];
     write_gains(pathToGainFile, speed, newGains)
+    display(sprintf('Gains written to %s', pathToGainFile))
 end
 
 % close all the loops and simulate
@@ -312,7 +313,7 @@ data.outputsDot = yDot;
 data.path = yc;
 data.gainMuls = settings.gainMuls;
 
-display(sprintf('Data written. \n'))
+display(sprintf('Done. \n'))
 
 %% plot
 if settings.plot
