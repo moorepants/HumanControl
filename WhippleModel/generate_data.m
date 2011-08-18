@@ -12,9 +12,6 @@ function data = generate_data(bike, speed, varargin)
 % varargin : pairs of strings and values
 %   input : string, optional
 %       'Steer' or 'Roll'. 'Steer' is the default.
-%   plot : boolean, optional
-%       If 1 basic plots will be shown, if 0 no plots will be shown. 0 is the
-%       default.
 %   gains : matrix (5, 1), optional
 %       If gains are given this will manually override the search for the
 %       optimal gains.
@@ -24,6 +21,31 @@ function data = generate_data(bike, speed, varargin)
 %   laneType : string, optional
 %       'single' or 'double' for a single or double lane change maneuver.
 %       'double' is the default.
+%   neuroFreq : float, optional
+%       The neuromuscular frequency. The default is 30 rad/sec.
+%   plot : boolean, optional
+%       If 1 basic plots will be shown, if 0 no plots will be shown. 0 is the
+%       default.
+%   simulate : boolean, optional
+%       Default is true. If true the simulation will be available in the
+%       output.
+%   loopTransfer : boolean, optional
+%       Default is true. If true the open and closed loop transfer functions
+%       will be available in the output.
+%   handlingQuality : boolean, optional
+%       Default is true. If true the handling quality metric will be
+%       available in the output.
+%   forceRollRate : boolean, optional
+%       Default is true. If true, the output will contain the transfer
+%       function from pull force to roll rate.
+%   stateSpace : cell array, optional
+%       This cell array should contain the state space matrices {A, B, C, D}
+%       for the whipple pull force bicycle model. Be sure that the `bike`
+%       and `speed` matches this state space model. If it isn't specified,
+%       the state space calculation happens inside generate_data. This
+%       option allows make the potentially time intensive calculation
+%       outside of generate data. But be careful with it because the
+%       arguments `bike` and `speed` become redundant.
 %
 % Returns
 % -------
@@ -118,9 +140,15 @@ display(sprintf(repmat('-', 1, 79)))
 % set the defaults for the optional arguments
 defaults.input = 'Steer';
 defaults.laneType = 'double';
-defaults.plot = 0;
 defaults.gainMuls = [1, 1, 1, 1, 1];
 defaults.gains = [];
+defaults.neuroFreq = 30;
+defaults.plot = 0;
+defaults.simulate = 1;
+defaults.loopTransfer = 1;
+defaults.handlingQuality = 1;
+defaults.forceRollRate = 1;
+defaults.stateSpace = {};
 
 % load in user supplied settings
 if size(varargin, 2) >= 1
@@ -178,140 +206,169 @@ end
 display(['Gains are set to: ', strtrim(kString)])
 
 %% store transfer function data
-perturbTable = [zeros(1, 5) % do not perturb any loop
-                eye(5)]; % perturb each loop individually
-% all the loops are closed at first
-closedTable = ones(6, 5);
+if settings.loopTransfer
+    perturbTable = [zeros(1, 5) % do not perturb any loop
+                    eye(5)]; % perturb each loop individually
+    % all the loops are closed at first
+    closedTable = ones(6, 5);
 
-if strcmp(settings.input, 'Roll')
-    % don't feed back delta
-    closedTable(:, 1) = zeros(6, 1);
-end
+    if strcmp(settings.input, 'Roll')
+        % don't feed back delta
+        closedTable(:, 1) = zeros(6, 1);
+    end
 
-update_model_variables(modelPar)
-
-% store the transfer functions for the closed loops
-for i = startLoop:length(loopNames)
-    str = 'Finding the %s closed loop transfer function.';
-    display(sprintf(str, loopNames{i}))
-    modelPar.loopNumber = i;
-    modelPar.perturb = perturbTable(i + 1, :);
-    modelPar.closed = closedTable(i + 1, :);
     update_model_variables(modelPar)
-    [num, den] = linmod('WhippleModel');
-    closedLoops.(loopNames{i}).num = num;
-    closedLoops.(loopNames{i}).den = den;
-end
 
-% make a truth table for closing the loops sequentially
-closedTable = ~perturbTable;
+    % store the transfer functions for the closed loops
+    for i = startLoop:length(loopNames)
+        str = 'Finding the %s closed loop transfer function.';
+        display(sprintf(str, loopNames{i}))
+        modelPar.loopNumber = i;
+        modelPar.perturb = perturbTable(i + 1, :);
+        modelPar.closed = closedTable(i + 1, :);
+        update_model_variables(modelPar)
+        [num, den] = linmod('WhippleModel');
+        closedLoops.(loopNames{i}).num = num;
+        closedLoops.(loopNames{i}).den = den;
+    end
 
-% don't feed back delta if looking at roll control
-if strcmp(settings.input, 'Roll')
-    closedTable(:, 1) = zeros(6, 1);
-end
+    % make a truth table for closing the loops sequentially
+    closedTable = ~perturbTable;
 
-% get the transfer functions for the open loops
-for i = startLoop:length(loopNames)
-    str = 'Finding the %s open loop transfer function.';
-    display(sprintf(str, loopNames{i}));
-    modelPar.loopNumber = i;
-    modelPar.perturb = perturbTable(i + 1, :);
-    modelPar.closed = closedTable(i + 1, :);
-    update_model_variables(modelPar);
-    [num, den] = linmod('WhippleModel');
-    openLoops.(loopNames{i}).num = num;
-    openLoops.(loopNames{i}).den = den;
+    % don't feed back delta if looking at roll control
+    if strcmp(settings.input, 'Roll')
+        closedTable(:, 1) = zeros(6, 1);
+    end
+
+    % get the transfer functions for the open loops
+    for i = startLoop:length(loopNames)
+        str = 'Finding the %s open loop transfer function.';
+        display(sprintf(str, loopNames{i}));
+        modelPar.loopNumber = i;
+        modelPar.perturb = perturbTable(i + 1, :);
+        modelPar.closed = closedTable(i + 1, :);
+        update_model_variables(modelPar);
+        [num, den] = linmod('WhippleModel');
+        openLoops.(loopNames{i}).num = num;
+        openLoops.(loopNames{i}).den = den;
+    end
+
+    % store the loop transfer functions
+    data.closedLoops = closedLoops;
+    data.openLoops = openLoops;
+
+    % check to see if the final system is stable
+    G = tf(closedLoops.Y.num, closedLoops.Y.den);
+    if any(real(roots(G.den{:})) > 0)
+        display(sprintf(repmat('*', 1, 76)))
+        display('Warning')
+        display(sprintf(repmat('*', 1, 76)))
+        s = ['The system is not stable with these gains. If the ', ...
+                 'simulation completes, the\ndata may be invalid. ', ...
+                 'Please give better gain guesses or supply the gains\n', ...
+                 'manually.'];
+        display(sprintf(s))
+        display(sprintf(repmat('*', 1, 76)))
+        roots(G.den{:});
+    else
+        % write the gains to file if the system is stable
+        pathToGainFile = ['gains' filesep bike settings.input 'Gains.txt'];
+        newGains = [modelPar.kDelta, modelPar.kPhiDot, modelPar.kPhi, ...
+        modelPar.kPsi, modelPar.kY];
+        write_gains(pathToGainFile, speed, newGains)
+        display(sprintf('Gains written to %s', pathToGainFile))
+    end
 end
 
 %% get the handling quality metric
-display('Finding the handling quality metric.')
+if settings.handlingQuality
+    display('Finding the handling quality metric.')
+    % the handling qualities must be calculated with the phi loop at 2 rad/sec
+    % crossover
+    if strcmp(settings.input, 'Roll')
+        origkPhi = modelPar.kPhi;
+        % find the gain needed to move the current phi loop to a crossover of 2
+        num = openLoops.Phi.num;
+        den = openLoops.Phi.den;
+        w = logspace(-1, 2, 1000);
+        [mag,phase] = bode(tf(num,den), w);
+        mag = mag(:)';
+        phase = phase(:)';
+        % get the magnitude at the desired crossover frequency
+        MagCO = interp1(w, mag, 2.0);
+        % calculate the gain needed to get the desired crossover frequency
+        modelPar.kPhi = 1 / MagCO * origkPhi;
+    end
 
-% the handling qualities must be calculated with the phi loop at 2 rad/sec
-% crossover, so this modifies the transfer function !!!Currently only works for
-% the Benchmark bike at medium speed!!! Needs to be smarter to work generally.
-if strcmp(settings.input, 'Roll')
-    origkPhi = modelPar.kPhi;
-    % find the gain needed to move the current phi loop to a crossover of 2
-    num = openLoops.Phi.num;
-    den = openLoops.Phi.den;
-    w = logspace(-1, 2, 1000);
-    [mag,phase] = bode(tf(num,den), w);
-    mag = mag(:)';
-    phase = phase(:)';
-    % get the magnitude at the desired crossover frequency
-    MagCO = interp1(w, mag, 2.0);
-    % calculate the gain needed to get the desired crossover frequency
-    modelPar.kPhi = 1 / MagCO * origkPhi;
+    modelPar.isHandling = 1;
+    modelPar.loopNumber = 3;
+    modelPar.closed = [0, 0, 1, 1, 1];
+    modelPar.perturb = [0, 0, 1, 0, 0];
+
+    update_model_variables(modelPar);
+
+    [num, den] = linmod('WhippleModel');
+    handlingMetric.num = num;
+    handlingMetric.den = den;
+
+    % change the gain
+    if strcmp(settings.input, 'Roll')
+        modelPar.kPhi = origkPhi;
+    end
+
+    % store the handling quality metric
+    data.handlingMetric = handlingMetric;
 end
-
-modelPar.isHandling = 1;
-modelPar.loopNumber = 3;
-modelPar.closed = [0, 0, 1, 1, 1];
-modelPar.perturb = [0, 0, 1, 0, 0];
-update_model_variables(modelPar);
-[num, den] = linmod('WhippleModel');
-handlingMetric.num = num;
-handlingMetric.den = den;
 
 %% Simulate the system
-% change the gain back for simulation
-if strcmp(settings.input, 'Roll')
-    modelPar.kPhi = origkPhi;
+if settings.simulate
+    % close all the loops and simulate
+    modelPar.loopNumber = 0;
+    modelPar.isHandling = 0;
+    modelPar.perturb = [0, 0, 0, 0, 0];
+    modelPar.closed = [1, 1, 1, 1, 1];
+
+    update_model_variables(modelPar)
+
+    display('Simulating the tracking task.')
+    tic;
+    sim('WhippleModel.mdl')
+    elapsedTime = toc;
+    display(sprintf('Simulation finished in %1.3f seconds.', elapsedTime))
+
+    % set the initial point of the front wheel ahead of the rear wheel by the
+    % wheelbase length
+    y(:, 17) = y(:, 17) + par.w;
+
+    % store simulation data
+    data.time = t;
+    data.command = command;
+    data.inputs = u;
+    data.outputs = y;
+    data.outputsDot = yDot;
+    data.path = yc;
 end
 
-% check to see if the final system is stable
-G = tf(closedLoops.Y.num, closedLoops.Y.den);
-if any(real(roots(G.den{:})) > 0)
-    display(sprintf(repmat('*', 1, 76)))
-    display('Warning')
-    display(sprintf(repmat('*', 1, 76)))
-    s = ['The system is not stable with these gains. If the ', ...
-             'simulation completes, the\ndata may be invalid. ', ...
-             'Please give better gain guesses or supply the gains\n', ...
-             'manually.'];
-    display(sprintf(s))
-    display(sprintf(repmat('*', 1, 76)))
-    roots(G.den{:});
-else
-    % write the gains to file if the system is stable
-    pathToGainFile = ['gains' filesep bike settings.input 'Gains.txt'];
-    newGains = [modelPar.kDelta, modelPar.kPhiDot, modelPar.kPhi, ...
-    modelPar.kPsi, modelPar.kY];
-    write_gains(pathToGainFile, speed, newGains)
-    display(sprintf('Gains written to %s', pathToGainFile))
+if settings.forceRollRate
+    modelPar.loopNumber = 2;
+    modelPar.isHandling = 0;
+    modelPar.isPullPerturb = 1;
+    modelPar.perturb = [0, 0, 0, 0, 0];
+    modelPar.closed = [1, 1, 1, 1, 1];
+
+    update_model_variables(modelPar)
+
+    [num, den] = linmod('WhippleModel');
+    forceRollRateTF.num = num;
+    forceRollRateTF.den = den;
+
+    data.forceRollRateTF = forceRollRateTF;
 end
-
-% close all the loops and simulate
-modelPar.loopNumber = 0;
-modelPar.isHandling = 0;
-modelPar.perturb = perturbTable(1, :);
-modelPar.closed = closedTable(1, :);
-update_model_variables(modelPar)
-display('Simulating the tracking task.')
-tic;
-sim('WhippleModel.mdl')
-elapsedTime = toc;
-display(sprintf('Simulation finished in %1.3f seconds.', elapsedTime))
-
-% set the initial point of the front wheel ahead of the rear wheel by the
-% wheelbase length
-y(:, 17) = y(:, 17) + par.w;
 
 % write data for export
 data.speed = speed;
 data.par = par;
 data.modelPar = modelPar;
-data.closedLoops = closedLoops;
-data.openLoops = openLoops;
-data.handlingMetric = handlingMetric;
-data.time = t;
-data.command = command;
-data.inputs = u;
-data.outputs = y;
-data.outputsDot = yDot;
-data.path = yc;
-data.gainMuls = settings.gainMuls;
 
 display(sprintf('Done. \n'))
 
@@ -766,12 +823,20 @@ str = 'Parameters for the %s bicycle and rider have been loaded.';
 display(sprintf(str, bike))
 
 % calculate the A, B, C, and D matrices of the bicycle model
-display(sprintf('Calculating the A, B, C, D matrices for %1.2f m/s', speed))
-tic
-[modelPar.A, modelPar.B, modelPar.C, modelPar.D] = ...
-    whipple_pull_force_abcd(par, speed);
-elapsedTime = toc;
-display(sprintf('A, B, C, D calculated in %1.4f seconds.', elapsedTime))
+if isempty(settings.stateSpace)
+    display(sprintf('Calculating the A, B, C, D matrices for %1.2f m/s', speed))
+    tic
+    [modelPar.A, modelPar.B, modelPar.C, modelPar.D] = ...
+        whipple_pull_force_abcd(par, speed);
+    elapsedTime = toc;
+    display(sprintf('A, B, C, D calculated in %1.4f seconds.', elapsedTime))
+else
+    display('A, B, C, D matrices already supplied')
+    mats = {'A', 'B', 'C', 'D'};
+    for i = 1:4
+        modelPar.(mats{i}) = settings.stateSpace{i};
+    end
+end
 
 % Keep in mind that the there is a function that relates steer angle, roll
 % angle and pitch angle that must be enforced when setting any three of those
@@ -789,8 +854,10 @@ modelPar.initialConditions = [-par.w, ... rear wheel contact x
                                0]; % steer rate
 
 % human neuromuscular system
-modelPar.neuroNum = 900;
-modelPar.neuroDen = [1, 2 * 0.707 * 30, 900];
+wnm = settings.neuroFreq;
+display(sprintf('Neuromuscular frequency set to: %1.1f', wnm))
+modelPar.neuroNum = wnm^2;
+modelPar.neuroDen = [1, 2 * 0.707 * wnm, wnm^2];
 
 % path filter
 modelPar.pathFilterNum = 2.4^2;
@@ -802,6 +869,9 @@ modelPar.handlingFilterDen = [1, 40, 400];
 
 % handling quality calculation flag
 modelPar.isHandling = 0;
+
+% set the pull perturb flag
+modelPar.isPullPerturb = 0;
 
 % set parameters for steer or roll inputs
 if strcmp(settings.input, 'Steer')
