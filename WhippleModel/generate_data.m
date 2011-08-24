@@ -35,17 +35,21 @@ function data = generate_data(bike, speed, varargin)
 %   handlingQuality : boolean, optional
 %       Default is true. If true the handling quality metric will be
 %       available in the output.
-%   forceRollRate : boolean, optional
-%       Default is true. If true, the output will contain the transfer
-%       function from pull force to roll rate.
+%   forceTransfer : cell array of strings, optional
+%       The default is {'delta', 'phiDot', 'phi', 'psi', 'y', 'Tdelta'}. The
+%       output will contain the transfer functions from pull force to steer
+%       angle, roll rate, roll angle, yaw angle, lateral deviation and steer
+%       torque. If the array is empty, then none of the transfer functions
+%       of computed. You can also provide a subset of the available transfer
+%       functions.
 %   stateSpace : cell array, optional
 %       This cell array should contain the state space matrices {A, B, C, D}
 %       for the whipple pull force bicycle model. Be sure that the `bike`
 %       and `speed` matches this state space model. If it isn't specified,
 %       the state space calculation happens inside generate_data. This
-%       option allows make the potentially time intensive calculation
-%       outside of generate data. But be careful with it because the
-%       arguments `bike` and `speed` become redundant.
+%       option allows make the potentially time intensive calculation of the
+%       state space outside of generate data. But be careful with it because
+%       the arguments `bike` and `speed` become redundant.
 %
 % Returns
 % -------
@@ -147,7 +151,7 @@ defaults.plot = 0;
 defaults.simulate = 1;
 defaults.loopTransfer = 1;
 defaults.handlingQuality = 1;
-defaults.forceRollRate = 1;
+defaults.forceTransfer = {'Delta', 'PhiDot', 'Phi', 'Psi', 'Y', 'Tdelta'};
 defaults.stateSpace = {};
 
 % load in user supplied settings
@@ -349,20 +353,23 @@ if settings.simulate
     data.path = yc;
 end
 
-if settings.forceRollRate
-    modelPar.loopNumber = 2;
+if ~isempty(settings.forceTransfer)
+    ftf = settings.forceTransfer;
     modelPar.isHandling = 0;
     modelPar.isPullPerturb = 1;
     modelPar.perturb = [0, 0, 0, 0, 0];
     modelPar.closed = [1, 1, 1, 1, 1];
 
-    update_model_variables(modelPar)
+    for i = 1:length(ftf)
+        % needs something to deal with the Tdelta option
+        modelPar.loopNumber = find(ismember(loopNames, ftf{i})==1);
 
-    [num, den] = linmod('WhippleModel');
-    forceRollRateTF.num = num;
-    forceRollRateTF.den = den;
+        update_model_variables(modelPar)
 
-    data.forceRollRateTF = forceRollRateTF;
+        [num, den] = linmod('WhippleModel');
+        data.forceTF.(ftf{i}).num = num;
+        data.forceTF.(ftf{i}).den = den;
+    end
 end
 
 % write data for export
