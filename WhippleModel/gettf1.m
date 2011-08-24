@@ -1,34 +1,47 @@
 function [g, gd, regmax, err] = gettf1(u, y, nn, tt, flag)
-
-%[g, gd, regmax] = gettf1(u,y,nn,tt,flag)
+%[g, gd, regmax, err] = gettf1(u, y, nn, tt, flag)
+% Returns a transfer function from an input/output time sequence pair and a
+% regressor.
 %
-% 'gettf1' obtains a transfer function
-% from a time sequence and regressor
-% g --> Estimated continuous transfer function Output/Input (y/u)
-% gd--> Estimated discrete transfer function Output/Input (y/u)
-% regmax --> Best regressor when used with optimization (i.e. flag=1)
-% u --> Input sequence
-% y --> Output sequence
-% nn --> Regressor [na nb nk]
-% tt --> Time sequence
-% flag --> (0 to just use the given regressor, and 1 to search for
-%           the optimum regressor using the given one as the upper bound)
+% Parameters
+% ----------
+% u : matrix, size(1, n)
+%   Input time series.
+% y : matrix, size(1, n)
+%   Output time series.
+% nn : matrix, size(1, 3)
+%   Regressor [na nb nk]
+% tt : matrix, size(1, n)
+%   Time.
+% flag : boolean
+%   0 to just use the given regressor, and 1 to search for the optimum
+%   regressor using the given one as the upper bound.
+%
+% Returns
+% -------
+% g : transfer function
+%   Estimated continuous transfer function Output/Input (y/u)
+% gd : transfer function
+%   Estimated discrete transfer function Output/Input (y/u)
+% regmax : matrix, size(1, 3)
+%   Best regressor when used with optimization (i.e. flag=1)
+% err :
+%
 % Author: Y. Zeyada 16 Aug 2000
 
 % The next 7 lines were added by Ron Hess 11/9/01
-ts=tt(6)-tt(5);
-[bin,ain]=butter(4,6*ts);
-[bout,aout]=butter(4,6*ts);
-in=filter(bin,ain,u);
-out=filter(bout,aout,y);
-u=in;
-y=out;
+ts = tt(6) - tt(5);
+[bin,ain] = butter(4, 6 * ts);
+[bout,aout] = butter(4, 6 * ts);
+in = filter(bin, ain, u);
+out = filter(bout, aout, y);
+u = in;
+y = out;
 
-u=u';
-y=y';
+u = u';
+y = y';
 
-
-NN=nn;
+NN = nn;
 
 % search for the optimal regressor
 if flag==1,
@@ -62,7 +75,7 @@ if flag==1,
                 % convert the discrete transfer function to a continous one
                 % with a Tustin approximation
                 gg = d2c(gdd, 'tustin');
-                % cancel poles with zeros
+                % cancel any poles and zeros that are close
                 gg = minreal(gg);
 
                 % simulate the system with the input and the computed transfer
