@@ -36,12 +36,12 @@ function data = generate_data(bike, speed, varargin)
 %       Default is true. If true the handling quality metric will be
 %       available in the output.
 %   forceTransfer : cell array of strings, optional
-%       The default is {'delta', 'phiDot', 'phi', 'psi', 'y', 'Tdelta'}. The
-%       output will contain the transfer functions from pull force to steer
-%       angle, roll rate, roll angle, yaw angle, lateral deviation and steer
-%       torque. If the array is empty, then none of the transfer functions
-%       of computed. You can also provide a subset of the available transfer
-%       functions.
+%       The default is {'Delta', 'PhiDot', 'Phi', 'Psi', 'Y', 'Tdelta'(or
+%       'Tphi'}. The output will contain the transfer functions from pull
+%       force to steer angle, roll rate, roll angle, yaw angle, lateral
+%       deviation and steer torque (or roll torque if input is 'Roll'). If
+%       the array is empty, then none of the transfer functions of computed.
+%       You can also provide a subset of the available transfer functions.
 %   stateSpace : cell array, optional
 %       This cell array should contain the state space matrices {A, B, C, D}
 %       for the whipple pull force bicycle model. Be sure that the `bike`
@@ -59,6 +59,8 @@ function data = generate_data(bike, speed, varargin)
 %       Closed loop transfer functions for each loop.
 %   command : matrix (n, 5)
 %       The commanded input to each loop.
+%   forceTF : structure
+%       Transfer functions from pull force to various outputs.
 %   gainMuls : matrix (5, 1)
 %       Multipliers for each gain.
 %   handlingMetric : structure
@@ -324,11 +326,59 @@ if settings.handlingQuality
     data.handlingMetric = handlingMetric;
 end
 
+%% find the transfer functions from pull force to various outputs
+if ~isempty(settings.forceTransfer)
+    ftf = settings.forceTransfer;
+    modelPar.isHandling = 0;
+    modelPar.isPullPerturb = 1;
+    modelPar.perturb = [0, 0, 0, 0, 0];
+    modelPar.closed = [1, 1, 1, 1, 1];
+
+    % handle the fact that the user can specify both the control input and
+    % either pull force to steer torque or roll torque
+    if strcmp(settings.input, 'Steer')
+        % replace 'Tphi'
+        if any(ismember(ftf, 'Tphi'))
+            display(['You have specified Steer as the input so Tphi ' ...
+                     'will be replaced with Tdelta'])
+            ftf{find(ismember(ftf, 'Tphi')==1)} = 'Tdelta';
+        end
+    elseif strcmp(settings.input, 'Roll')
+        % don't feed back delta
+        modelPar.closed = [0, 1, 1, 1, 1];
+        % replace 'Tdelta'
+        if any(ismember(ftf, 'Tdelta'))
+            display(['You have specified Roll as the input so Tdelta ' ...
+                     'will be replaced with Tphi'])
+            ftf{find(ismember(ftf, 'Tdelta')==1)} = 'Tphi';
+        end
+    end
+
+    % calculate each transfer function
+    for i = 1:length(ftf)
+        display(sprintf(['Calculating the pull force to %s transfer ' ...
+                        'function.'], ftf{i}))
+        if strcmp(ftf{i}, 'Tdelta') || strcmp(ftf{i}, 'Tphi')
+            % Tdelta is connected to the 0 port in the multiswitch
+            modelPar.loopNumber = 0;
+        else
+            modelPar.loopNumber = find(ismember(loopNames, ftf{i})==1);
+        end
+
+        update_model_variables(modelPar)
+
+        [num, den] = linmod('WhippleModel');
+        data.forceTF.(ftf{i}).num = num;
+        data.forceTF.(ftf{i}).den = den;
+    end
+end
+
 %% Simulate the system
 if settings.simulate
     % close all the loops and simulate
     modelPar.loopNumber = 0;
     modelPar.isHandling = 0;
+    modelPar.isPullPerturb = 0;
     modelPar.perturb = [0, 0, 0, 0, 0];
     modelPar.closed = [1, 1, 1, 1, 1];
 
@@ -351,25 +401,6 @@ if settings.simulate
     data.outputs = y;
     data.outputsDot = yDot;
     data.path = yc;
-end
-
-if ~isempty(settings.forceTransfer)
-    ftf = settings.forceTransfer;
-    modelPar.isHandling = 0;
-    modelPar.isPullPerturb = 1;
-    modelPar.perturb = [0, 0, 0, 0, 0];
-    modelPar.closed = [1, 1, 1, 1, 1];
-
-    for i = 1:length(ftf)
-        % needs something to deal with the Tdelta option
-        modelPar.loopNumber = find(ismember(loopNames, ftf{i})==1);
-
-        update_model_variables(modelPar)
-
-        [num, den] = linmod('WhippleModel');
-        data.forceTF.(ftf{i}).num = num;
-        data.forceTF.(ftf{i}).den = den;
-    end
 end
 
 % write data for export
