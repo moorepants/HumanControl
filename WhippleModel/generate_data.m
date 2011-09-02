@@ -284,6 +284,33 @@ if settings.loopTransfer
         write_gains(pathToGainFile, speed, newGains)
         display(sprintf('Gains written to %s', pathToGainFile))
     end
+
+    if settings.plot
+        display('Generating loop transfer plots.')
+        figure()
+        % go through each loop and plot the bode plot for the closed loops
+        hold all
+        for i = startLoop:length(loopNames)
+            num = closedLoops.(loopNames{i}).num;
+            den = closedLoops.(loopNames{i}).den;
+            bode(tf(num, den), {0.1, 100.0})
+        end
+        legend(loopNames(startLoop:end))
+        title('Closed loop transfer functions')
+        hold off
+
+        figure()
+        % go through each loop and plot the open loop bode plot
+        hold all
+        for i = startLoop:length(loopNames)
+            num = openLoops.(loopNames{i}).num;
+            den = openLoops.(loopNames{i}).den;
+            bode(tf(num, den), {0.1, 100.0})
+        end
+        legend(loopNames(startLoop:end))
+        title('Open loop transfer functions')
+        hold off
+    end
 end
 
 %% get the handling quality metric
@@ -324,6 +351,16 @@ if settings.handlingQuality
 
     % store the handling quality metric
     data.handlingMetric = handlingMetric;
+    if settings.plot
+        display('Generating handling quality plot.')
+        figure()
+        num = handlingMetric.num;
+        den = handlingMetric.den;
+        wl = linspace(0.01, 20, 100);
+        [mag, phase, freq] = bode(tf(num, den), wl);
+        plot(wl, mag(:)')
+        title('Handling quality metric')
+    end
 end
 
 %% find the transfer functions from pull force to various outputs
@@ -371,6 +408,18 @@ if ~isempty(settings.forceTransfer)
         data.forceTF.(ftf{i}).num = num;
         data.forceTF.(ftf{i}).den = den;
     end
+
+    if settings.plot
+        figure()
+        hold all
+        for i = 1:length(ftf)
+            bode(tf(data.forceTF.(ftf{i}).num, ...
+                    data.forceTF.(ftf{i}).den))
+            legend(ftf)
+        end
+        hold off
+    end
+
 end
 
 %% Simulate the system
@@ -401,6 +450,18 @@ if settings.simulate
     data.outputs = y;
     data.outputsDot = yDot;
     data.path = yc;
+
+    if settings.plot
+        display('Generating simulation plots.')
+
+        outputPlot = plot_outputs(t, y, yc);
+
+        figure()
+        plot(t, u)
+        title('Inputs')
+        xlabel('Time [s]')
+        legend({'Roll Torque', 'Steer Torque', 'Pull Force'})
+    end
 end
 
 % write data for export
@@ -409,51 +470,6 @@ data.par = par;
 data.modelPar = modelPar;
 
 display(sprintf('Done. \n'))
-
-%% plot
-if settings.plot
-    display('Making basic plots.')
-    figure(1)
-    % go through each loop and plot the bode plot for the closed loops
-    hold all
-    for i = startLoop:length(loopNames)
-        num = closedLoops.(loopNames{i}).num;
-        den = closedLoops.(loopNames{i}).den;
-        bode(tf(num, den), {0.1, 100.0})
-    end
-    legend(loopNames(startLoop:end))
-    title('Closed loop transfer functions')
-    hold off
-
-    figure(2)
-    % go through each loop and plot the open loop bode plot
-    hold all
-    for i = startLoop:length(loopNames)
-        num = openLoops.(loopNames{i}).num;
-        den = openLoops.(loopNames{i}).den;
-        bode(tf(num, den), {0.1, 100.0})
-    end
-    legend(loopNames(startLoop:end))
-    title('Open loop transfer functions')
-    hold off
-
-    figure(3)
-    num = handlingMetric.num;
-    den = handlingMetric.den;
-    wl = linspace(0.01, 20, 100);
-    [mag, phase, freq] = bode(tf(num, den), wl);
-    plot(wl, mag(:)')
-    title('Handling quality metric')
-
-    outputPlot = plot_outputs(t, y, yc);
-
-    figure()
-    plot(t, u)
-    title('Inputs')
-    xlabel('Time [s]')
-    legend({'Roll Torque', 'Steer Torque', 'Pull Force'})
-    display('Plotting finished.')
-end
 
 function update_model_variables(modelPar)
 % Puts all the variables needed for the simulink model in to the base
