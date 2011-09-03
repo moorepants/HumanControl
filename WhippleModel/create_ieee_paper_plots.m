@@ -79,6 +79,10 @@ hold all
 
 closedLoops = bikeData.closedLoops;
 
+% make sure all bode plots display 'rad/s' instead of 'rad/sec'
+bops = bodeoptions;
+bops.FreqUnits = 'rad/s';
+
 if strcmp(input, 'Steer')
     linestyles = {'', '', '-.', '-.', '-', '-.', '-.', '-'};
     gray = [0.6, 0.6, 0.6];
@@ -86,11 +90,11 @@ if strcmp(input, 'Steer')
     % the closed delta loop
     deltaNum = closedLoops.Delta.num;
     deltaDen = closedLoops.Delta.den;
-    bodeplot(tf(deltaNum, deltaDen), freq);
+    bodeplot(tf(deltaNum, deltaDen), freq, bops);
     % a typical neuromuscular model
     neuroNum = 2722.5;
     neuroDen = [1, 13.96, 311.85, 2722.5];
-    bodeplot(tf(neuroNum, neuroDen), freq);
+    bodeplot(tf(neuroNum, neuroDen), freq, bops);
     whichLines = 5:-1:3;
 elseif strcmp(input, 'Roll')
     linestyles = {'', '', '-', '-'};
@@ -103,7 +107,7 @@ end
 % the closed phi dot loop
 phiDotNum = closedLoops.PhiDot.num;
 phiDotDen = closedLoops.PhiDot.den;
-closedBode = bodeplot(tf(phiDotNum, phiDotDen), freq);
+closedBode = bodeplot(tf(phiDotNum, phiDotDen), freq, bops);
 
 hold off
 
@@ -204,15 +208,15 @@ hold all
 
 num = openLoops.Phi.num;
 den = openLoops.Phi.den;
-bodeplot(tf(num, den), freq);
+bodeplot(tf(num, den), freq, bops);
 
 num = openLoops.Psi.num;
 den = openLoops.Psi.den;
-bodeplot(tf(num, den), freq);
+bodeplot(tf(num, den), freq, bops);
 
 num = openLoops.Y.num;
 den = openLoops.Y.den;
-openBode = bodeplot(tf(num, den), freq);
+openBode = bodeplot(tf(num, den), freq, bops);
 
 hold off
 
@@ -343,11 +347,15 @@ set(gcf, ...
 
 freq = {0.1, 20.0};
 
+% make sure all bode plots display 'rad/s' instead of 'rad/sec'
+bops = bodeoptions;
+bops.FreqUnits = 'rad/s';
+
 hold all
 for i = 2:length(bikes)
     num = data.(bikes{i}).Medium.openLoops.Phi.num;
     den = data.(bikes{i}).Medium.openLoops.Phi.den;
-    openBode = bodeplot(tf(num, den), freq);
+    openBode = bodeplot(tf(num, den), freq, bops);
 end
 hold off
 
