@@ -17,10 +17,13 @@ function data = load_bikes(bikes, input)
 speeds = [2.5, 5.0, 7.5];
 speedNames = {'Slow', 'Medium', 'Fast'};
 
-% these are the gains that were selected manually by Ron Hess
+% these are the gains that were selected manually by Ron Hess, taken from
+% the paper
 gains.Benchmark.Slow   = [22.0, -0.090, 23.3, 0.058, 0.195]; % place holder
 gains.Browserins.Slow  = [22.0, -0.090, 23.3, 0.058, 0.195];
 gains.Browser.Slow     = [20.5, -0.086, 24.1, 0.053, 0.199];
+% the gains in the paper give an unstable bike, the uncommented one were the ones from his
+% simulink model
 gains.Pista.Slow       = [22.3000,-0.1300,15.6410,0.0645,0.1990]; %[22.3, -0.130, 15.6, 0.662, 0.198];
 gains.Fisher.Slow      = [23.0, -0.120, 17.7, 0.065, 0.198];
 gains.Yellow.Slow      = [18.0, -0.110, 20.2, 0.062, 0.200];
