@@ -311,7 +311,7 @@ set(level2, 'Color', 'k', 'Linestyle', '--', 'Linewidth', 2.0)
 ylim([0, 10]);
 
 ylabel('Handling Quality Metric')
-xlabel('Frequency (rad/sec)')
+xlabel('Frequency (rad/s)')
 text(3, 3, 'Level 1')
 text(3, 6.5, 'Level 2')
 text(3, 9, 'Level 3')
@@ -496,7 +496,7 @@ level2 = line([0, 20], [8, 8]);
 set(level1, 'Color', 'k', 'Linestyle', '--', 'Linewidth', 1.0)
 set(level2, 'Color', 'k', 'Linestyle', '--', 'Linewidth', 1.0)
 ylabel('Handling Quality Metric')
-xlabel('Frequency (rad/sec)')
+xlabel('Frequency (rad/s)')
 text(3.1, 4.3, 'Level 1')
 text(1.9, 6.5, 'Level 2')
 text(3, 15, 'Level 3')
@@ -599,8 +599,8 @@ if strcmp(io, 'input')
     prettyNames = {'$T_\phi$',
                    '$T_\delta$',
                    '$F$'};
-    units = {'(Nm)',
-             '(Nm)',
+    units = {'(N-m)',
+             '(N-m)',
              '(N)'};
 elseif strcmp(io, 'output')
     names = {'xP',
@@ -647,14 +647,14 @@ elseif strcmp(io, 'output')
              '(rad)',
              '(rad)',
              '(rad)',
-             '(m/sec)',
-             '(m/sec)',
-             '(rad/sec)',
-             '(rad/sec)',
-             '(rad/sec)',
-             '(rad/sec)',
-             '(rad/sec)',
-             '(rad/sec)',
+             '(m/s)',
+             '(m/s)',
+             '(rad/s)',
+             '(rad/s)',
+             '(rad/s)',
+             '(rad/s)',
+             '(rad/s)',
+             '(rad/s)',
              '(m)',
              '(m)'};
 else
@@ -874,7 +874,7 @@ set(get(ax(1), 'Ylabel'), ...
     'String', 'Angle (rad)', ...
     'Color', 'k')
 set(get(ax(2), 'Ylabel'), ...
-    'String', 'Torque (Nm)', ...
+    'String', 'Torque (N-m)', ...
     'Color', 'k')
 set(ax, 'YColor', 'k', 'Fontsize', 8)
 set(h1, 'Linestyle', '--', 'Color', 'k', 'Linewidth', 1.0)
