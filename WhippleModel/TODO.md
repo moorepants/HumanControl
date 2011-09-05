@@ -15,3 +15,5 @@ To Do List
   routine
 - Allow the user to set the neuro transfer function parameters as an option
   argument to generata_data
+- Make the path filter frequency and time delay dependent on the
+  characteristics of each bike at each speed, see the paper.
