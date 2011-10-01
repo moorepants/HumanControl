@@ -8,12 +8,11 @@ To Do List
 - Make the varargin_to_structure take the default structure and add the
   varargins to the default stucture. This may need to be done recursively.
 - Save correctly found gains to a file
-- Add a way for the user to graphically choose where to measure the PhiDot neuro
-  peak height from.
 - Fix xlim to match all plots on the basic plots from generate_data.m
-- Setup load_bikes to use Ron's gains instead of the one found by our autok
-  routine
 - Allow the user to set the neuro transfer function parameters as an option
   argument to generata_data
 - Make the path filter frequency and time delay dependent on the
   characteristics of each bike at each speed, see the paper.
+- Try out Ron's idea to find the gains for low speeds.
+- Add a way for the user to graphically choose where to measure the PhiDot neuro
+  peak height from.
