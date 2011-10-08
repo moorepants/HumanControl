@@ -470,7 +470,9 @@ if settings.fullSystem
                            'deltaDot',
                            'thetaFDot',
                            'xQ',
-                           'yQ'};
+                           'yQ',
+                           'tDelta'};
+
 end
 
 %% Simulate the system

@@ -14,7 +14,7 @@ Model {
       Name		      "Output"
     }
     ParameterArgumentNames  ""
-    ComputedModelVersion    "1.228"
+    ComputedModelVersion    "1.229"
     NumModelReferences	    0
     NumTestPointedSignals   0
   }
@@ -33,9 +33,9 @@ Model {
   ModifiedByFormat	  "%<Auto>"
   LastModifiedBy	  "moorepants"
   ModifiedDateFormat	  "%<Auto>"
-  LastModifiedDate	  "Fri Oct  7 19:01:51 2011"
-  RTWModifiedTimeStamp	  239914029
-  ModelVersionFormat	  "1.%<AutoIncrement:228>"
+  LastModifiedDate	  "Sat Oct  8 14:58:46 2011"
+  RTWModifiedTimeStamp	  239986721
+  ModelVersionFormat	  "1.%<AutoIncrement:229>"
   ConfigurationManager	  "None"
   SampleTimeColors	  off
   SampleTimeAnnotations	  off
@@ -798,7 +798,7 @@ Model {
   }
   System {
     Name		    "WhippleModel"
-    Location		    [1369, 51, 3049, 1047]
+    Location		    [3, 75, 1363, 741]
     Open		    on
     ModelBrowserVisibility  off
     ModelBrowserWidth	    200
@@ -812,7 +812,7 @@ Model {
     ShowPageBoundaries	    off
     ZoomFactor		    "100"
     ReportName		    "simulink-default.rpt"
-    SIDHighWatermark	    146
+    SIDHighWatermark	    147
     Block {
       BlockType		      Inport
       Name		      "Perturbation Input"
@@ -966,7 +966,7 @@ Model {
       MaskHideContents	      off
       System {
 	Name			"Feedback Variables"
-	Location		[1709, 235, 2048, 857]
+	Location		[917, 116, 1256, 738]
 	Open			off
 	ModelBrowserVisibility	off
 	ModelBrowserWidth	200
@@ -1443,6 +1443,16 @@ Model {
       DisplayOption	      "bar"
     }
     Block {
+      BlockType		      Mux
+      Name		      "Mux2"
+      SID		      147
+      Ports		      [2, 1]
+      Position		      [2240, 251, 2255, 389]
+      ShowName		      off
+      Inputs		      "2"
+      DisplayOption	      "bar"
+    }
+    Block {
       BlockType		      TransferFcn
       Name		      "Neuromuscular"
       SID		      45
@@ -1836,22 +1846,19 @@ Model {
 	DstPort			1
       }
       Branch {
-	Points			[0, -120]
+	Points			[0, -125]
 	Branch {
-	  Points		  [0, -5]
-	  Branch {
-	    DstBlock		    "Outputs"
-	    DstPort		    1
-	  }
-	  Branch {
-	    Points		    [0, -40]
-	    DstBlock		    "Derivative"
-	    DstPort		    1
-	  }
+	  Points		  [0, -40]
+	  DstBlock		  "Derivative"
+	  DstPort		  1
 	}
 	Branch {
-	  Points		  [410, 0; 0, 215]
-	  DstBlock		  "Full System State Space Switch"
+	  DstBlock		  "Outputs"
+	  DstPort		  1
+	}
+	Branch {
+	  Points		  [0, 5]
+	  DstBlock		  "Mux2"
 	  DstPort		  1
 	}
       }
@@ -2320,9 +2327,16 @@ Model {
 	  DstPort		  1
 	}
 	Branch {
-	  Points		  [0, -115; 545, 0; 0, 245]
-	  DstBlock		  "System Output\nSwitch"
-	  DstPort		  2
+	  Points		  [0, -115; 545, 0; 0, 145]
+	  Branch {
+	    Points		    [0, 100]
+	    DstBlock		    "System Output\nSwitch"
+	    DstPort		    2
+	  }
+	  Branch {
+	    DstBlock		    "Mux2"
+	    DstPort		    2
+	  }
 	}
       }
     }
@@ -2418,6 +2432,13 @@ Model {
       SrcBlock		      "Full System State Space Switch"
       SrcPort		      1
       DstBlock		      "Output"
+      DstPort		      1
+    }
+    Line {
+      SrcBlock		      "Mux2"
+      SrcPort		      1
+      Points		      [55, 0; 0, 180]
+      DstBlock		      "Full System State Space Switch"
       DstPort		      1
     }
     Annotation {
