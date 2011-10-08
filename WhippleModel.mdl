@@ -11,10 +11,10 @@ Model {
     Outport {
       BusObject		      ""
       BusOutputAsStruct	      "off"
-      Name		      "Closed Loop Output"
+      Name		      "Output"
     }
     ParameterArgumentNames  ""
-    ComputedModelVersion    "1.217"
+    ComputedModelVersion    "1.228"
     NumModelReferences	    0
     NumTestPointedSignals   0
   }
@@ -33,9 +33,9 @@ Model {
   ModifiedByFormat	  "%<Auto>"
   LastModifiedBy	  "moorepants"
   ModifiedDateFormat	  "%<Auto>"
-  LastModifiedDate	  "Wed Aug 24 11:19:44 2011"
-  RTWModifiedTimeStamp	  236085560
-  ModelVersionFormat	  "1.%<AutoIncrement:217>"
+  LastModifiedDate	  "Fri Oct  7 19:01:51 2011"
+  RTWModifiedTimeStamp	  239914029
+  ModelVersionFormat	  "1.%<AutoIncrement:228>"
   ConfigurationManager	  "None"
   SampleTimeColors	  off
   SampleTimeAnnotations	  off
@@ -798,7 +798,7 @@ Model {
   }
   System {
     Name		    "WhippleModel"
-    Location		    [1366, 51, 3046, 1049]
+    Location		    [1369, 51, 3049, 1047]
     Open		    on
     ModelBrowserVisibility  off
     ModelBrowserWidth	    200
@@ -812,7 +812,7 @@ Model {
     ShowPageBoundaries	    off
     ZoomFactor		    "100"
     ReportName		    "simulink-default.rpt"
-    SIDHighWatermark	    144
+    SIDHighWatermark	    146
     Block {
       BlockType		      Inport
       Name		      "Perturbation Input"
@@ -899,6 +899,15 @@ Model {
     }
     Block {
       BlockType		      Constant
+      Name		      "Constant5"
+      SID		      146
+      Position		      [2280, 520, 2340, 550]
+      Value		      "isFullSystem"
+      OutDataType	      "fixdt(1, 16)"
+      OutScaling	      "2^0"
+    }
+    Block {
+      BlockType		      Constant
       Name		      "Constant6"
       SID		      128
       Position		      [770, 364, 840, 396]
@@ -957,7 +966,7 @@ Model {
       MaskHideContents	      off
       System {
 	Name			"Feedback Variables"
-	Location		[513, 75, 852, 697]
+	Location		[1709, 235, 2048, 857]
 	Open			off
 	ModelBrowserVisibility	off
 	ModelBrowserWidth	200
@@ -1165,6 +1174,18 @@ Model {
 	  Interpreter		  "tex"
 	}
       }
+    }
+    Block {
+      BlockType		      Switch
+      Name		      "Full System State Space Switch"
+      SID		      145
+      Position		      [2390, 489, 2420, 541]
+      NamePlacement	      "alternate"
+      Criteria		      "u2 ~= 0"
+      InputSameDT	      off
+      OutDataType	      "fixdt(1, 16)"
+      OutScaling	      "2^0"
+      SaturateOnIntegerOverflow	off
     }
     Block {
       BlockType		      Gain
@@ -1434,7 +1455,7 @@ Model {
       Name		      "Outputs"
       SID		      55
       Ports		      [1]
-      Position		      [1770, 265, 1830, 295]
+      Position		      [1775, 265, 1835, 295]
       BlockMirror	      on
       VariableName	      "y"
       MaxDataPoints	      "inf"
@@ -1773,9 +1794,9 @@ Model {
     }
     Block {
       BlockType		      Outport
-      Name		      "Closed Loop Output"
+      Name		      "Output"
       SID		      52
-      Position		      [2390, 668, 2420, 682]
+      Position		      [2465, 508, 2495, 522]
       IconDisplay	      "Port number"
       OutDataType	      "sfix(16)"
       OutScaling	      "2^0"
@@ -1815,14 +1836,22 @@ Model {
 	DstPort			1
       }
       Branch {
-	Points			[0, -125]
+	Points			[0, -120]
 	Branch {
-	  DstBlock		  "Outputs"
-	  DstPort		  1
+	  Points		  [0, -5]
+	  Branch {
+	    DstBlock		    "Outputs"
+	    DstPort		    1
+	  }
+	  Branch {
+	    Points		    [0, -40]
+	    DstBlock		    "Derivative"
+	    DstPort		    1
+	  }
 	}
 	Branch {
-	  Points		  [0, -40]
-	  DstBlock		  "Derivative"
+	  Points		  [410, 0; 0, 215]
+	  DstBlock		  "Full System State Space Switch"
 	  DstPort		  1
 	}
       }
@@ -2215,12 +2244,6 @@ Model {
       DstPort		      2
     }
     Line {
-      SrcBlock		      "HQ Metric Switch 3"
-      SrcPort		      1
-      DstBlock		      "Closed Loop Output"
-      DstPort		      1
-    }
-    Line {
       SrcBlock		      "Transfer Fcn1"
       SrcPort		      1
       DstBlock		      "Switch 5"
@@ -2376,6 +2399,26 @@ Model {
 	  DstPort		  1
 	}
       }
+    }
+    Line {
+      SrcBlock		      "Constant5"
+      SrcPort		      1
+      Points		      [5, 0; 0, -20]
+      DstBlock		      "Full System State Space Switch"
+      DstPort		      2
+    }
+    Line {
+      SrcBlock		      "HQ Metric Switch 3"
+      SrcPort		      1
+      Points		      [15, 0; 0, -145]
+      DstBlock		      "Full System State Space Switch"
+      DstPort		      3
+    }
+    Line {
+      SrcBlock		      "Full System State Space Switch"
+      SrcPort		      1
+      DstBlock		      "Output"
+      DstPort		      1
     }
     Annotation {
       Name		      "TPhi"

@@ -37,19 +37,23 @@ function data = generate_data(bike, speed, varargin)
 %       available in the output.
 %   forceTransfer : cell array of strings, optional
 %       The default is {'Delta', 'PhiDot', 'Phi', 'Psi', 'Y', 'Tdelta'(or
-%       'Tphi'}. The output will contain the transfer functions from pull
-%       force to steer angle, roll rate, roll angle, yaw angle, lateral
-%       deviation and steer torque (or roll torque if input is 'Roll'). If
-%       the array is empty, then none of the transfer functions of computed.
-%       You can also provide a subset of the available transfer functions.
+%       'Tphi')}. The output will contain the transfer functions from
+%       lateral force to steer angle, roll rate, roll angle, yaw angle,
+%       lateral deviation and steer torque (or roll torque if input is
+%       'Roll'). If the array is empty, then none of the transfer functions
+%       are computed.  You can also provide a subset of the available
+%       transfer functions.
 %   stateSpace : cell array, optional
 %       This cell array should contain the state space matrices {A, B, C, D}
 %       for the whipple pull force bicycle model. Be sure that the `bike`
-%       and `speed` matches this state space model. If it isn't specified,
-%       the state space calculation happens inside generate_data. This
-%       option allows make the potentially time intensive calculation of the
-%       state space outside of generate data. But be careful with it because
+%       and `speed` match this state space model. If it isn't specified, the
+%       state space calculation happens inside generate_data. This option
+%       allows the potentially time intensive calculation of the state space
+%       to happen outside of generate data. But be careful with it because
 %       the arguments `bike` and `speed` become redundant.
+%   fullSystem : boolean
+%       If true the state space matrices for the entire system with lateral
+%       force as the only input are returned.
 %
 % Returns
 % -------
@@ -115,6 +119,15 @@ function data = generate_data(bike, speed, varargin)
 %       Speed of bicycle.
 %   time : matrix (n, 1)
 %       Time.
+%   system : structure
+%       A : matrix (11, 11)
+%           The state matrix.
+%       B : matrix (11, 1)
+%           The input matrix.
+%       C : matrix (11, 1)
+%           The output matrix.
+%       D : matrix
+%           The feed forward matrix.
 %
 % Examples
 % --------
@@ -155,6 +168,7 @@ defaults.loopTransfer = 1;
 defaults.handlingQuality = 1;
 defaults.forceTransfer = {'Delta', 'PhiDot', 'Phi', 'Psi', 'Y', 'Tdelta'};
 defaults.stateSpace = {};
+defaults.fullSystem = 1;
 
 % load in user supplied settings
 if size(varargin, 2) >= 1
@@ -233,7 +247,7 @@ if settings.loopTransfer
         modelPar.perturb = perturbTable(i + 1, :);
         modelPar.closed = closedTable(i + 1, :);
         update_model_variables(modelPar)
-        [num, den] = linmod('WhippleModel');
+        [num, den] = linmod_switch('WhippleModel');
         closedLoops.(loopNames{i}).num = num;
         closedLoops.(loopNames{i}).den = den;
     end
@@ -254,7 +268,7 @@ if settings.loopTransfer
         modelPar.perturb = perturbTable(i + 1, :);
         modelPar.closed = closedTable(i + 1, :);
         update_model_variables(modelPar);
-        [num, den] = linmod('WhippleModel');
+        [num, den] = linmod_switch('WhippleModel');
         openLoops.(loopNames{i}).num = num;
         openLoops.(loopNames{i}).den = den;
     end
@@ -340,7 +354,7 @@ if settings.handlingQuality
 
     update_model_variables(modelPar);
 
-    [num, den] = linmod('WhippleModel');
+    [num, den] = linmod_switch('WhippleModel');
     handlingMetric.num = num;
     handlingMetric.den = den;
 
@@ -404,7 +418,7 @@ if ~isempty(settings.forceTransfer)
 
         update_model_variables(modelPar)
 
-        [num, den] = linmod('WhippleModel');
+        [num, den] = linmod_switch('WhippleModel');
         data.forceTF.(ftf{i}).num = num;
         data.forceTF.(ftf{i}).den = den;
     end
@@ -422,12 +436,50 @@ if ~isempty(settings.forceTransfer)
 
 end
 
+% get the full system state space
+if settings.fullSystem
+    display('Calculating the full system state space with lateral input.')
+    modelPar.isHandling = 0;
+    modelPar.isPullPerturb = 1;
+    modelPar.isFullSystem = 1;
+    modelPar.perturb = [0, 0, 0, 0, 0];
+    modelPar.closed = [1, 1, 1, 1, 1];
+
+    update_model_variables(modelPar)
+
+    [A, B, C, D] = linmod('WhippleModel');
+
+    data.system.A = A;
+    data.system.B = B;
+    data.system.C = C;
+    data.system.D = D;
+    data.system.outputs = {'xP',
+                           'yP',
+                           'psi',
+                           'phi',
+                           'thetaP',
+                           'thetaR',
+                           'delta',
+                           'thetaF',
+                           'xPDot$',
+                           'yPDot$',
+                           'psiDot',
+                           'phiDot',
+                           'thetaPDot',
+                           'thetaRDot',
+                           'deltaDot',
+                           'thetaFDot',
+                           'xQ',
+                           'yQ'};
+end
+
 %% Simulate the system
 if settings.simulate
     % close all the loops and simulate
     modelPar.loopNumber = 0;
     modelPar.isHandling = 0;
     modelPar.isPullPerturb = 0;
+    modelPar.isFullSystem = 0;
     modelPar.perturb = [0, 0, 0, 0, 0];
     modelPar.closed = [1, 1, 1, 1, 1];
 
@@ -645,7 +697,7 @@ function k = find_open_gain(loop, input)
 % set the gain for this loop to unity
 assignin('base', ['k' loop], 1)
 % get the transfer function
-[num, den] = linmod('WhippleModel');
+[num, den] = linmod_switch('WhippleModel');
 w = logspace(-1,2,1000);
 [mag,phase] = bode(tf(num,den), w);
 mag = mag(:)';
@@ -697,7 +749,7 @@ function delta = delta_mag_closed(gain, loop)
 assignin('base', ['k' loop], gain)
 
 % get the closed loop transfer function
-[num, den] = linmod('WhippleModel');
+[num, den] = linmod_switch('WhippleModel');
 w = logspace(-2, 2, 1000);
 
 % check for stability
@@ -927,6 +979,9 @@ modelPar.isHandling = 0;
 % set the pull perturb flag
 modelPar.isPullPerturb = 0;
 
+% set the full system flag to default
+modelPar.isFullSystem = 0;
+
 % set parameters for steer or roll inputs
 if strcmp(settings.input, 'Steer')
     % start at the delta loop
@@ -945,3 +1000,16 @@ elseif strcmp(settings.input, 'Roll')
 else
     error('Choose Steer or Roll as the input')
 end
+
+function [num, den] = linmod_switch(model)
+% Returns the numerator and denominator of the current transfer function
+% specified by the input and output blocks. This function is a hack and only
+% exists because the full system state space switch has one vector input and
+% one scalar input, which forces the output to always be a vector. A better
+% solution for this may be to remove the switches related to the output and
+% simply have one output that always outputs all the variables, instead of
+% select ones.
+
+[num, den] = linmod(model);
+
+num = num(1, :);

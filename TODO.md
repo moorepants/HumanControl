@@ -16,3 +16,6 @@ To Do List
 - Try out Ron's idea to find the gains for low speeds.
 - Add a way for the user to graphically choose where to measure the PhiDot neuro
   peak height from.
+- The simulink model could be significantly simplified by removing all switches
+  related to the outputs and simply outputing a vector quantify for all output
+  variables. It may be possible to do something similar with inputs too.
