@@ -147,6 +147,11 @@ function data = generate_data(bike, speed, varargin)
 % % input and a single lane change as the manuever.
 % >>data = generate_data('Pista', 7.5, 'laneType', 'single');
 
+global CURRENT_DIRECTORY
+% get the directory which this m-file is in
+S = dbstack('-completenames');
+[CURRENT_DIRECTORY, ~, ~] = fileparts(S(1).file);
+
 % there are some unconnected ports in the simulink model that send out warnings
 warning off
 
@@ -202,7 +207,7 @@ if isempty(settings.gains)
         display(sprintf(repmat('*', 1, 76)))
     end
     % load the gain guesses
-    pathToGainFile = ['gains' filesep bike settings.input 'Gains.txt'];
+    pathToGainFile = [CURRENT_DIRECTORY filesep 'gains' filesep bike settings.input 'Gains.txt'];
     [modelPar.kDelta, modelPar.kPhiDot, modelPar.kPhi, ...
      modelPar.kPsi, modelPar.kY] = lookup_gains(pathToGainFile, speed);
     % now calculate exact feedback gains using successive loop closure
@@ -292,7 +297,7 @@ if settings.loopTransfer
         roots(G.den{:});
     else
         % write the gains to file if the system is stable
-        pathToGainFile = ['gains' filesep bike settings.input 'Gains.txt'];
+        pathToGainFile = [CURRENT_DIRECTORY filesep 'gains' filesep bike settings.input 'Gains.txt'];
         newGains = [modelPar.kDelta, modelPar.kPhiDot, modelPar.kPhi, ...
         modelPar.kPsi, modelPar.kY];
         write_gains(pathToGainFile, speed, newGains)
@@ -461,8 +466,8 @@ if settings.fullSystem
                            'thetaR',
                            'delta',
                            'thetaF',
-                           'xPDot$',
-                           'yPDot$',
+                           'xPDot',
+                           'yPDot',
                            'psiDot',
                            'phiDot',
                            'thetaPDot',
@@ -915,6 +920,8 @@ function [modelPar, startLoop, par] = ...
 % par : structure
 %   The physical parameters of the bicycle and rider.
 
+global CURRENT_DIRECTORY
+
 % set the speed
 modelPar.speed = speed;
 
@@ -925,7 +932,7 @@ modelPar.track = [pathT, pathY];
 modelPar.stopTime = pathT(end);
 
 % load the bicycle parameters
-pathToParFile = ['parameters' filesep bike 'Par.txt'];
+pathToParFile = [CURRENT_DIRECTORY filesep 'parameters' filesep bike 'Par.txt'];
 par = par_text_to_struct(pathToParFile);
 str = 'Parameters for the %s bicycle and rider have been loaded.';
 display(sprintf(str, bike))
