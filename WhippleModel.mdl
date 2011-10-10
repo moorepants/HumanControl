@@ -14,7 +14,7 @@ Model {
       Name		      "Output"
     }
     ParameterArgumentNames  ""
-    ComputedModelVersion    "1.229"
+    ComputedModelVersion    "1.230"
     NumModelReferences	    0
     NumTestPointedSignals   0
   }
@@ -33,9 +33,9 @@ Model {
   ModifiedByFormat	  "%<Auto>"
   LastModifiedBy	  "moorepants"
   ModifiedDateFormat	  "%<Auto>"
-  LastModifiedDate	  "Sat Oct  8 14:58:46 2011"
-  RTWModifiedTimeStamp	  239986721
-  ModelVersionFormat	  "1.%<AutoIncrement:229>"
+  LastModifiedDate	  "Mon Oct 10 09:56:59 2011"
+  RTWModifiedTimeStamp	  240141394
+  ModelVersionFormat	  "1.%<AutoIncrement:230>"
   ConfigurationManager	  "None"
   SampleTimeColors	  off
   SampleTimeAnnotations	  off
@@ -1447,7 +1447,7 @@ Model {
       Name		      "Mux2"
       SID		      147
       Ports		      [2, 1]
-      Position		      [2240, 251, 2255, 389]
+      Position		      [2240, 249, 2250, 391]
       ShowName		      off
       Inputs		      "2"
       DisplayOption	      "bar"
@@ -2437,7 +2437,7 @@ Model {
     Line {
       SrcBlock		      "Mux2"
       SrcPort		      1
-      Points		      [55, 0; 0, 180]
+      Points		      [60, 0; 0, 180]
       DstBlock		      "Full System State Space Switch"
       DstPort		      1
     }
