@@ -7,10 +7,7 @@ To Do List
 - Add the new values for the Browserins instead of the old.
 - Make the varargin_to_structure take the default structure and add the
   varargins to the default stucture. This may need to be done recursively.
-- Save correctly found gains to a file
 - Fix xlim to match all plots on the basic plots from generate_data.m
-- Allow the user to set the neuro transfer function parameters as an option
-  argument to generata_data
 - Make the path filter frequency and time delay dependent on the
   characteristics of each bike at each speed, see the paper.
 - Try out Ron's idea to find the gains for low speeds.
