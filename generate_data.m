@@ -54,6 +54,9 @@ function data = generate_data(bike, speed, varargin)
 %   fullSystem : boolean
 %       If true the state space matrices for the entire system with lateral
 %       force as the only input are returned.
+%   display : boolean
+%       If true the function will dispaly information to screen as the
+%       function runs else it will display nothing. The default is true.
 %
 % Returns
 % -------
@@ -155,11 +158,6 @@ S = dbstack('-completenames');
 % there are some unconnected ports in the simulink model that send out warnings
 warning off
 
-% show the bike and speed on the screen
-display(sprintf(repmat('-', 1, 79)))
-display(sprintf('%s at %1.2f m/s.', bike, speed))
-display(sprintf(repmat('-', 1, 79)))
-
 %% parse function arguments
 % set the defaults for the optional arguments
 defaults.input = 'Steer';
@@ -174,6 +172,7 @@ defaults.handlingQuality = 1;
 defaults.forceTransfer = {'Delta', 'PhiDot', 'Phi', 'Psi', 'Y', 'Tdelta'};
 defaults.stateSpace = {};
 defaults.fullSystem = 1;
+defaults.display = 1;
 
 % load in user supplied settings
 if size(varargin, 2) >= 1
@@ -184,6 +183,18 @@ end
 
 % combine the defaults with the user settings
 settings = overwrite_settings(defaults, userSettings);
+
+global PRINT_TO_SCREEN
+if settings.display
+    PRINT_TO_SCREEN = 1;
+else
+    PRINT_TO_SCREEN = 0;
+end
+
+% show the bike and speed on the screen
+display_if(sprintf(repmat('-', 1, 79)))
+display_if(sprintf('%s at %1.2f m/s.', bike, speed))
+display_if(sprintf(repmat('-', 1, 79)))
 
 %% set model parameters
 [modelPar, startLoop, par] = ...
@@ -197,14 +208,14 @@ loopNames = {'Delta', 'PhiDot', 'Phi', 'Psi', 'Y'};
 if isempty(settings.gains)
     % give a warning that the program doesn't work well for low speeds
     if speed < 2.5
-        display(sprintf(repmat('*', 1, 76)))
-        display('Warning')
-        display(sprintf(repmat('*', 1, 76)))
+        display_if(sprintf(repmat('*', 1, 76)))
+        display_if('Warning')
+        display_if(sprintf(repmat('*', 1, 76)))
         s = ['The speed, %1.2f m/s, is less than 2.5 m/s. The PhiDot ', ...
              'loop often has a\nhard time converging. It is suggested ', ...
              'to supply the gains manually for these\nlower speeds.'];
-        display(sprintf(s, speed))
-        display(sprintf(repmat('*', 1, 76)))
+        display_if(sprintf(s, speed))
+        display_if(sprintf(repmat('*', 1, 76)))
     end
     % load the gain guesses
     pathToGainFile = [CURRENT_DIRECTORY filesep 'gains' filesep bike settings.input 'Gains.txt'];
@@ -228,7 +239,7 @@ for i = 1:length(k)
     kString = [kString sprintf('%s = %1.3f\n                  ', ...
                k{i}, modelPar.(k{i}))];
 end
-display(['Gains are set to: ', strtrim(kString)])
+display_if(['Gains are set to: ', strtrim(kString)])
 
 %% store transfer function data
 if settings.loopTransfer
@@ -247,7 +258,7 @@ if settings.loopTransfer
     % store the transfer functions for the closed loops
     for i = startLoop:length(loopNames)
         str = 'Finding the %s closed loop transfer function.';
-        display(sprintf(str, loopNames{i}))
+        display_if(sprintf(str, loopNames{i}))
         modelPar.loopNumber = i;
         modelPar.perturb = perturbTable(i + 1, :);
         modelPar.closed = closedTable(i + 1, :);
@@ -268,7 +279,7 @@ if settings.loopTransfer
     % get the transfer functions for the open loops
     for i = startLoop:length(loopNames)
         str = 'Finding the %s open loop transfer function.';
-        display(sprintf(str, loopNames{i}));
+        display_if(sprintf(str, loopNames{i}));
         modelPar.loopNumber = i;
         modelPar.perturb = perturbTable(i + 1, :);
         modelPar.closed = closedTable(i + 1, :);
@@ -285,15 +296,15 @@ if settings.loopTransfer
     % check to see if the final system is stable
     G = tf(closedLoops.Y.num, closedLoops.Y.den);
     if any(real(roots(G.den{:})) > 0)
-        display(sprintf(repmat('*', 1, 76)))
-        display('Warning')
-        display(sprintf(repmat('*', 1, 76)))
+        display_if(sprintf(repmat('*', 1, 76)))
+        display_if('Warning')
+        display_if(sprintf(repmat('*', 1, 76)))
         s = ['The system is not stable with these gains. If the ', ...
                  'simulation completes, the\ndata may be invalid. ', ...
                  'Please give better gain guesses or supply the gains\n', ...
                  'manually.'];
-        display(sprintf(s))
-        display(sprintf(repmat('*', 1, 76)))
+        display_if(sprintf(s))
+        display_if(sprintf(repmat('*', 1, 76)))
         roots(G.den{:});
     else
         % write the gains to file if the system is stable
@@ -301,11 +312,11 @@ if settings.loopTransfer
         newGains = [modelPar.kDelta, modelPar.kPhiDot, modelPar.kPhi, ...
         modelPar.kPsi, modelPar.kY];
         write_gains(pathToGainFile, speed, newGains)
-        display(sprintf('Gains written to %s', pathToGainFile))
+        display_if(sprintf('Gains written to %s', pathToGainFile))
     end
 
     if settings.plot
-        display('Generating loop transfer plots.')
+        display_if('Generating loop transfer plots.')
         figure()
         % go through each loop and plot the bode plot for the closed loops
         hold all
@@ -334,7 +345,7 @@ end
 
 %% get the handling quality metric
 if settings.handlingQuality
-    display('Finding the handling quality metric.')
+    display_if('Finding the handling quality metric.')
     % the handling qualities must be calculated with the phi loop at 2 rad/sec
     % crossover
     if strcmp(settings.input, 'Roll')
@@ -371,7 +382,7 @@ if settings.handlingQuality
     % store the handling quality metric
     data.handlingMetric = handlingMetric;
     if settings.plot
-        display('Generating handling quality plot.')
+        display_if('Generating handling quality plot.')
         figure()
         num = handlingMetric.num;
         den = handlingMetric.den;
@@ -395,7 +406,7 @@ if ~isempty(settings.forceTransfer)
     if strcmp(settings.input, 'Steer')
         % replace 'Tphi'
         if any(ismember(ftf, 'Tphi'))
-            display(['You have specified Steer as the input so Tphi ' ...
+            display_if(['You have specified Steer as the input so Tphi ' ...
                      'will be replaced with Tdelta'])
             ftf{find(ismember(ftf, 'Tphi')==1)} = 'Tdelta';
         end
@@ -404,7 +415,7 @@ if ~isempty(settings.forceTransfer)
         modelPar.closed = [0, 1, 1, 1, 1];
         % replace 'Tdelta'
         if any(ismember(ftf, 'Tdelta'))
-            display(['You have specified Roll as the input so Tdelta ' ...
+            display_if(['You have specified Roll as the input so Tdelta ' ...
                      'will be replaced with Tphi'])
             ftf{find(ismember(ftf, 'Tdelta')==1)} = 'Tphi';
         end
@@ -412,7 +423,7 @@ if ~isempty(settings.forceTransfer)
 
     % calculate each transfer function
     for i = 1:length(ftf)
-        display(sprintf(['Calculating the pull force to %s transfer ' ...
+        display_if(sprintf(['Calculating the pull force to %s transfer ' ...
                         'function.'], ftf{i}))
         if strcmp(ftf{i}, 'Tdelta') || strcmp(ftf{i}, 'Tphi')
             % Tdelta is connected to the 0 port in the multiswitch
@@ -443,7 +454,7 @@ end
 
 % get the full system state space
 if settings.fullSystem
-    display('Calculating the full system state space with lateral input.')
+    display_if('Calculating the full system state space with lateral input.')
     modelPar.isHandling = 0;
     modelPar.isPullPerturb = 1;
     modelPar.isFullSystem = 1;
@@ -492,11 +503,11 @@ if settings.simulate
 
     update_model_variables(modelPar)
 
-    display('Simulating the tracking task.')
+    display_if('Simulating the tracking task.')
     tic;
     sim('WhippleModel.mdl')
     elapsedTime = toc;
-    display(sprintf('Simulation finished in %1.3f seconds.', elapsedTime))
+    display_if(sprintf('Simulation finished in %1.3f seconds.', elapsedTime))
 
     % set the initial point of the front wheel ahead of the rear wheel by the
     % wheelbase length
@@ -511,7 +522,7 @@ if settings.simulate
     data.path = yc;
 
     if settings.plot
-        display('Generating simulation plots.')
+        display_if('Generating simulation plots.')
 
         outputPlot = plot_outputs(t, y, yc);
 
@@ -528,7 +539,7 @@ data.speed = speed;
 data.par = par;
 data.modelPar = modelPar;
 
-display(sprintf('Done. \n'))
+display_if(sprintf('Done. \n'))
 
 function update_model_variables(modelPar)
 % Puts all the variables needed for the simulink model in to the base
@@ -638,7 +649,7 @@ function [kDelta, kPhiDot, kPhi, kPsi, kY] = lookup_gains(pathToGains, speed)
 try
     contents = importdata(pathToGains);
 catch err
-    display(sprintf('There is no gain file: %s.', pathToGains))
+    display_if(sprintf('There is no gain file: %s.', pathToGains))
     rethrow(err)
 end
 
@@ -646,7 +657,7 @@ speeds = contents.data(:, 1);
 
 if length(speeds) == 1
     guesses = contents.data(2:end);
-    display(sprintf(['Gain guess may be bad, please provide more than one ' ...
+    display_if(sprintf(['Gain guess may be bad, please provide more than one ' ...
                     'speed of gain guesses in %s'], pathToGains))
 else
     guesses = zeros(5);
@@ -762,7 +773,7 @@ w = logspace(-2, 2, 1000);
 % check for stability
 %G = tf(num, den);
 %if any(real(roots(G.den{:})) > 0)
-    %display('Loop is not stable with this gain.')
+    %display_if('Loop is not stable with this gain.')
     %roots(G.den{:})
 %end
 
@@ -794,7 +805,7 @@ ddmag = [0 diff(dmag)];
 for i = indMaxDD:-1:2
     if ddmag(i - 1) < 0 && ddmag(i) > 0
         iMinDmag = i;
-        %display(sprintf(['Found a zero crossing in ddmag ' ...
+        %display_if(sprintf(['Found a zero crossing in ddmag ' ...
                         %'at the inflection point at %f.'], ...
                         %wtrunc(iMinDmag)))
         break
@@ -804,16 +815,16 @@ for i = indMaxDD:-1:2
 end
 
 if iMinDmag == 1
-    %display('Did not find a zero crossing in ddmag at the inflection point.')
+    %display_if('Did not find a zero crossing in ddmag at the inflection point.')
     if strcmp(loop, 'Delta')
         [tmp, iMinDmag] = min(dmag);
-        %display(sprintf('Setting the Delta low point to %f', ...
+        %display_if(sprintf('Setting the Delta low point to %f', ...
                         %wtrunc(iMinDmag)))
     elseif strcmp(loop, 'PhiDot')
         wMid = wtrunc(end) - 4;
         wMid = 3;
         [tmp, iMinDmag] = min(abs(wMid - wtrunc));
-        %display(sprintf('Setting the PhiDot low point to %f', ...
+        %display_if(sprintf('Setting the PhiDot low point to %f', ...
                         %wtrunc(iMinDmag)))
     end
 end
@@ -878,7 +889,7 @@ for i = startLoop:length(loopNames)
     guess = modelPar.(['k' loopNames{i}]);
     str = ['Finding the loop transfer function ' ...
            'of the %s loop with a start guess of %1.4f.'];
-    display(sprintf(str, loopNames{i}, guess))
+    display_if(sprintf(str, loopNames{i}, guess))
     % set the logic for this loop calculation
     modelPar.loopNumber = i;
     modelPar.perturb = perturbTable(i + 1, :);
@@ -893,7 +904,7 @@ for i = startLoop:length(loopNames)
     end
     modelPar.(['k' loopNames{i}]) = gain;
     str = '%s loop gain set to %1.4f.';
-    display(sprintf(str, loopNames{i}, gain))
+    display_if(sprintf(str, loopNames{i}, gain))
 end
 
 function [modelPar, startLoop, par] = ...
@@ -935,18 +946,18 @@ modelPar.stopTime = pathT(end);
 pathToParFile = [CURRENT_DIRECTORY filesep 'parameters' filesep bike 'Par.txt'];
 par = par_text_to_struct(pathToParFile);
 str = 'Parameters for the %s bicycle and rider have been loaded.';
-display(sprintf(str, bike))
+display_if(sprintf(str, bike))
 
 % calculate the A, B, C, and D matrices of the bicycle model
 if isempty(settings.stateSpace)
-    display(sprintf('Calculating the A, B, C, D matrices for %1.2f m/s', speed))
+    display_if(sprintf('Calculating the A, B, C, D matrices for %1.2f m/s', speed))
     tic
     [modelPar.A, modelPar.B, modelPar.C, modelPar.D] = ...
         whipple_pull_force_abcd(par, speed);
     elapsedTime = toc;
-    display(sprintf('A, B, C, D calculated in %1.4f seconds.', elapsedTime))
+    display_if(sprintf('A, B, C, D calculated in %1.4f seconds.', elapsedTime))
 else
-    display('A, B, C, D matrices already supplied')
+    display_if('A, B, C, D matrices already supplied')
     mats = {'A', 'B', 'C', 'D'};
     for i = 1:4
         modelPar.(mats{i}) = settings.stateSpace{i};
@@ -970,7 +981,7 @@ modelPar.initialConditions = [-par.w, ... rear wheel contact x
 
 % human neuromuscular system
 wnm = settings.neuroFreq;
-display(sprintf('Neuromuscular frequency set to: %1.1f', wnm))
+display_if(sprintf('Neuromuscular frequency set to: %1.1f', wnm))
 modelPar.neuroNum = wnm^2;
 modelPar.neuroDen = [1, 2 * 0.707 * wnm, wnm^2];
 
@@ -1022,3 +1033,12 @@ function [num, den] = linmod_switch(model)
 [num, den] = linmod(model);
 
 num = num(1, :);
+
+function display_if(string)
+% Prints the string to screen only if the print to screen global is true.
+
+global PRINT_TO_SCREEN
+
+if PRINT_TO_SCREEN
+    disp(string)
+end
