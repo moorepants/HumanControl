@@ -17,135 +17,52 @@ function [name, order] = convert_variable(variable, output)
 
 [coordinates, speeds, inputs] = get_variables();
 
-if strcmp(variable(1), 'q')
-    type = 'coordinates';
-    input = 'moore';
-elseif strcmp(variable(1), 'u')
-    type = 'speeds';
-    input = 'moore';
-elseif strcmp(variable(1), 'T')
-    type = 'inputs';
-    input = 'moore';
-elseif regexp(variable, 'Dot$')
-    type = 'speeds';
-    input = 'meijaard';
-elseif regexp(variable, 'Angle$')
-    type = 'coordinates';
-    input = 'data';
-elseif regexp(variable, 'Contact$')
-    type = 'coordinates';
-    input = 'data';
-elseif regexp(variable, 'Rate$')
-    type = 'speeds';
-    input = 'data';
-elseif regexp(variable, 'Torque$')
-    type = 'inputs';
-    input = 'data';
-elseif regexp(variable, 'Force$')
-    type = 'inputs';
-    input = 'data';
-else % search in meijaard coordinates and inputs
-    if find(ismember(coordinates.meijaard, variable))
-        type = 'coordinates';
-        input = 'meijaard';
-    elseif find(ismember(inputs.meijaard, variable))
-        type = 'inputs';
-        input = 'meijaard';
-    else
-        error('Beep: Done typed yo variable name wrong')
-    end
-end
+columns = {'data', 'meijaard', 'moore'};
 
-if strcmp(type, 'coordinates')
-    order = find(ismember(coordinates.(input), variable));
-    name = coordinates.(output){order};
-elseif strcmp(type, 'speeds')
-    order = find(ismember(speeds.(input), variable));
-    name = speeds.(output){order};
-elseif strcmp(type, 'inputs')
-    order = find(ismember(inputs.(input), variable));
-    name = inputs.(output){order};
+if find(ismember(coordinates, variable))
+
+    [order, ~] = find(ismember(coordinates, variable));
+    name = coordinates{order, find(ismember(columns, output))};
+
+elseif find(ismember(speeds, variable))
+
+    [order, ~] = find(ismember(speeds, variable));
+    name = speeds{order, find(ismember(columns, output))};
+
+elseif find(ismember(inputs, variable))
+
+    [order, ~] = find(ismember(inputs, variable));
+    name = inputs{order, find(ismember(columns, output))};
+
+else
+    error('Beep: Done typed yo variable name wrong')
 end
 
 function [coordinates, speeds, inputs] = get_variables()
 
-coordinates.moore = {'q1',
-                     'q2',
-                     'q3',
-                     'q4',
-                     'q5',
-                     'q6',
-                     'q7',
-                     'q8',
-                     'q9',
-                     'q10'};
+coordinates = {'LongitudinalRearContact', 'xP', 'q1';
+               'LateralRearContact', 'yP','q2';
+               'YawAngle', 'psi','q3';
+               'RollAngle', 'phi','q4';
+               'PitchAngle', 'theta','q5';
+               'RearWheelAngle', 'thetaR','q6';
+               'SteerAngle', 'delta','q7';
+               'FrontWheelAngle', 'thetaF','q8';
+               'LongitudinalFrontContact', 'xQ','q9';
+               'LateralFrontContact', 'yQ', 'q10'};
 
-speeds.moore = {'u1',
-                'u2',
-                'u3',
-                'u4',
-                'u5',
-                'u6',
-                'u7',
-                'u8',
-                'u9',
-                'u10'};
+speeds = {'LongitudinalRearContactRate', 'xPDot', 'u1';
+          'LateralRearContactRate', 'yPDot', 'u2';
+          'YawRate', 'psiDot', 'u3';
+          'RollRate', 'phiDot', 'u4';
+          'PitchRate', 'thetaDot', 'u5';
+          'RearWheelRate', 'thetaRDot', 'u6';
+          'SteerRate', 'deltaDot', 'u7';
+          'FrontWheelRate', 'thetaFDot','u8';
+          'LongitudinalFrontContactRate', 'xQDot', 'u9';
+          'LateralFrontContactRate', 'yQDot', 'u10'};
 
-inputs.moore = {'T4',
-                'T6',
-                'T7',
-                'F'};
-
-coordinates.data = {'LongitudinalRearContact',
-                    'LateralRearContact',
-                    'YawAngle',
-                    'RollAngle',
-                    'PitchAngle',
-                    'RearWheelAngle',
-                    'SteerAngle',
-                    'FrontWheelAngle',
-                    'LongitudinalFrontContact',
-                    'LateralFrontContact'};
-
-speeds.data = {'LongitudinalRearContactRate',
-               'LateralRearContactRate',
-               'YawRate',
-               'RollRate',
-               'PitchRate',
-               'RearWheelRate',
-               'SteerRate',
-               'FrontWheelRate',
-               'LongitudinalFrontContactRate',
-               'LateralFrontContactRate'};
-
-inputs.data = {'RollTorque',
-               'RearWheelTorque',
-               'SteerTorque',
-               'PullForce'};
-
-coordinates.meijaard = {'xP',
-                        'yP',
-                        'psi',
-                        'phi',
-                        'theta',
-                        'thetaR',
-                        'delta',
-                        'thetaF',
-                        'xQ',
-                        'yQ'};
-
-speeds.meijaard = {'xPDot',
-                   'yPDot',
-                   'psiDot',
-                   'phiDot',
-                   'thetaDot',
-                   'thetaRDot',
-                   'deltaDot',
-                   'thetaFDot',
-                   'xQDot',
-                   'yQDot'};
-
-inputs.meijaard = {'tPhi',
-                   'tThetaR',
-                   'tDelta',
-                   'fB'};
+inputs = {'RollTorque', 'tPhi', 'T4';
+          'RearWheelTorque', 'tThetaR', 'T6';
+          'SteerTorque', 'tDelta', 'T7';
+          'PullForce', 'fB', 'F'};
