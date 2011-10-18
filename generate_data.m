@@ -460,6 +460,7 @@ if settings.fullSystem
     modelPar.isFullSystem = 1;
     modelPar.perturb = [0, 0, 0, 0, 0];
     modelPar.closed = [1, 1, 1, 1, 1];
+    modelPar.loopNumber = 0;
 
     update_model_variables(modelPar)
 
