@@ -1,7 +1,7 @@
 gains = [76.3808, -0.0516, 7.2456, 0.2632, 0.0708]
 neuro = 30
 
-data = generate_data('Rigid', 7.0, 'gains', gains, 'neuroFreq', neuro);
+data = generate_data('Rigid', 7.0, 'gains', gains, 'neuroFreq', neuro, 'loopTransfer', 0, 'handlingQuality', 0, 'simulate', 0);
 
 bicycle.A = data.modelPar.A;
 bicycle.B = data.modelPar.B;
@@ -34,9 +34,13 @@ pzplot(analytic, numeric)
 figure()
 hold all
 % plot my analytic model
-[num, den] = ss2tf(sys.A, sys.B, sys.C, sys.D, 2)
+[num, den] = ss2tf(sys.A, sys.B, sys.C, sys.D, 2);
+mine = tf(num(find(strcmp('phiDot', outputs)), :), den)
 bode(tf(num(find(strcmp('phiDot', outputs)), :), den))
 % plot the data from the simulink model
 bode(tf(data.forceTF.PhiDot.num, data.forceTF.PhiDot.den))
-[num, den] = ss2tf(data.system.A, data.system.B, data.system.C, data.system.D, 1)
+[num, den] = ss2tf(data.system.A, data.system.B, data.system.C, data.system.D, 1);
 bode(tf(num(12, :), den))
+
+eig(sys.A)
+eig(data.system.A)

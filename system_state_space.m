@@ -42,88 +42,82 @@ function sys = system_state_space(bicycle, gains, neuro, outputs)
 %       be the inputs of the bicycle minus `tDelta` and plus `yc`, the
 %       commanded lateral deviation of the front wheel.
 
-% the outputs must have at least yQ, psi, phi, phiDot, and delta this also
-% implies that the
-
 % build the state matrix
 % append the two additional state names
-states = [bicycle.x, 'tDelta', 'tDeltaDot']
+states = [bicycle.x, 'tDelta', 'tDeltaDot'];
 % add room for the two new states, tDelta and tDeltaDot
-[mA, nA] = size(bicycle.A)
-A = zeros(mA + 2, nA + 2)
+[mA, nA] = size(bicycle.A);
+A = zeros(mA + 2, nA + 2);
 % put the bicycle equations in the upper left corner
-A(1:mA, 1:nA) = bicycle.A
-% put the neuro block state space in the bottom right corner
-zeta = 0.707 % damping ratio of the neuromuscular mode
-A(mA + 1:end, nA + 1:end) = [0, 1;-neuro, -2 * zeta * neuro]
+A(1:mA, 1:nA) = bicycle.A;
 % put the steer torque B column in the new A matrix
-A(1:mA, find(strcmp(states, 'tDelta'))) = bicycle.B(:, find(ismember(bicycle.u, 'tDelta')))
-% get the row corresponding to yQ in bicycle.C
-yQrow = find(strcmp('yQ', bicycle.y))
-yPCol = find(strcmp('yP', bicycle.x))
-psiCol = find(strcmp('psi', bicycle.x))
-phiCol = find(strcmp('phi', bicycle.x))
-deltaCol = find(strcmp('delta', bicycle.x))
-phiDotCol = find(strcmp('phiDot', bicycle.x))
-deltaDotCol = find(strcmp('deltaDot', bicycle.x))
-% coefficients with respect to the bicycle states of the steer torque double dot equation
-tDeltaDDot.yP =  -neuro^2 * prod(gains) * bicycle.C(yQrow, yPCol)
-tDeltaDDot.psi = -neuro^2 * prod(gains(1:4)) * (1 + gains(1) * bicycle.C(yQrow, psiCol))
-tDeltaDDot.phi = -neuro^2 * prod(gains(1:3)) * (1 + prod(gains(4:5)) * bicycle.C(yQrow, phiCol))
-tDeltaDDot.delta = -neuro^2 * gains(1) * (1 + prod(gains(2:5)) * bicycle.C(yQrow, deltaCol))
-tDeltaDDot.phiDot = -neuro^2 * prod(gains(1:2)) * (1 + prod(gains(3:5)) * bicycle.C(yQrow, phiDotCol))
-tDeltaDDot.deltaDot = -neuro^2 * prod(gains) * bicycle.C(yQrow, deltaDotCol)
-% add the steer torque double dot equation
-tddcoefs = fieldnames(tDeltaDDot)
-for i = 1:length(tddcoefs)
-    % get the column of the state
-    colNum = find(strcmp(states, tddcoefs{i}))
-    % put the coefficients in the last row
-    A(end, colNum) = tDeltaDDot.(tddcoefs{i})
+A(1:mA, index('tDelta', states)) = bicycle.B(:, index('tDelta', bicycle.u));
+
+% put the neuro block state space in the bottom right corner
+zeta = 0.707; % damping ratio of the neuromuscular mode
+A(mA + 1:end, nA + 1:end) = [0, 1; -neuro, -2 * zeta * neuro];
+
+% build a bicycle C matrix that is minimal for the feedback loop
+minBicycleOutputs = {'psi', 'phi', 'delta', 'phiDot', 'yQ'};
+minBicycleStates = {'yP', 'psi', 'phi', 'delta', 'phiDot', 'deltaDot'};
+% copy the bicycle C matrix
+minC = bicycle.C;
+% delete the rows and columns for the extra states and outputs
+rows = find(~ismember(bicycle.y, minBicycleOutputs));
+cols = find(~ismember(bicycle.x, minBicycleStates));
+minC(rows, :) = []; minC(:, cols) = [];
+% build the tDeltaDot equation
+tDeltaDotRow = index('tDeltaDot', states);
+kDelta = gains(1); kPhiDot = gains(2); kPhi = gains(3); kPsi = gains(4); kYQ = gains(5);
+for i = 1:length(minBicycleStates)
+    A(tDeltaDotRow, index(minBicycleStates{i}, states)) = ...
+    kDelta*neuro^2*(-minC(1, i)*kPhi*kPhiDot*kPsi - ...
+    minC(2, i)*kPhi*kPhiDot - minC(3, i) - ...
+    minC(4, i)*kPhiDot - minC(5, i)*kPhi*kPhiDot*kPsi*kYQ);
 end
 
 % build the input matrix
 % remove tDelta as an input, add yc as the last input to the system and add
 % two rows for the two new state equations
-[mB, nB] = size(bicycle.B)
-B = zeros(mB + 2, nB)
+[mB, nB] = size(bicycle.B);
+B = zeros(mB + 2, nB);
 % the steer torque delta dot equation yc coefficient
-B(end, end) = neuro^2 * prod(gains)
+B(end, end) = neuro^2 * prod(gains);
 % put the other bicycle inputs other than the steer torque into the new B
 % matrix
-inputs = {}
-j = 1
+inputs = {};
+j = 1;
 for i = 1:length(bicycle.u)
     % skip the steer torque input because it is included in the new A matrix
     if ~strcmp(bicycle.u{i}, 'tDelta')
-        B(1:mB, j) = bicycle.B(:, i)
-        inputs{j} = bicycle.u{i}
-        j = j + 1
+        B(1:mB, j) = bicycle.B(:, i);
+        inputs{j} = bicycle.u{i};
+        j = j + 1;
     end
 end
-inputs = [inputs 'yc']
+inputs = [inputs 'yc'];
 
 % build the output matrix
-[mC, nC] = size(bicycle.C)
-C = zeros(length(outputs), nA + 2)
+[mC, nC] = size(bicycle.C);
+C = zeros(length(outputs), nA + 2);
 for i = 1:length(outputs)
     if strcmp(outputs{i}, 'tDelta')
-        row = find(strcmp(outputs, 'tDelta'))
-        col = find(strcmp(states, 'tDelta'))
+        row = find(strcmp(outputs, 'tDelta'));
+        col = find(strcmp(states, 'tDelta'));
         C(row, col) = 1;
     elseif strcmp(outputs{i}, 'tDeltaDot')
-        row = find(strcmp(outputs, 'tDeltaDot'))
-        col = find(strcmp(states, 'tDeltaDot'))
+        row = find(strcmp(outputs, 'tDeltaDot'));
+        col = find(strcmp(states, 'tDeltaDot'));
         C(row, col) = 1;
     else
         % grab the row in the bicycle output matrix and put it in the system
         % output matrix
-        C(i, 1:nC) = bicycle.C(find(strcmp(bicycle.y, outputs{i})), :)
+        C(i, 1:nC) = bicycle.C(find(strcmp(bicycle.y, outputs{i})), :);
     end
 end
 
 % build the feed forward matrix, this is always zero
-D = zeros(length(outputs), length(inputs))
+D = zeros(length(outputs), length(inputs));
 
 sys.A = A;
 sys.B = B;
@@ -132,3 +126,6 @@ sys.D = D;
 sys.states = states;
 sys.inputs = inputs;
 sys.outputs = outputs;
+
+function i = index(value, vector)
+    i = find(strcmp(value, vector));
