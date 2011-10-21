@@ -14,7 +14,7 @@ function data = generate_data(bike, speed, varargin)
 %       'Steer' or 'Roll'. 'Steer' is the default.
 %   gains : matrix (5, 1), optional
 %       If gains are given this will manually override the search for the
-%       optimal gains.
+%       optimal gains. In order kDelta, kPhiDot, kPhi, kPsi, kY.
 %   gainMuls : matrix (5, 1), optional
 %       General gain multipliers. The gains are applied starting at the inner
 %       loop going out. [1, 1, 1, 1, 1] is the default.
@@ -465,6 +465,7 @@ if settings.fullSystem
     update_model_variables(modelPar)
 
     [A, B, C, D] = linmod('WhippleModel');
+
 
     data.system.A = A;
     data.system.B = B;
