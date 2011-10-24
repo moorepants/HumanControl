@@ -6,7 +6,7 @@ from sympy import Symbol, symbols, Matrix
 b = {}
 delta, deltaDot, phiDot, phi, psi, yP, yQ = symbols('delta, deltaDot, phiDot, phi, psi, yP, yQ')
 tPhi, tDelta, fB, tDeltaDot = symbols('tPhi, tDelta, fB, tDeltaDot')
-b['x'] = Matrix([[yP], [psi], [phi], [delta], [phiDot], ['deltaDot']])
+b['x'] = Matrix([[yP], [psi], [phi], [delta], [phiDot], [deltaDot]])
 b['u'] = Matrix([[tPhi], [tDelta], [fB]])
 b['y'] = Matrix([[psi], [phi], [delta], [phiDot], [yQ]])
 
@@ -28,17 +28,12 @@ b['D'] = Matrix(numOutputs, numInputs, lambda i, j: 0.)
 # the controller block
 kDelta, kPhiDot, kPhi, kPsi, kYQ = symbols('kDelta, kPhiDot, kPhi, kPsi, kYQ')
 deltac, phiDotc, phic, psic, yc = symbols('deltac, phiDotc, phic, psic, yc')
+psic = kYQ * (yc - yQ)
+phic = kPsi * (psic - psi)
+phiDotc = kPhi * (phic - phi)
+deltac = kPhiDot * (phiDotc - phiDot)
 Unm = kDelta * (deltac - delta)
-delta_c = kPhiDot * (phiDotc - phiDot)
-phiDot_c = kPhi * (phic - phi)
-phi_c = kPsi * (psic - psi)
-psi_c = kYQ * (yc - yQ)
-
-Unm = Unm.subs({deltac: delta_c})
-Unm = Unm.subs({phiDotc: phiDot_c})
-Unm = Unm.subs({phic: phi_c})
-Unm = Unm.subs({psic: psi_c}).expand()
-
+Unm = Unm.expand()
 controller = Matrix([Unm.coeff(psi), Unm.coeff(phi), Unm.coeff(delta),
     Unm.coeff(phiDot), Unm.coeff(yQ), Unm.coeff(yc)]).T
 
