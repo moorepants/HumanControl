@@ -65,11 +65,16 @@ minC = bicycle.C;
 % delete the rows and columns for the extra states and outputs
 rows = find(~ismember(bicycle.y, minBicycleOutputs));
 cols = find(~ismember(bicycle.x, minBicycleStates));
-minC(rows, :) = []; minC(:, cols) = [];
+minC(rows, :) = [];
+minC(:, cols) = [];
 
 % build the tDeltaDot equation
 tDeltaDotRow = index('tDeltaDot', states);
-kDelta = gains(1); kPhiDot = gains(2); kPhi = gains(3); kPsi = gains(4); kYQ = gains(5);
+kDelta = gains(1);
+kPhiDot = gains(2);
+kPhi = gains(3);
+kPsi = gains(4);
+kYQ = gains(5);
 for i = 1:length(minBicycleStates)
     A(tDeltaDotRow, index(minBicycleStates{i}, states)) = ...
     -kDelta * neuro^2 * ( ...
