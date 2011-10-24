@@ -55,7 +55,7 @@ A(1:mA, index('tDelta', states)) = bicycle.B(:, index('tDelta', bicycle.u));
 
 % put the neuro block state space in the bottom right corner
 zeta = 0.707; % damping ratio of the neuromuscular mode
-A(mA + 1:end, nA + 1:end) = [0, 1; -neuro, -2 * zeta * neuro];
+A(mA + 1:end, nA + 1:end) = [0, 1; -neuro^2, -2 * zeta * neuro];
 
 % build a bicycle C matrix that is minimal for the feedback loop
 minBicycleOutputs = {'psi', 'phi', 'delta', 'phiDot', 'yQ'};
