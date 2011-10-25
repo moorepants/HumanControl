@@ -1,4 +1,4 @@
-function sys = system_state_space(bicycle, gains, neuro, outputs)
+function sys = system_state_space(bicycle, gains, neuro, inputs, outputs)
 % Returns the full system state space of the bicycle rider controller with
 % steer torque as the controlled input.
 %
@@ -25,6 +25,9 @@ function sys = system_state_space(bicycle, gains, neuro, outputs)
 %   The feedback gains [kDelta, kPhiDot, kPhi, kPsi, kY].
 % neuro : double
 %   The neuromuscular frequency.
+% inputs : cell array of chars, m + 2 x q
+%   The names of the desired system inputs in order. If the array is empty,
+%   then the system B matrix is empty.
 % ouputs : cell array of chars, p x m + 2
 %   The names of the desired system outputs in order. These can be a subset
 %   of the outputs in the bicycle outputs in addition to `tDelta` and
@@ -77,34 +80,33 @@ kPsi = gains(4);
 kYQ = gains(5);
 for i = 1:length(minBicycleStates)
     A(tDeltaDotRow, index(minBicycleStates{i}, states)) = ...
-    -kDelta * neuro^2 * ( ...
-    minC(1, i) * kPhi * kPhiDot * kPsi +...
-    minC(2, i) * kPhi * kPhiDot + ...
-    minC(3, i) + ...
-    minC(4, i) * kPhiDot + ...
-    minC(5, i) * kPhi * kPhiDot * kPsi * kYQ);
+    -kDelta * neuro^2 * ...
+    (minC(1, i) * kPhi * kPhiDot * kPsi +...
+     minC(2, i) * kPhi * kPhiDot + ...
+     minC(3, i) + ...
+     minC(4, i) * kPhiDot + ...
+     minC(5, i) * kPhi * kPhiDot * kPsi * kYQ);
 end
 
 % build the input matrix
 % remove tDelta as an input, add yc as the last input to the system and add
 % two rows for the two new state equations
 [mB, nB] = size(bicycle.B);
-B = zeros(mB + 2, nB);
-% the steer torque delta dot equation yc coefficient
-B(end, end) = neuro^2 * prod(gains);
-% put the other bicycle inputs other than the steer torque into the new B
-% matrix
-inputs = {};
-j = 1;
-for i = 1:length(bicycle.u)
-    % skip the steer torque input because it is included in the new A matrix
-    if ~strcmp(bicycle.u{i}, 'tDelta')
-        B(1:mB, j) = bicycle.B(:, i);
-        inputs{j} = bicycle.u{i};
-        j = j + 1;
+B = zeros(mB + 2, length(inputs));
+% for each input that is in bicycle.u that isn't steer torque, add the
+% column into B
+% if yc is inputs, add it's column
+for i = 1:length(inputs)
+    if strcmp(inputs{i}, 'yc')
+        B(:, i) = [zeros(mB + 1, 1); neuro^2 * prod(gains)];
+    else
+        B(1:mB, i) = bicycle.B(:, index(inputs{i}, bicycle.u));
     end
 end
-inputs = [inputs 'yc'];
+
+% the steer torque delta dot equation yc coefficient
+% put the other bicycle inputs other than the steer torque into the new B
+% matrix
 
 % build the output matrix
 [mC, nC] = size(bicycle.C);

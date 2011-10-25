@@ -20,7 +20,9 @@ outputs = {'xP', 'yP', 'psi', 'phi', 'theta', 'thetaR', 'delta', ...
            'thetaDot', 'thetaRDot', 'deltaDot', 'thetaFDot', ...
            'xQ', 'yQ', 'tDelta'};
 
-sys = system_state_space(bicycle, gains, neuro, outputs);
+inputs = {'fB', 'yc'};
+
+sys = system_state_space(bicycle, gains, neuro, inputs, outputs);
 
 analytic = ss(sys.A, sys.B, sys.C, sys.D, 'StateName', sys.states, ...
     'OutputName', sys.outputs, 'InputName', sys.inputs);
@@ -34,7 +36,7 @@ pzplot(analytic, numeric)
 figure()
 hold all
 % plot my analytic model
-[num, den] = ss2tf(sys.A, sys.B, sys.C, sys.D, 2);
+[num, den] = ss2tf(sys.A, sys.B, sys.C, sys.D, 1);
 mine = tf(num(find(strcmp('phiDot', outputs)), :), den)
 bode(tf(num(find(strcmp('phiDot', outputs)), :), den))
 % plot the data from the simulink model
