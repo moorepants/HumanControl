@@ -296,15 +296,15 @@ if settings.loopTransfer
     % check to see if the final system is stable
     G = tf(closedLoops.Y.num, closedLoops.Y.den);
     if any(real(roots(G.den{:})) > 0)
-        display_if(sprintf(repmat('*', 1, 76)))
-        display_if('Warning')
-        display_if(sprintf(repmat('*', 1, 76)))
+        display(sprintf(repmat('*', 1, 76)))
+        display('Warning')
+        display(sprintf(repmat('*', 1, 76)))
         s = ['The system is not stable with these gains. If the ', ...
                  'simulation completes, the\ndata may be invalid. ', ...
                  'Please give better gain guesses or supply the gains\n', ...
                  'manually.'];
-        display_if(sprintf(s))
-        display_if(sprintf(repmat('*', 1, 76)))
+        display(sprintf(s))
+        display(sprintf(repmat('*', 1, 76)))
         roots(G.den{:});
     else
         % write the gains to file if the system is stable
