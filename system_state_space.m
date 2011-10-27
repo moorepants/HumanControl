@@ -15,11 +15,11 @@ function sys = system_state_space(bicycle, gains, neuro, inputs, outputs)
 %       least yQ, psi, phi, phiDot, and delta.
 %   D : matrix, o X n
 %       The feed forward matrix of the bicycle system. This is always zero.
-%   x : cell array of chars, m x 1
+%   states : cell array of chars, m x 1
 %       The names of the states in order.
-%   u : cell array of chars, n x 1
+%   inputs : cell array of chars, n x 1
 %       The names of the inputs in order.
-%   y : cell array of chars, o x 1
+%   outputs : cell array of chars, o x 1
 %       The names of the outputs in order.
 % gains : matrix, 5 x 1
 %   The feedback gains [kDelta, kPhiDot, kPhi, kPsi, kY].
@@ -47,14 +47,14 @@ function sys = system_state_space(bicycle, gains, neuro, inputs, outputs)
 
 % build the state matrix
 % append the two additional state names
-states = [bicycle.x, 'tDelta', 'tDeltaDot'];
+states = [bicycle.states, 'tDelta', 'tDeltaDot'];
 % add room for the two new states, tDelta and tDeltaDot
 [mA, nA] = size(bicycle.A);
 A = zeros(mA + 2, nA + 2);
 % put the bicycle equations in the upper left corner
 A(1:mA, 1:nA) = bicycle.A;
 % put the steer torque B column in the new A matrix
-A(1:mA, index('tDelta', states)) = bicycle.B(:, index('tDelta', bicycle.u));
+A(1:mA, index('tDelta', states)) = bicycle.B(:, index('tDelta', bicycle.inputs));
 
 % put the neuro block state space in the bottom right corner
 zeta = 0.707; % damping ratio of the neuromuscular mode
@@ -66,8 +66,8 @@ minBicycleStates = {'yP', 'psi', 'phi', 'delta', 'phiDot', 'deltaDot'};
 % copy the bicycle C matrix
 minC = bicycle.C;
 % delete the rows and columns for the extra states and outputs
-rows = find(~ismember(bicycle.y, minBicycleOutputs));
-cols = find(~ismember(bicycle.x, minBicycleStates));
+rows = find(~ismember(bicycle.outputs, minBicycleOutputs));
+cols = find(~ismember(bicycle.states, minBicycleStates));
 minC(rows, :) = [];
 minC(:, cols) = [];
 
@@ -93,14 +93,14 @@ end
 % two rows for the two new state equations
 [mB, nB] = size(bicycle.B);
 B = zeros(mB + 2, length(inputs));
-% for each input that is in bicycle.u that isn't steer torque, add the
+% for each input that is in bicycle.inputs that isn't steer torque, add the
 % column into B
 % if yc is inputs, add it's column
 for i = 1:length(inputs)
     if strcmp(inputs{i}, 'yc')
         B(:, i) = [zeros(mB + 1, 1); neuro^2 * prod(gains)];
     else
-        B(1:mB, i) = bicycle.B(:, index(inputs{i}, bicycle.u));
+        B(1:mB, i) = bicycle.B(:, index(inputs{i}, bicycle.inputs));
     end
 end
 
@@ -123,7 +123,7 @@ for i = 1:length(outputs)
     else
         % grab the row in the bicycle output matrix and put it in the system
         % output matrix
-        C(i, 1:nC) = bicycle.C(find(strcmp(bicycle.y, outputs{i})), :);
+        C(i, 1:nC) = bicycle.C(find(strcmp(bicycle.outputs, outputs{i})), :);
     end
 end
 
