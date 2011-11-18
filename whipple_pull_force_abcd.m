@@ -59,8 +59,8 @@ end
 
 % add two parameters for the location of the pull force
 % these values are approximate for the rigid rider instrumented bicycle
-xpf = 0.23;
-zpf = -0.91;
+xpf = 0.2032;
+zpf = -0.942975;
 
 % states at which to linearize about
 q3 = 0.0;
