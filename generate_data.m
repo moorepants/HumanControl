@@ -51,11 +51,11 @@ function data = generate_data(bike, speed, varargin)
 %       allows the potentially time intensive calculation of the state space
 %       to happen outside of generate data. But be careful with it because
 %       the arguments `bike` and `speed` become redundant.
-%   fullSystem : boolean
+%   fullSystem : boolean, optional
 %       If true the state space matrices for the entire system with lateral
 %       force as the only input are returned.
-%   display : boolean
-%       If true the function will dispaly information to screen as the
+%   display : boolean, optional
+%       If true the function will display information to screen as the
 %       function runs else it will display nothing. The default is true.
 %
 % Returns
