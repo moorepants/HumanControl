@@ -442,7 +442,7 @@ modelPar.loopNumber = 0;
 update_model_variables(modelPar)
 
 [A, B, C, D] = linmod('WhippleModel');
-% check to see if the final system is stable
+% check to see if the final system is unstable
 if any(real(eig(A)) > 0)
     display(sprintf(repmat('*', 1, 76)))
     display('Warning')
@@ -454,13 +454,19 @@ if any(real(eig(A)) > 0)
     display(sprintf(s))
     display(sprintf(repmat('*', 1, 76)))
     roots(G.den{:});
-else
-    % write the gains to file if the system is stable
-    pathToGainFile = [CURRENT_DIRECTORY filesep 'gains' filesep bike settings.input 'Gains.txt'];
-    newGains = [modelPar.kDelta, modelPar.kPhiDot, modelPar.kPhi, ...
-    modelPar.kPsi, modelPar.kY];
-    write_gains(pathToGainFile, speed, newGains)
-    display_if(sprintf('Gains written to %s', pathToGainFile))
+    display(settings.gains)
+else % if not unstable
+    if isempty(settings.gains) % only save gains if not user supplied
+        % write the gains to file if the system is stable
+        pathToGainFile = [CURRENT_DIRECTORY filesep 'gains' filesep bike ...
+            settings.input 'Gains.txt'];
+        newGains = [modelPar.kDelta, modelPar.kPhiDot, modelPar.kPhi, ...
+        modelPar.kPsi, modelPar.kY];
+        write_gains(pathToGainFile, speed, newGains)
+        display_if(sprintf('Gains written to %s', pathToGainFile))
+    else
+        display_if('Gains were not saved to file since supplied by user.')
+    end
 end
 
 if settings.fullSystem
@@ -487,7 +493,6 @@ if settings.fullSystem
                            'xQ',
                            'yQ',
                            'tDelta'};
-
 end
 
 %% Simulate the system
