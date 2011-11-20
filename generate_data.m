@@ -293,28 +293,6 @@ if settings.loopTransfer
     data.closedLoops = closedLoops;
     data.openLoops = openLoops;
 
-    % check to see if the final system is stable
-    G = tf(closedLoops.Y.num, closedLoops.Y.den);
-    if any(real(roots(G.den{:})) > 0)
-        display(sprintf(repmat('*', 1, 76)))
-        display('Warning')
-        display(sprintf(repmat('*', 1, 76)))
-        s = ['The system is not stable with these gains. If the ', ...
-                 'simulation completes, the\ndata may be invalid. ', ...
-                 'Please give better gain guesses or supply the gains\n', ...
-                 'manually.'];
-        display(sprintf(s))
-        display(sprintf(repmat('*', 1, 76)))
-        roots(G.den{:});
-    else
-        % write the gains to file if the system is stable
-        pathToGainFile = [CURRENT_DIRECTORY filesep 'gains' filesep bike settings.input 'Gains.txt'];
-        newGains = [modelPar.kDelta, modelPar.kPhiDot, modelPar.kPhi, ...
-        modelPar.kPsi, modelPar.kY];
-        write_gains(pathToGainFile, speed, newGains)
-        display_if(sprintf('Gains written to %s', pathToGainFile))
-    end
-
     if settings.plot
         display_if('Generating loop transfer plots.')
         figure()
@@ -453,20 +431,39 @@ if ~isempty(settings.forceTransfer)
 end
 
 % get the full system state space
+display_if('Calculating the full system state space with lateral input.')
+modelPar.isHandling = 0;
+modelPar.isPullPerturb = 1;
+modelPar.isFullSystem = 1;
+modelPar.perturb = [0, 0, 0, 0, 0];
+modelPar.closed = [1, 1, 1, 1, 1];
+modelPar.loopNumber = 0;
+
+update_model_variables(modelPar)
+
+[A, B, C, D] = linmod('WhippleModel');
+% check to see if the final system is stable
+if any(real(eig(A)) > 0)
+    display(sprintf(repmat('*', 1, 76)))
+    display('Warning')
+    display(sprintf(repmat('*', 1, 76)))
+    s = ['The system is not stable with these gains. If the ', ...
+             'simulation completes, the\ndata may be invalid. ', ...
+             'Please give better gain guesses or supply the gains\n', ...
+             'manually.'];
+    display(sprintf(s))
+    display(sprintf(repmat('*', 1, 76)))
+    roots(G.den{:});
+else
+    % write the gains to file if the system is stable
+    pathToGainFile = [CURRENT_DIRECTORY filesep 'gains' filesep bike settings.input 'Gains.txt'];
+    newGains = [modelPar.kDelta, modelPar.kPhiDot, modelPar.kPhi, ...
+    modelPar.kPsi, modelPar.kY];
+    write_gains(pathToGainFile, speed, newGains)
+    display_if(sprintf('Gains written to %s', pathToGainFile))
+end
+
 if settings.fullSystem
-    display_if('Calculating the full system state space with lateral input.')
-    modelPar.isHandling = 0;
-    modelPar.isPullPerturb = 1;
-    modelPar.isFullSystem = 1;
-    modelPar.perturb = [0, 0, 0, 0, 0];
-    modelPar.closed = [1, 1, 1, 1, 1];
-    modelPar.loopNumber = 0;
-
-    update_model_variables(modelPar)
-
-    [A, B, C, D] = linmod('WhippleModel');
-
-
     data.system.A = A;
     data.system.B = B;
     data.system.C = C;
