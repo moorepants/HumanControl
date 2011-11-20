@@ -57,10 +57,15 @@ for i = 1:length(parFields)
     eval([parFields{i} ' = ' num2str(par.(parFields{i})) ';']);
 end
 
-% add two parameters for the location of the pull force
-% these values are approximate for the rigid rider instrumented bicycle
-xpf = 0.2032;
-zpf = -0.942975;
+% Add two parameters for the location of the pull force if they aren't
+% provided
+if ~exist('xcl') && ~exist('zcl')
+    % These values are approximate for the rigid rider instrumented bicycle
+    % and will be used for all bicycles that don't provide them in their
+    % parameter file.
+    xcl = 0.2032;
+    zcl = -0.942975;
+end
 
 % states at which to linearize about
 q3 = 0.0;
@@ -106,8 +111,8 @@ massc = mB;
 massd = mR;
 masse = mH;
 massf = mF;
-l5 = xpf*cos(lam) - rR*sin(lam) - zpf*sin(lam);
-l6 = rR*cos(lam) + xpf*sin(lam) + zpf*cos(lam);
+l5 = xcl*cos(lam) - rR*sin(lam) - zcl*sin(lam);
+l6 = rR*cos(lam) + xcl*sin(lam) + zcl*cos(lam);
 z(3) = cos(q4);
 z(2) = sin(q3);
 z(4) = sin(q4);
