@@ -30,7 +30,7 @@ function [kDelta, kPhiDot, kPhi, kPsi, kY] = lookup_gains(pathToGains, speed)
 try
     contents = importdata(pathToGains);
 catch err
-    display_if(sprintf('There is no gain file: %s.', pathToGains))
+    display(sprintf('There is no gain file: %s.', pathToGains))
     rethrow(err)
 end
 

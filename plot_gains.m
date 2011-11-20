@@ -12,7 +12,7 @@ data = importdata(pathToGainFile);
 
 for i=2:numCols
     subplot(numCols - 1, 1, i - 1)
-    plot(data.data(:, 1), data.data(:, i))
+    plot(data.data(:, 1), data.data(:, i), '.')
     ylabel(data.colheaders{i})
     xlabel('Speed [m/s]')
 end
