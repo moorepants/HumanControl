@@ -456,7 +456,9 @@ if any(real(eig(A)) > 0)
     roots(G.den{:});
     display(settings.gains)
 else % if not unstable
-    if isempty(settings.gains) % only save gains if not user supplied
+    % only save gains if not user supplied and the neuro frequency is
+    % default
+    if isempty(settings.gains) && (settings.neuroFreq - 30) < 1e-8
         % write the gains to file if the system is stable
         pathToGainFile = [CURRENT_DIRECTORY filesep 'gains' filesep bike ...
             settings.input 'Gains.txt'];
@@ -465,7 +467,7 @@ else % if not unstable
         write_gains(pathToGainFile, speed, newGains)
         display_if(sprintf('Gains written to %s', pathToGainFile))
     else
-        display_if('Gains were not saved to file since supplied by user.')
+        display_if('Gains were not saved to file.')
     end
 end
 
