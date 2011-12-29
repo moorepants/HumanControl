@@ -10,9 +10,21 @@ data = importdata(pathToGainFile);
 
 [numSpeeds, numCols] = size(data.data);
 
-for i=2:numCols
-    subplot(numCols - 1, 1, i - 1)
-    plot(data.data(:, 1), data.data(:, i), '.')
-    ylabel(data.colheaders{i})
-    xlabel('Speed [m/s]')
-end
+figure()
+subplot(2, 1, 1)
+hold all
+plot(data.data(:, 1), data.data(:, 2), '-')
+plot(data.data(:, 1), data.data(:, 4), '-')
+hold off
+ylabel('Gain')
+legend('k_\delta', 'k_\phi')
+
+subplot(2, 1, 2)
+hold all
+plot(data.data(:, 1), data.data(:, 3), '-')
+plot(data.data(:, 1), data.data(:, 5), '-')
+plot(data.data(:, 1), data.data(:, 6), '-')
+hold off
+legend('$\dot{\phi}$', 'k_\psi', 'k_{y_d}', 'Interpreter', 'latex')
+ylabel('Gain')
+xlabel('Speed [m/s]')
