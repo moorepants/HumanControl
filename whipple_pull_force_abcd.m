@@ -1,14 +1,15 @@
 function [aMat, bMat, cMat, dMat] = whipple_pull_force_abcd(par, speed)
 % function [aMat, bMat, cMat, dMat] = whipple_pull_force_abcd(par, speed)
-% Returns the A, B, C, and D matrices for the linear Whipple Pull Force model
-% given a set of parameters and a speed.
+%
+% Returns the A, B, C, and D matrices for the Whipple model linearized about
+% the nominal configuration given a set of parameters and a speed.
 %
 % Parameters
 % ----------
 % par : structure
 %   A matlab structure that contains the values of the bicycle parameters.
-%   (i.e. par.c = 0.08). These should be named according to the Meijaard 2007
-%   paper.
+%   (i.e. par.c = 0.08). These should be named according to the Meijaard
+%   2007 paper.
 % speed : float
 %   The speed at which to linearize about. This overrides any speed parameter
 %   contained in the par structure.
@@ -31,7 +32,7 @@ function [aMat, bMat, cMat, dMat] = whipple_pull_force_abcd(par, speed)
 %              steer rate]
 %         u = [roll torque
 %              steer torque
-%              pull force]
+%              lateral force]
 %         y = [rear wheel contact x
 %              rear wheel contact y
 %              yaw angle
@@ -51,23 +52,25 @@ function [aMat, bMat, cMat, dMat] = whipple_pull_force_abcd(par, speed)
 %              front wheel contact x
 %              front wheel contact y]
 
-% put the parameters in the workspace
+% Put the parameters in the workspace.
 parFields = fields(par);
 for i = 1:length(parFields)
     eval([parFields{i} ' = ' num2str(par.(parFields{i})) ';']);
 end
 
-% Add two parameters for the location of the pull force if they aren't
-% provided
-if ~exist('xcl') && ~exist('zcl')
+% Add two parameters for the location of the lateral force if either aren't
+% provided in par.
+if ~exist('xcl') || ~exist('zcl')
     % These values are approximate for the rigid rider instrumented bicycle
     % and will be used for all bicycles that don't provide them in their
     % parameter file.
+    warning(['You did not supply `xcl` and/or `zcl` for the location of ' ...
+        'the lateral force point, so xcl=0.2032 and zcl=-0.942975 were used.'])
     xcl = 0.2032;
     zcl = -0.942975;
 end
 
-% states at which to linearize about
+% Linearize about this nominal configuration.
 q3 = 0.0;
 q4 = 0.0;
 q5 = 0.0;
@@ -75,13 +78,13 @@ q6 = 0.0;
 q7 = 0.0;
 q8 = 0.0;
 u4 = 0.0;
-u6 = -speed/rR;
+u6 = -speed / rR;
 u7 = 0.0;
 
-% Reserve space and initialize matrices
+% Reserve space and initialize matrices.
 z = zeros(4231,1);
 
-% Evaluate constants
+% Evaluate constants.
 d1 = cos(lam)*(c+w-rR*tan(lam));
 d3 = -cos(lam)*(c-rF*tan(lam));
 d2 = -(rF-rR-sin(lam)*d1-sin(lam)*d3)/cos(lam);
@@ -113,6 +116,8 @@ masse = mH;
 massf = mF;
 l5 = xcl*cos(lam) - rR*sin(lam) - zcl*sin(lam);
 l6 = rR*cos(lam) + xcl*sin(lam) + zcl*cos(lam);
+
+% Compute the state space matrices.
 z(3) = cos(q4);
 z(2) = sin(q3);
 z(4) = sin(q4);
