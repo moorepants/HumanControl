@@ -1,6 +1,8 @@
 function sys = system_state_space(bicycle, gains, neuro, inputs, outputs)
-% Returns the full system state space of the bicycle rider controller with
-% steer torque as the controlled input.
+% function sys = system_state_space(bicycle, gains, neuro, inputs, outputs)
+%
+% Returns the full system state space of the Hess bicycle-rider system with
+% bicycle steer torque as the controlled input.
 %
 % bicycle : structure
 %   A : matrix, m x m
@@ -21,7 +23,7 @@ function sys = system_state_space(bicycle, gains, neuro, inputs, outputs)
 %       The names of the inputs in order.
 %   outputs : cell array of chars, o x 1
 %       The names of the outputs in order.
-% gains : matrix, 5 x 1
+% gains : matrix, 1 x 5
 %   The feedback gains [kDelta, kPhiDot, kPhi, kPsi, kY].
 % neuro : double
 %   The neuromuscular frequency.
