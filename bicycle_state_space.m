@@ -51,39 +51,39 @@ par = par_text_to_struct([CURRENT_DIRECTORY filesep 'parameters' ...
 
 % name the states, outputs and inputs
 states = {'xP',
-              'yP',
-              'psi',
-              'phi',
-              'thetaP',
-              'thetaR',
-              'delta',
-              'thetaF',
-              'phiDot',
-              'thetaRDot',
-              'deltaDot'};
+          'yP',
+          'psi',
+          'phi',
+          'thetaP',
+          'thetaR',
+          'delta',
+          'thetaF',
+          'phiDot',
+          'thetaRDot',
+          'deltaDot'};
 
 outputs = {'xP',
-               'yP',
-               'psi',
-               'phi',
-               'thetaP',
-               'thetaR',
-               'delta',
-               'thetaF',
-               'xPDot',
-               'yPDot',
-               'psiDot',
-               'phiDot',
-               'thetaPDot',
-               'thetaRDot',
-               'deltaDot',
-               'thetaFDot',
-               'xQ',
-               'yQ'};
+           'yP',
+           'psi',
+           'phi',
+           'thetaP',
+           'thetaR',
+           'delta',
+           'thetaF',
+           'xPDot',
+           'yPDot',
+           'psiDot',
+           'phiDot',
+           'thetaPDot',
+           'thetaRDot',
+           'deltaDot',
+           'thetaFDot',
+           'xQ',
+           'yQ'};
 
 inputs = {'tPhi',
-              'tDelta',
-              'fB'};
+          'tDelta',
+          'fB'};
 
 defaultSettings.states = states;
 defaultSettings.inputs = inputs;
