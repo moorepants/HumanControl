@@ -44,7 +44,7 @@ coordinates = {'LongitudinalRearContact', 'xP', 'q1';
                'LateralRearContact', 'yP','q2';
                'YawAngle', 'psi','q3';
                'RollAngle', 'phi','q4';
-               'PitchAngle', 'theta','q5';
+               'PitchAngle', 'thetaB','q5';
                'RearWheelAngle', 'thetaR','q6';
                'SteerAngle', 'delta','q7';
                'FrontWheelAngle', 'thetaF','q8';
