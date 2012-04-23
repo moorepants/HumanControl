@@ -1,33 +1,29 @@
-gains = [76.3808, -0.0516, 7.2456, 0.2632, 0.0708]
-neuro = 30
+gains = [76.3808, -0.0516, 7.2456, 0.2632, 0.0708];
+wnm = 30;
+zetanm = 0.707;
 
-data = generate_data('Rigid', 7.0, 'gains', gains, 'neuroFreq', neuro, 'loopTransfer', 0, 'handlingQuality', 0, 'simulate', 0);
+data = generate_data('Rigid', 7.0, 'gains', gains, 'neuroFreq', wnm, ...
+    'loopTransfer', 0, 'handlingQuality', 0, 'simulate', 0);
 
-bicycle.A = data.modelPar.A;
-bicycle.B = data.modelPar.B;
-bicycle.C = data.modelPar.C;
-bicycle.D = data.modelPar.D;
+bicycle = ss(data.modelPar.A, data.modelPar.B, data.modelPar.C, ...
+    data.modelPar.D);
 
-bicycle.x = {'xP', 'yP', 'psi', 'phi', 'theta', 'thetaR', 'delta', ...
+bicycle.StateName = {'xP', 'yP', 'psi', 'phi', 'thetaB', 'thetaR', 'delta', ...
              'thetaF', 'phiDot', 'thetaRDot', 'deltaDot'};
-bicycle.y = {'xP', 'yP', 'psi', 'phi', 'theta', 'thetaR', 'delta', ...
+bicycle.OutputName = {'xP', 'yP', 'psi', 'phi', 'thetaB', 'thetaR', 'delta', ...
              'thetaF', 'xPDot', 'yPDot', 'psiDot', 'phiDot', ...
-             'thetaDot', 'thetaRDot', 'deltaDot', 'thetaFDot', 'xQ', 'yQ'}
-bicycle.u = {'tPhi', 'tDelta', 'fB'};
+             'thetaBDot', 'thetaRDot', 'deltaDot', 'thetaFDot', 'xQ', 'yQ'};
+bicycle.InputName = {'tPhi', 'tDelta', 'fB'};
 
-outputs = {'xP', 'yP', 'psi', 'phi', 'theta', 'thetaR', 'delta', ...
-           'thetaF', 'xPDot', 'yPDot', 'psiDot', 'phiDot', ...
-           'thetaDot', 'thetaRDot', 'deltaDot', 'thetaFDot', ...
-           'xQ', 'yQ', 'tDelta'};
+inputs = {'fB'};
+outputs = [bicycle.OutputName; 'tDelta'];
 
-inputs = {'fB', 'yc'};
-
-sys = system_state_space(bicycle, gains, neuro, inputs, outputs);
-
-analytic = ss(sys.A, sys.B, sys.C, sys.D, 'StateName', sys.states, ...
-    'OutputName', sys.outputs, 'InputName', sys.inputs);
+analytic = system_state_space('lateral', bicycle, gains, [wnm, zetanm], inputs, outputs);
 
 numeric = ss(data.system.A, data.system.B, data.system.C, data.system.D);
+%numeric.StateName = data.bicycle.states;
+%numeric.InputName = data.bicycle.inputs;
+%numeric.OutputName = data.bicycle.outputs;
 
 figure()
 pzplot(analytic, numeric)
@@ -36,13 +32,38 @@ pzplot(analytic, numeric)
 figure()
 hold all
 % plot my analytic model
-[num, den] = ss2tf(sys.A, sys.B, sys.C, sys.D, 1);
-mine = tf(num(find(strcmp('phiDot', outputs)), :), den)
+[num, den] = ss2tf(analytic.A, analytic.B, analytic.C, analytic.D, 1);
+mine = tf(num(find(strcmp('phiDot', outputs)), :), den);
 bode(tf(num(find(strcmp('phiDot', outputs)), :), den))
 % plot the data from the simulink model
 bode(tf(data.forceTF.PhiDot.num, data.forceTF.PhiDot.den))
-[num, den] = ss2tf(data.system.A, data.system.B, data.system.C, data.system.D, 1);
+[num, den] = ss2tf(numeric.A, numeric.B, numeric.C, numeric.D, 1);
 bode(tf(num(12, :), den))
 
-eig(sys.A)
-eig(data.system.A)
+display('Analytic Eigenvalues')
+eig(analytic.A)
+display('Numeric Eigenvalues')
+eig(numeric.A)
+
+% Now see if the heading tracking works.
+gains = [76.3808, -0.0516, 7.2456, 0.2632];
+wnm = 30;
+zetanm = 0.707;
+
+par = par_text_to_struct('parameters/RigidPar.txt');
+[A, B, C, D] = whipple_pull_force_ABCD(par, 7.0);
+bicycle = ss(A([3, 4, 7, 9, 11], [3, 4, 7, 9, 11]), ...
+    B([3. 4, 7, 9, 11], [2, 3]), eye(5), 0);
+bicycle.StateName = {'psi', 'phi', 'delta', 'phiDot', 'deltaDot'};
+bicycle.OutputName = {'psi', 'phi', 'delta', 'phiDot', 'deltaDot'};
+bicycle.InputName = {'tDelta', 'fB'};
+
+inputs = {'fB'};
+outputs = [bicycle.OutputName; 'tDelta'];
+
+analytic = system_state_space('heading', bicycle, gains, [wnm, zetanm], inputs, outputs);
+% the following two should be the same
+analytic.A(end, :)
+bottomRow = [-wnm^2 * prod(gains), -wnm^2 * prod(gains(1:3)), ...
+    -wnm^2 * gains(1), -wnm^2 * prod(gains(1:2)), 0, -wnm^2, ...
+    -2 * wnm * zetanm]
