@@ -15,11 +15,11 @@ function bicycle = bicycle_state_space(bicycle, speed, varargin)
 %   following: `states`, `inputs`, `outputs` as a cell array of
 %   chars which include the subset variable names. Beaware that not all
 %   state, input and output combinations are necessarily possible.
-%   Valid state names: 'xP', 'yP', 'psi', 'phi', 'thetaP', 'thetaR', 'delta',
+%   Valid state names: 'xP', 'yP', 'psi', 'phi', 'thetaB', 'thetaR', 'delta',
 %       'thetaF', 'phiDot', 'thetaRDot', 'deltaDot'
 %   Valid input names: 'tPhi', 'tDelta', 'fB'
-%   Valid output names: 'xP', 'yP', 'psi', 'phi', 'thetaP', 'thetaR', 'delta',
-%       'thetaF', 'xPDot', 'yPDot', 'psiDot', 'phiDot', 'thetaPDot',
+%   Valid output names: 'xP', 'yP', 'psi', 'phi', 'thetaB', 'thetaR', 'delta',
+%       'thetaF', 'xPDot', 'yPDot', 'psiDot', 'phiDot', 'thetaBDot',
 %       'thetaRDot', 'deltaDot', 'thetaFDot', 'xQ', 'yQ'
 %
 % Returns
@@ -34,7 +34,7 @@ function bicycle = bicycle_state_space(bicycle, speed, varargin)
 % Examples
 % --------
 % bicycle = bicycle_state_space('Benchmark', 5.0, ...
-%   'states', {'phi', 'phiDot', 'delta', 'deltaDot', ...
+%   'states', {'phi', 'phiDot', 'delta', 'deltaDot'}, ...
 %   'inputs', {'tDelta'}, ...
 %   'outputs', {'delta', 'phi'})
 
@@ -54,7 +54,7 @@ states = {'xP',
           'yP',
           'psi',
           'phi',
-          'thetaP',
+          'thetaB',
           'thetaR',
           'delta',
           'thetaF',
@@ -66,7 +66,7 @@ outputs = {'xP',
            'yP',
            'psi',
            'phi',
-           'thetaP',
+           'thetaB',
            'thetaR',
            'delta',
            'thetaF',
@@ -74,7 +74,7 @@ outputs = {'xP',
            'yPDot',
            'psiDot',
            'phiDot',
-           'thetaPDot',
+           'thetaBDot',
            'thetaRDot',
            'deltaDot',
            'thetaFDot',
