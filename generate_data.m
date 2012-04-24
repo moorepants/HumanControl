@@ -480,7 +480,7 @@ if settings.fullSystem
                            'yP',
                            'psi',
                            'phi',
-                           'thetaP',
+                           'thetaB',
                            'thetaR',
                            'delta',
                            'thetaF',
@@ -488,7 +488,7 @@ if settings.fullSystem
                            'yPDot',
                            'psiDot',
                            'phiDot',
-                           'thetaPDot',
+                           'thetaBDot',
                            'thetaRDot',
                            'deltaDot',
                            'thetaFDot',
@@ -544,11 +544,11 @@ end
 data.speed = speed;
 data.par = par;
 data.modelPar = modelPar;
-data.bicycle.states = {'xP', 'yP', 'psi', 'phi', 'theta', 'thetaR', 'delta', ...
+data.bicycle.states = {'xP', 'yP', 'psi', 'phi', 'thetaB', 'thetaR', 'delta', ...
              'thetaF', 'phiDot', 'thetaRDot', 'deltaDot'};
-data.bicycle.outputs = {'xP', 'yP', 'psi', 'phi', 'theta', 'thetaR', 'delta', ...
+data.bicycle.outputs = {'xP', 'yP', 'psi', 'phi', 'thetaB', 'thetaR', 'delta', ...
              'thetaF', 'xPDot', 'yPDot', 'psiDot', 'phiDot', ...
-             'thetaDot', 'thetaRDot', 'deltaDot', 'thetaFDot', 'xQ', 'yQ'};
+             'thetaBDot', 'thetaRDot', 'deltaDot', 'thetaFDot', 'xQ', 'yQ'};
 data.bicycle.inputs = {'tPhi', 'tDelta', 'fB'};
 
 display_if(sprintf('Done. \n'))
@@ -585,7 +585,7 @@ outputs = {'$x_P$',
            '$y_P$',
            '$\psi$',
            '$\phi$',
-           '$\theta_P$',
+           '$\theta_B$',
            '$\theta_R$',
            '$\delta$',
            '$\theta_F$',
@@ -593,7 +593,7 @@ outputs = {'$x_P$',
            '$\dot{y}_P$',
            '$\dot{\psi}$',
            '$\dot{\phi}$',
-           '$\dot{\theta}_P$',
+           '$\dot{\theta}_B$',
            '$\dot{\theta}_R$',
            '$\dot{\delta}$',
            '$\dot{\theta}_F$',
