@@ -4,31 +4,39 @@ function data = generate_data(bike, speed, varargin)
 %
 % Parameters
 % ----------
-% bike : string
+% bike : char
 %   The name of the bicycle model to use. This corresponds to a file in the
 %   ./parameters directory named <bike>Par.txt.
-% speed : float
+% speed : double
 %   The speed of the bicycle.
 % varargin : pairs of strings and values
-%   input : string, optional
+%   crossover : double (1 x 3), optional
+%       The desired crossover frequencies in rad/s for the phi, psi and y
+%       loops. The default for steer control is [2.0, 1.0, 0.5] and roll
+%       control is [1.5, 0.75, 0.5].
+%   input : char, optional
 %       'Steer' or 'Roll'. 'Steer' is the default.
-%   gains : matrix (5, 1), optional
+%   gains : double (1 x 5), optional
 %       If gains are given this will manually override the search for the
 %       optimal gains. In order kDelta, kPhiDot, kPhi, kPsi, kY.
-%   gainMuls : matrix (5, 1), optional
-%       General gain multipliers. The gains are applied starting at the inner
-%       loop going out. [1, 1, 1, 1, 1] is the default.
-%   laneType : string, optional
+%   gainGuess : double (1 x 5), optional
+%       Provide these gains if you want a better starting guess for the
+%       search algorithm. In order kDelta, kPhiDot, kPhi, kPsi, kY.
+%   gainMuls : double (1 x 5), optional
+%       General gain multipliers. The gains are applied starting at the
+%       inner loop going out: kDelta, kPhiDot, kPhi, kPsi, kY. [1, 1, 1,
+%       1, 1] is the default.
+%   laneType : char, optional
 %       'single' or 'double' for a single or double lane change maneuver.
 %       'double' is the default.
-%   neuroFreq : float, optional
+%   neuroFreq : double, optional
 %       The neuromuscular frequency. The default is 30 rad/sec.
 %   plot : boolean, optional
 %       If 1 basic plots will be shown, if 0 no plots will be shown. 0 is the
 %       default.
 %   simulate : boolean, optional
-%       Default is true. If true the simulation will be available in the
-%       output.
+%       Default is true. If true the simulation results will be available in
+%       the output.
 %   loopTransfer : boolean, optional
 %       Default is true. If true the open and closed loop transfer functions
 %       will be available in the output.
@@ -61,7 +69,7 @@ function data = generate_data(bike, speed, varargin)
 % Returns
 % -------
 % data : structure
-%   Complete data set from the model and simulations:
+%   Complete data set from the model and simulations.
 %   closedLoops : structure
 %       Closed loop transfer functions for each loop.
 %   command : matrix (n, 5)
@@ -160,10 +168,12 @@ warning off
 
 %% parse function arguments
 % set the defaults for the optional arguments
+defaults.crossover = [];
 defaults.input = 'Steer';
 defaults.laneType = 'double';
-defaults.gainMuls = [1, 1, 1, 1, 1];
 defaults.gains = [];
+defaults.gainGuess = [];
+defaults.gainMuls = [1, 1, 1, 1, 1];
 defaults.neuroFreq = 30;
 defaults.plot = 0;
 defaults.simulate = 1;
@@ -218,9 +228,17 @@ if isempty(settings.gains)
         display_if(sprintf(repmat('*', 1, 76)))
     end
     % load the gain guesses
-    pathToGainFile = [CURRENT_DIRECTORY filesep 'gains' filesep bike settings.input 'Gains.txt'];
-    [modelPar.kDelta, modelPar.kPhiDot, modelPar.kPhi, ...
-     modelPar.kPsi, modelPar.kY] = lookup_gains(pathToGainFile, speed);
+    if isempty(settings.gainGuess)
+        pathToGainFile = [CURRENT_DIRECTORY filesep 'gains' filesep bike settings.input 'Gains.txt'];
+        [modelPar.kDelta, modelPar.kPhiDot, modelPar.kPhi, ...
+         modelPar.kPsi, modelPar.kY] = lookup_gains(pathToGainFile, speed);
+    else
+        modelPar.kDelta = settings.gainGuess(1);
+        modelPar.kPhiDot = settings.gainGuess(2);
+        modelPar.kPhi = settings.gainGuess(3);
+        modelPar.kPsi = settings.gainGuess(4);
+        modelPar.kY = settings.gainGuess(5);
+    end
     % now calculate exact feedback gains using successive loop closure
     modelPar = exact_gains(startLoop, loopNames, modelPar, settings);
 else % set the gains as the user specified
@@ -453,12 +471,13 @@ if any(real(eig(A)) > 0)
              'manually.'];
     display(sprintf(s))
     display(sprintf(repmat('*', 1, 76)))
-    roots(G.den{:});
+    eig(A)
     display(settings.gains)
 else % if not unstable
     % only save gains if not user supplied and the neuro frequency is
     % default
-    if isempty(settings.gains) && (settings.neuroFreq - 30) < 1e-8
+    if isempty(settings.gains) && (settings.neuroFreq - 30) < 1e-8 && ...
+        isempty(settings.crossover)
         % write the gains to file if the system is stable
         pathToGainFile = [CURRENT_DIRECTORY filesep 'gains' filesep bike ...
             settings.input 'Gains.txt'];
@@ -553,6 +572,10 @@ data.bicycle.inputs = {'tPhi', 'tDelta', 'fB'};
 
 display_if(sprintf('Done. \n'))
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Sub Functions
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 function update_model_variables(modelPar)
 % Puts all the variables needed for the simulink model in to the base
 % workspace. This is a hack because linmod has no way to operate inside a
@@ -568,6 +591,8 @@ modelParNames = fieldnames(modelPar);
 for i = 1:length(modelParNames)
     assignin('base', modelParNames{i}, modelPar.(modelParNames{i}))
 end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 function outputPlot = plot_outputs(t, y, yc)
 % Returns a plot of the model outputs.
@@ -629,6 +654,8 @@ for i = 1:numPlots
     set(leg, 'interpreter', 'latex')
 end
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 function k = find_closed_gain(loop, guess)
 % Returns the gain required for a 10dB resonant peak in the closed loop
 % transfer function.
@@ -642,7 +669,9 @@ function k = find_closed_gain(loop, guess)
 
 k = fzero(@(x) delta_mag_closed(x, loop), guess);
 
-function k = find_open_gain(loop, input)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+function k = find_open_gain(loop, input, settings)
 % Returns the gain needed to set the crossover frequency at a desired value.
 %
 % Parameters
@@ -651,6 +680,8 @@ function k = find_open_gain(loop, input)
 %   The name of the loop.
 % input : string
 %   Whether this is 'Steer' or 'Roll' torque input
+% settings : structure
+%   The user supplied and default settings.
 %
 % Returns
 % -------
@@ -671,21 +702,28 @@ w = logspace(-1,2,1000);
 mag = mag(:)';
 phase = phase(:)';
 
-% set the desired open loop crossover frequency
+% set the desired open loop crossover frequency (this a mess of an if
+% statement!)
 if strcmp(loop, 'Phi')
-    if strcmp(input, 'Steer')
+    if ~isempty(settings.crossover)
+        wBW = settings.crossover(1);
+    elseif strcmp(input, 'Steer')
         wBW = 2.0;
     elseif strcmp(input, 'Roll')
         wBW = 1.5;
     end
 elseif strcmp(loop, 'Psi')
-    if strcmp(input, 'Steer')
+    if ~isempty(settings.crossover)
+        wBW = settings.crossover(2);
+    elseif strcmp(input, 'Steer')
         wBW = 1.0;
     elseif strcmp(input, 'Roll')
         wBW = 0.75;
     end
 elseif strcmp(loop, 'Y')
-    if strcmp(input, 'Steer')
+    if ~isempty(settings.crossover)
+        wBW = settings.crossover(3);
+    elseif strcmp(input, 'Steer')
         wBW = 0.5;
     elseif strcmp(input, 'Roll')
         wBW = 0.375;
@@ -696,6 +734,8 @@ end
 MagCO = interp1(w, mag, wBW);
 % calculate the gain needed to get the desired crossover frequency
 k = 1 / MagCO;
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 function delta = delta_mag_closed(gain, loop)
 % Returns the difference between a 10db overshoot and the overshoot calculated
@@ -798,6 +838,8 @@ rmag = magmax / magmin;
 % the difference in the magnitude and the desired 10db peak
 delta = rmag - sqrt(10);  % 10 dB corresponds to a magnitude ratio of sqrt(10)
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 function modelPar = exact_gains(startLoop, loopNames, modelPar, settings)
 % function modelPar = exact_gains(startLoop, loopNames, modelPar, settings)
 % Finds the exact values for the gains for each loop given the guesses
@@ -848,7 +890,7 @@ for i = startLoop:length(loopNames)
     if i == 1 || i == 2
         gain = find_closed_gain(loopNames{i}, guess);
     elseif i == 3 || i == 4 || i == 5
-        gain = find_open_gain(loopNames{i}, settings.input);
+        gain = find_open_gain(loopNames{i}, settings.input, settings);
     else
         error(sprintf('%s loop not found', loopNames{i}))
     end
@@ -856,6 +898,8 @@ for i = startLoop:length(loopNames)
     str = '%s loop gain set to %1.4f.';
     display_if(sprintf(str, loopNames{i}, gain))
 end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 function [modelPar, startLoop, par] = ...
     set_initial_model_parameters(bike, speed, settings)
@@ -971,6 +1015,8 @@ else
     error('Choose Steer or Roll as the input')
 end
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 function [num, den] = linmod_switch(model)
 % Returns the numerator and denominator of the current transfer function
 % specified by the input and output blocks. This function is a hack and only
@@ -983,6 +1029,8 @@ function [num, den] = linmod_switch(model)
 [num, den] = linmod(model);
 
 num = num(1, :);
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 function display_if(string)
 % Prints the string to screen only if the print to screen global is true.
