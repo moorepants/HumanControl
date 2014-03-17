@@ -5,6 +5,14 @@ bicycle model is based on the Whipple bicycle dynamic model. The control
 portion is based on the crossover model and includes basic preview. The model
 is capable of tracking a path.
 
+This software is the companion code to the publication:
+
+Hess, R.; Moore, J.K.; Hubbard, M., "Modeling the Manually Controlled Bicycle,"
+Systems, Man and Cybernetics, Part A: Systems and Humans, IEEE Transactions on,
+vol.42, no.3, pp.545,557, May 2012
+
+http://dx.doi.org/10.1109/TSMCA.2011.2164244
+
 File Descriptions
 ===================
 whipple_pull_force_abcd.m : Generates the linearized Whipple model about the
