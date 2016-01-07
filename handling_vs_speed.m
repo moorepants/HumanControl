@@ -1,3 +1,5 @@
+clear; close all; clc;
+
 speeds = linspace(3, 10, 20);
 freqs = linspace(0.01, 20, 100);
 
