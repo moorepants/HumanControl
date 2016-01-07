@@ -1,4 +1,4 @@
-speeds = linspace(2, 10, 20);
+speeds = linspace(3, 10, 20);
 freqs = linspace(0.01, 20, 100);
 
 bikes = {'Benchmark', 'Browserins', 'Browser', 'Pista', ...
