@@ -33,6 +33,7 @@ for i = 1:length(bikes)
 end
 plot(speeds, ones(size(speeds)) * 5, 'k');
 plot(speeds, ones(size(speeds)) * 8, 'k');
+box on;
 xlabel('Speed [m/s]')
 ylabel('max(HQM)')
 hold off;
