@@ -775,7 +775,7 @@ w = logspace(-2, 2, 1000);
 % rewrite mag and phase so the dimension is reduced
 mag = mag(:)';
 phase = phase(:)';
-% get the maximum magitude and index, this is the peak of the neurmuscular mode
+% get the maximum magnitude and index, this is the peak of the neurmuscular mode
 [magmax, iMaxMag] = max(mag);
 % find lower cutoff of 2 rad/sec
 %lowi = min(find(w > 2));
@@ -1039,4 +1039,32 @@ global PRINT_TO_SCREEN
 
 if PRINT_TO_SCREEN
     disp(string)
+end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+function [kDelta, kPhi] = shape_steer_and_roll_rate_loops()
+% Returns the optimal choices for the steer and roll rate loops such that
+% there is one pole pair with a damping ratio of 0.15 and frequency of 10
+% rad/s in the clossed roll rate loop.
+
+    function distance = distance_from_pole(x)
+
+        target = ;
+
+        kDelta = x(1);
+        kPhiDot = x(2);
+
+        [num, den] = linmod();
+
+        poles = pole(tf(num, den));
+
+        % pick all of the oscillating poles
+
+        % pick the pair that has a pole closest to 0.15, 10
+
+    end
+
+[kDelta, kPhiDot] = fsolve(@distance_from_pole, guess);
+
 end
