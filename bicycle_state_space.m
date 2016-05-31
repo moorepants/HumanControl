@@ -15,12 +15,41 @@ function bicycle = bicycle_state_space(bicycle, speed, varargin)
 %   following: `states`, `inputs`, `outputs` as a cell array of
 %   chars which include the subset variable names. Beaware that not all
 %   state, input and output combinations are necessarily possible.
-%   Valid state names: 'xP', 'yP', 'psi', 'phi', 'thetaB', 'thetaR', 'delta',
-%       'thetaF', 'phiDot', 'thetaRDot', 'deltaDot'
-%   Valid input names: 'tPhi', 'tDelta', 'fB'
-%   Valid output names: 'xP', 'yP', 'psi', 'phi', 'thetaB', 'thetaR', 'delta',
-%       'thetaF', 'xPDot', 'yPDot', 'psiDot', 'phiDot', 'thetaBDot',
-%       'thetaRDot', 'deltaDot', 'thetaFDot', 'xQ', 'yQ'
+%   Valid state names:
+%       'xP' : Longitudinal Rear Contact
+%       'yP' : Lateral Rear Contact
+%       'psi' : Yaw Angle
+%       'phi' : Roll Angle
+%       'thetaB' : Pitch Angle
+%       'thetaR' : Rear Wheel Angle
+%       'delta' : Steer Angle
+%       'thetaF' : Front Wheel Angle
+%       'phiDot' : Roll Rate
+%       'thetaRDot' : Rear Wheel Rate
+%       'deltaDot' : Steer Rate
+%   Valid input names:
+%       'tPhi' : Roll Torque
+%       'tDelta' : Steer Torque
+%       'fB' : Lateral Force
+%   Valid output names:
+%       'xP' : Longitudinal Rear Contact
+%       'yP' : Lateral Rear Contact
+%       'psi' : Yaw Angle
+%       'phi' : Roll Angle
+%       'thetaB' : Pitch Angle
+%       'thetaR' : Rear Wheel Angle
+%       'delta' : Steer Angle
+%       'thetaF' : Front Wheel Angle
+%       'xPDot' : Longitudinal Rear Contact Rate
+%       'yPDot' : Lateral Rear Contact Rate
+%       'psiDot' : Yaw Rate
+%       'phiDot' : Roll Rate
+%       'thetaBDot' : Pitch Rate
+%       'thetaRDot' : Rear Wheel Rate
+%       'deltaDot' : Steer Rate
+%       'thetaFDot' : Front Wheel Rate
+%       'xQ' : Longitudinal Front Contact
+%       'yQ' : Longitudinal Rear Contact
 %
 % Returns
 % -------
