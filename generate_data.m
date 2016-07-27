@@ -888,7 +888,9 @@ for i = startLoop:length(loopNames)
     modelPar.closed = closedTable(i + 1, :);
     update_model_variables(modelPar);
     if i == 1 || i == 2
-        gain = find_closed_gain(loopNames{i}, guess);
+        [kDelta, kPhiDot] = shape_inner_loops(modelPar.A, modelPar.B, settings.neuroFreq, 0.707);
+        gains = [kDelta, kPhiDot];
+        gain = gains(i);
     elseif i == 3 || i == 4 || i == 5
         gain = find_open_gain(loopNames{i}, settings.input, settings);
     else
@@ -1043,28 +1045,79 @@ end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function [kDelta, kPhi] = shape_steer_and_roll_rate_loops()
+function [kDelta, kPhiDot] = shape_inner_loops(A, B, omega_nm, zeta_nm)
 % Returns the optimal choices for the steer and roll rate loops such that
 % there is one pole pair with a damping ratio of 0.15 and frequency of 10
 % rad/s in the clossed roll rate loop.
 
-    function distance = distance_from_pole(x)
+    a_20 = A(9, 4);
+    a_21 = A(9, 7);
+    a_22 = A(9, 9);
+    a_23 = A(9, 11);
+    a_30 = A(11, 4);
+    a_31 = A(11, 7);
+    a_32 = A(11, 9);
+    a_33 = A(11, 11);
 
-        target = ;
+    b_21 = B(9, 2);
+    b_31 = B(11, 2);
 
-        kDelta = x(1);
-        kPhiDot = x(2);
+    x0 = omega_nm^2;
+    x1 = 10000*b_21;
+    x2 = 91*b_21;
+    x3 = a_20*b_31;
+    x4 = a_22*b_31;
+    x5 = 300*x4;
+    x6 = 100*b_21;
+    x7 = b_21^2;
+    x8 = 3*b_31;
+    x9 = a_20*x8;
+    x10 = a_23*b_31;
+    x11 = a_33*b_21;
+    x12 = x10 - x11;
+    x13 = 100*b_31;
+    x14 = a_22*x13;
+    x15 = 3*b_21;
+    x16 = a_30*x15;
+    x17 = a_32*x6;
+    x18 = a_30*b_21;
+    x19 = -x18 + x3;
+    x20 = a_21*b_31;
+    x21 = a_31*b_21;
+    x22 = 2*zeta_nm;
+    x23 = omega_nm*x22;
+    x24 = a_22 + a_33 - x23 + 3;
+    x25 = a_20*a_31;
+    x26 = a_21*a_30;
+    x27 = x0*(x25 - x26);
+    x28 = -x20 + x21;
+    x29 = -a_23*x13;
+    x30 = a_33*x6;
+    x31 = a_20*a_33;
+    x32 = a_22*a_31;
+    x33 = a_21*a_32;
+    x34 = a_23*a_30;
+    x35 = omega_nm*(omega_nm*x31 + omega_nm*x32 - omega_nm*x33 - ...
+        omega_nm*x34 + x22*x25 - x22*x26);
+    x36 = a_23*a_32;
+    x37 = a_22*a_33;
+    x38 = a_20 + a_22*x23 + a_31 + a_33*x23 - x0 + x36 - x37 + 100;
+    x39 = a_20*x23 + a_22*x0 + a_31*x23 + a_33*x0 + x23*x36 - x23*x37 - ...
+        x31 - x32 + x33 + x34;
+    x40 = a_20*x0 + a_31*x0 + x0*x36 - x0*x37 - x23*x31 - x23*x32 + ...
+        x23*x33 + x23*x34 - x25 + x26;
+    x41 = 100*x24*(30000*b_21 + 9100*x10 - 9100*x11 - 573*x20 + 573*x21) ...
+        + x27*(a_23*x8 - a_33*x15 + x2 + x28) + x35*(300*b_21 + x29 + x30) ...
+        - 100*x38*(a_31*x2 + x1 - 300*x10 + 300*x11 - 91*x20) + ...
+        100*x39*(a_21*x8 - a_31*x15 + x29 + x30) + 100*x40*(x28 + x6);
+    x42 = a_32*b_21;
 
-        [num, den] = linmod();
+    kDelta = x41/(x0*(-100*a_21*b_31^2 - 91*a_30*x7 + a_31*b_31*x6 - ...
+        300*a_32*x7 + b_21*x5 + b_31*x1 - x12*x14 - x12*x16 + x12*x17 + ...
+        x12*x9 - x19*(x20 - x21) + x2*x3));
 
-        poles = pole(tf(num, den));
-
-        % pick all of the oscillating poles
-
-        % pick the pair that has a pole closest to 0.15, 10
-
-    end
-
-[kDelta, kPhiDot] = fsolve(@distance_from_pole, guess);
-
-end
+    kPhiDot = (-x24*(910000*b_31 - 7381*x18 + 7381*x3 + 57300*x4 - ...
+        57300*x42) - x27*(x4 - x42 + x8) + x35*(x13 + x19) - ...
+        x38*(30000*b_31 - 573*x18 + 573*x3 - 9100*x4 + 9100*x42) + ...
+        x39*(-a_30*x2 + 10000*b_31 + 91*x3 - 300*x42 + x5) + ...
+        x40*(-x14 - x16 + x17 + x9))/x41;
