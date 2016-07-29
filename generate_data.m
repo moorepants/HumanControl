@@ -888,7 +888,8 @@ for i = startLoop:length(loopNames)
     modelPar.closed = closedTable(i + 1, :);
     update_model_variables(modelPar);
     if i == 1 || i == 2
-        [kDelta, kPhiDot] = shape_inner_loops(modelPar.A, modelPar.B, settings.neuroFreq, 0.707);
+        [kDelta, kPhiDot] = compute_inner_gains(modelPar.A, modelPar.B, ...
+            settings.neuroFreq, 0.707, 10.5, 0.15);
         gains = [kDelta, kPhiDot];
         gain = gains(i);
     elseif i == 3 || i == 4 || i == 5
@@ -1045,10 +1046,36 @@ end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function [kDelta, kPhiDot] = shape_inner_loops(A, B, omega_nm, zeta_nm)
-% Returns the optimal choices for the steer and roll rate loops such that
-% there is one pole pair with a damping ratio of 0.15 and frequency of 10
-% rad/s in the clossed roll rate loop.
+function [k_delta, k_phi_dot] = compute_inner_gains(A, B, omega_nm, zeta_nm, omega_d, zeta_d)
+% Returns the steer and roll rate gains given the state and input
+% matrices of the bicycle and the neuromuscular block's natural
+% frequency and damping ratio.
+%
+%   Parameters
+%   ==========
+%
+%   A : double, shape(4, 4)
+%       The state matrix for a linear Whipple bicycle model, where
+%       the states are [roll angle, steer angle, roll angular rate,
+%       steer angular rate].
+%   B : double, shape(4, 2)
+%       The input matrix for a linear Whipple bicycle model, where
+%       the inputs are [roll torque, steer torque].
+%   omega_nm : double
+%       The natural frequency of the neuromuscular model.
+%   zeta_nm : double
+%       The damping ratio of the neuromuscular model.
+%   omega_d : double, shape(1, 1)
+%       The natural frequency of the desired closed loop pole.
+%   zeta_d : double, shape(1, )
+%       The damping ratio of the desired closed loop pole.
+%
+%   Returns
+%   =======
+%   k_delta : float
+%       The steer angle feedback gain.
+%   k_phi_dot : float
+%       The roll rate feedback gain.
 
     a_20 = A(9, 4);
     a_21 = A(9, 7);
@@ -1062,62 +1089,57 @@ function [kDelta, kPhiDot] = shape_inner_loops(A, B, omega_nm, zeta_nm)
     b_21 = B(9, 2);
     b_31 = B(11, 2);
 
-    x0 = omega_nm^2;
-    x1 = 10000*b_21;
-    x2 = 91*b_21;
-    x3 = a_20*b_31;
-    x4 = a_22*b_31;
-    x5 = 300*x4;
-    x6 = 100*b_21;
-    x7 = b_21^2;
-    x8 = 3*b_31;
-    x9 = a_20*x8;
-    x10 = a_23*b_31;
-    x11 = a_33*b_21;
-    x12 = x10 - x11;
-    x13 = 100*b_31;
-    x14 = a_22*x13;
-    x15 = 3*b_21;
-    x16 = a_30*x15;
-    x17 = a_32*x6;
-    x18 = a_30*b_21;
-    x19 = -x18 + x3;
-    x20 = a_21*b_31;
-    x21 = a_31*b_21;
-    x22 = 2*zeta_nm;
-    x23 = omega_nm*x22;
-    x24 = a_22 + a_33 - x23 + 3;
-    x25 = a_20*a_31;
-    x26 = a_21*a_30;
-    x27 = x0*(x25 - x26);
+    x0 = omega_nm.^2;
+    x1 = omega_d.^4;
+    x2 = omega_d.^2;
+    x3 = b_21.*x2;
+    x4 = a_20.*b_31;
+    x5 = a_30.*b_21;
+    x6 = x4 - x5;
+    x7 = b_31.*x2;
+    x8 = a_21.*b_31;
+    x9 = a_31.*b_21;
+    x10 = x8 - x9;
+    x11 = 2*zeta_d;
+    x12 = omega_d.^3;
+    x13 = a_22.*b_31;
+    x14 = a_32.*b_21;
+    x15 = x13 - x14;
+    x16 = zeta_d.^2;
+    x17 = 4*x16;
+    x18 = x17.*x3;
+    x19 = 2*omega_d.*zeta_d;
+    x20 = a_23.*b_31;
+    x21 = a_33.*b_21;
+    x22 = x20 - x21;
+    x23 = x19.*x22;
+    x24 = a_20.*a_31;
+    x25 = a_21.*a_30;
+    x26 = x0.*(x24 - x25);
+    x27 = x3 - x8 + x9;
     x28 = -x20 + x21;
-    x29 = -a_23*x13;
-    x30 = a_33*x6;
-    x31 = a_20*a_33;
-    x32 = a_22*a_31;
-    x33 = a_21*a_32;
-    x34 = a_23*a_30;
-    x35 = omega_nm*(omega_nm*x31 + omega_nm*x32 - omega_nm*x33 - ...
-        omega_nm*x34 + x22*x25 - x22*x26);
-    x36 = a_23*a_32;
-    x37 = a_22*a_33;
-    x38 = a_20 + a_22*x23 + a_31 + a_33*x23 - x0 + x36 - x37 + 100;
-    x39 = a_20*x23 + a_22*x0 + a_31*x23 + a_33*x0 + x23*x36 - x23*x37 - ...
-        x31 - x32 + x33 + x34;
-    x40 = a_20*x0 + a_31*x0 + x0*x36 - x0*x37 - x23*x31 - x23*x32 + ...
-        x23*x33 + x23*x34 - x25 + x26;
-    x41 = 100*x24*(30000*b_21 + 9100*x10 - 9100*x11 - 573*x20 + 573*x21) ...
-        + x27*(a_23*x8 - a_33*x15 + x2 + x28) + x35*(300*b_21 + x29 + x30) ...
-        - 100*x38*(a_31*x2 + x1 - 300*x10 + 300*x11 - 91*x20) + ...
-        100*x39*(a_21*x8 - a_31*x15 + x29 + x30) + 100*x40*(x28 + x6);
-    x42 = a_32*b_21;
+    x29 = a_20.*a_33;
+    x30 = a_22.*a_31;
+    x31 = 2*zeta_nm;
+    x32 = a_21.*a_32;
+    x33 = a_23.*a_30;
+    x34 = omega_nm.*(omega_nm.*x29 + omega_nm.*x30 - omega_nm.*x32 - omega_nm.*x33 + x24.*x31 - x25.*x31);
+    x35 = a_23.*a_32;
+    x36 = a_22.*a_33;
+    x37 = omega_nm.*x31;
+    x38 = a_20 + a_22.*x37 + a_31 + a_33.*x37 - x0 + x2 + x35 - x36;
+    x39 = a_22 + a_33 + x19 - x37;
+    x40 = omega_d.*x22;
+    x41 = 4*zeta_d;
+    x42 = 8*zeta_d.^3;
+    x43 = a_20.*x0 + a_31.*x0 + x0.*x35 - x0.*x36 - x24 + x25 - x29.*x37 - x30.*x37 + x32.*x37 + x33.*x37;
+    x44 = a_20.*x37 + a_22.*x0 + a_31.*x37 + a_33.*x0 - x29 - x30 + x32 + x33 + x35.*x37 - x36.*x37;
+    x45 = omega_d.^5.*x39.*(omega_d.*x17.*x28 - x10.*x41 + x10.*x42 + x11.*x3 + x40) - x1.*x38.*(x10.*x17 - x23 + x27) - x12.*x44.*(-x10.*x11 + x40) + x2.*x27.*x43 + x2.*x34.*(b_21.*x19 + x28) + x26.*(-x18 + x23 + x27);
+    x46 = x6 + x7;
+    x47 = omega_d.*x15;
+    x48 = -x4 + x5;
+    x49 = omega_d.*(-x13 + x14);
 
-    kDelta = x41/(x0*(-100*a_21*b_31^2 - 91*a_30*x7 + a_31*b_31*x6 - ...
-        300*a_32*x7 + b_21*x5 + b_31*x1 - x12*x14 - x12*x16 + x12*x17 + ...
-        x12*x9 - x19*(x20 - x21) + x2*x3));
+    k_delta = x45./(x0.*(b_21.*b_31.*x1 + b_21.*x11.*x12.*x15 - x10.*x6 - x10.*x7 - x15.*x2.*x22 - x18.*x6 + x23.*x6 + x3.*x6));
+    k_phi_dot = (-omega_d.*x43.*(-x11.*x6 + x47) - x1.*x39.*(12*x16.*x48 - x17.*x7 + x41.*x47 + x42.*x49 + x46 + 16*x6.*zeta_d.^4) - x12.*x38.*(x11.*x7 + x17.*x47 + x41.*x6 + x42.*x48 + x49) + x2.*x44.*(x15.*x19 + x17.*x48 + x46) - x26.*(b_31.*x19 + x15) + x34.*x46)./x45;
 
-    kPhiDot = (-x24*(910000*b_31 - 7381*x18 + 7381*x3 + 57300*x4 - ...
-        57300*x42) - x27*(x4 - x42 + x8) + x35*(x13 + x19) - ...
-        x38*(30000*b_31 - 573*x18 + 573*x3 - 9100*x4 + 9100*x42) + ...
-        x39*(-a_30*x2 + 10000*b_31 + 91*x3 - 300*x42 + x5) + ...
-        x40*(-x14 - x16 + x17 + x9))/x41;
