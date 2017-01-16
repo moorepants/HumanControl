@@ -382,7 +382,7 @@ if settings.handlingQuality
         figure()
         num = handlingMetric.num;
         den = handlingMetric.den;
-        wl = linspace(0.01, 20, 100);
+        wl = linspace(0.01, 40, 100);
         [mag, phase, freq] = bode(tf(num, den), wl);
         plot(wl, mag(:)')
         title('Handling quality metric')
