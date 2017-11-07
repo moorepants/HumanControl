@@ -156,7 +156,7 @@ plot:
 The handling quality metric can be accessed by:
 
 ```matlab
->> tf(handlingMetric.num, handlingMetric.den)
+>> tf(data.handlingMetric.num, data.handlingMetric.den)
 ```
 
 The inputs and outputs from the simulation can be be visualized with:
