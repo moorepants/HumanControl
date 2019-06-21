@@ -20,7 +20,7 @@ release corresponds to each related publication.
 - [[tag:bmd2016](https://github.com/moorepants/HumanControl/releases/tag/bmd2016)]
   J. Moore, M. Hubbard, and R. A. Hess, "An Optimal Handling Bicycle," in
   Proceedings of the 2016 Bicycle and Motorcycle Dynamics Conference, 2016,
-  http://moorepants.github.io/dissertation/.
+  https://doi.org/10.6084/m9.figshare.3806310.v1
 
 Requirements
 ============
