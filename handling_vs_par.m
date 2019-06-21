@@ -1,7 +1,12 @@
-par = 'w';
-start = 0.1;
-stop = 1.1;
-num = 30;
+% Generates a plot of peak HQM magnitude versus changes in a particular
+% bicycle parameter.
+
+bike = 'Benchmark';
+speed = 5.0;  % travel speed of the bicycle in m/s
+par = 'w';  % parameter symbol
+start = 0.1;  % min parameter value
+stop = 1.1;  % max parameter value
+num = 30;  % number of data points on the graph
 
 % Generate some parameter values to compute the HQM at.
 par_vals = linspace(start, stop, num);
@@ -12,15 +17,15 @@ freqs = linspace(0.01, 20, 100);
 
 for j = 1:length(par_vals)
     % Load the benchmark bicycle parameters from the file.
-    par = par_text_to_struct('parameters/BenchmarkPar.txt');
+    par = par_text_to_struct(['parameters/' bike 'Par.txt']);
     % Change the parameter you are plotting to the jth value.
     par.(par) = par_vals(j);
-    % Generate the state space form of the plant (bicycle) at 5.0 m/s and
-    % the specified physical parameters.
-    [A, B, C, D] = whipple_pull_force_abcd(par, 5.0);
+    % Generate the state space form of the plant (bicycle) at the specified
+    % speed and the specified physical parameters.
+    [A, B, C, D] = whipple_pull_force_abcd(par, speed);
     % Generate the HQM transfer function with the specified state space
     % matrices.
-    data = generate_data('Benchmark', 5.0, ...
+    data = generate_data(bike, speed, ...
                          'simulate', false, ...
                          'loopTransfer', false, ...
                          'forceTransfer', {}, ...

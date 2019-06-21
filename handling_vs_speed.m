@@ -1,3 +1,6 @@
+% Generates a plot of the peak HQM versus change in speed for all six
+% bicycles in the IEEE paper.
+
 % Define some linestyles and colors for each of the six bicycles
 linestyles = {'-', '-', '-.', ...
               '--', '-.', '--'};
