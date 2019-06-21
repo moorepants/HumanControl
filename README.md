@@ -10,14 +10,14 @@ model is capable of tracking arbitrary a paths in the ground plane.
 This software serves as the companion code to several publications. A tagged
 release corresponds to each related publication.
 
-- [tag:ieee](https://github.com/moorepants/HumanControl/releases/tag/dissertation) Hess, R.; Moore, J.K.; Hubbard, M., "Modeling the Manually
+- [[tag:ieee](https://github.com/moorepants/HumanControl/releases/tag/ieee)] Hess, R.; Moore, J.K.; Hubbard, M., "Modeling the Manually
   Controlled Bicycle," Systems, Man and Cybernetics, Part A: Systems and
   Humans, IEEE Transactions on, vol.42, no.3, pp.545,557, May 2012,
   http://dx.doi.org/10.1109/TSMCA.2011.2164244.
-- [tag:dissertation](https://github.com/moorepants/HumanControl/releases/tag/dissertation) J. K. Moore, "Human Control of a Bicycle," Doctor of
+- [[tag:dissertation](https://github.com/moorepants/HumanControl/releases/tag/dissertation)] J. K. Moore, "Human Control of a Bicycle," Doctor of
   Philosophy, University of California, Davis, CA, August 2012,
   http://moorepants.github.io/dissertation/.
-- [tag:bmd2016](https://github.com/moorepants/HumanControl/releases/tag/bmd2016)
+- [[tag:bmd2016](https://github.com/moorepants/HumanControl/releases/tag/bmd2016)]
   J. Moore, M. Hubbard, and R. A. Hess, "An Optimal Handling Bicycle," in
   Proceedings of the 2016 Bicycle and Motorcycle Dynamics Conference, 2016,
   http://moorepants.github.io/dissertation/.
