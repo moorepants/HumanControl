@@ -51,7 +51,7 @@ wnm = 30;
 zetanm = 0.707;
 
 par = par_text_to_struct('parameters/RigidPar.txt');
-[A, B, C, D] = whipple_pull_force_ABCD(par, 7.0);
+[A, B, C, D] = whipple_pull_force_abcd(par, 7.0);
 bicycle = ss(A([3, 4, 7, 9, 11], [3, 4, 7, 9, 11]), ...
     B([3. 4, 7, 9, 11], [2, 3]), eye(5), 0);
 bicycle.StateName = {'psi', 'phi', 'delta', 'phiDot', 'deltaDot'};
