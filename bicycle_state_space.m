@@ -58,7 +58,11 @@ function bicycle = bicycle_state_space(bicycle, speed, varargin)
 %
 % Notes
 % -----
-% The variable names are defined as in Meijaard2007.
+% The variable names are defined as in J. P. Meijaard, J. M. Papadopoulos,
+% A. Ruina, and A. L. Schwab, "Linearized dynamics equations for the balance
+% and steer of a bicycle: A benchmark and review," Proceedings of the Royal
+% Society A: Mathematical, Physical and Engineering Sciences, vol. 463, no.
+% 2084, pp. 1955–1982, Aug. 2007.
 %
 % Examples
 % --------

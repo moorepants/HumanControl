@@ -382,7 +382,7 @@ if settings.handlingQuality
         figure()
         num = handlingMetric.num;
         den = handlingMetric.den;
-        wl = linspace(0.01, 20, 100);
+        wl = linspace(0.01, 40, 100);
         [mag, phase, freq] = bode(tf(num, den), wl);
         plot(wl, mag(:)')
         title('Handling quality metric')
@@ -779,7 +779,7 @@ w = logspace(-2, 2, 1000);
 % rewrite mag and phase so the dimension is reduced
 mag = mag(:)';
 phase = phase(:)';
-% get the maximum magitude and index, this is the peak of the neurmuscular mode
+% get the maximum magnitude and index, this is the peak of the neurmuscular mode
 [magmax, iMaxMag] = max(mag);
 % find lower cutoff of 2 rad/sec
 %lowi = min(find(w > 2));
@@ -892,7 +892,9 @@ for i = startLoop:length(loopNames)
     modelPar.closed = closedTable(i + 1, :);
     update_model_variables(modelPar);
     if i == 1 || i == 2
-        gain = find_closed_gain(loopNames{i}, guess);
+        [kDelta, kPhiDot] = compute_inner_gains(modelPar.A, modelPar.B, settings.neuroFreq, 0.707, 0.1289, 0.0855);
+        gains = [kDelta, kPhiDot];
+        gain = gains(i);
     elseif i == 3 || i == 4 || i == 5
         gain = find_open_gain(loopNames{i}, settings.input, settings);
     else
@@ -1044,3 +1046,191 @@ global PRINT_TO_SCREEN
 if PRINT_TO_SCREEN
     disp(string)
 end
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+function [k_delta, k_phi_dot] = compute_inner_gains(A, B, omega_nm, zeta_nm, zeta_delta, zeta_phidot)
+% function [k_delta, k_phi_dot] = compute_inner_gains(A, B, omega_nm, zeta_nm, zeta_delta, zeta_phidot)
+% Returns the steer and roll rate gains given the state and input
+% matrices of the bicycle, the neuromuscular block's natural
+% frequency and damping ratio, and the desired closed loop damping
+% ratio of the signature neuromuscular peak in each of the closed loops.
+%
+%   Parameters
+%   ==========
+%
+%   A : double, size 4 x 4
+%       The state matrix for a linear Whipple bicycle model, where
+%       the states are [roll angle, steer angle, roll angular rate,
+%       steer angular rate].
+%   B : double, size 4 x 2
+%       The input matrix for a linear Whipple bicycle model, where
+%       the inputs are [roll torque, steer torque].
+%   omega_nm : double, size 1 x 1
+%       The natural frequency of the neuromuscular model.
+%   zeta_nm : double, size 1 x 1
+%       The damping ratio of the neuromuscular model.
+%   zeta_delta : double, size 1 x 1
+%       The damping ratio of the desired closed loop pole.
+%   zeta_phidot : double, size 1 x 1
+%       The damping ratio of the desired closed loop pole.
+%
+%   Returns
+%   =======
+%   k_delta : float
+%       The steer angle feedback gain.
+%   k_phi_dot : float
+%       The roll rate feedback gain.
+
+    knowns = [omega_nm, zeta_delta, zeta_phidot, zeta_nm, reshape(A([9, 11], [4, 7, 9, 11]).', 1, []), reshape(B([9, 11], 2).', 1, [])];
+
+    func = @(unknowns) eval_func(unknowns, knowns);
+
+    % TODO : This guess comes from the known solution for the Benchmark bike
+    % at 5 m/s, this should be made more robust.
+    guess = [-8.71798244e3, 1.58227411e3, 1.23258658e3, 5.47761600e1, 5.59477325e1, 1.28748836e3, 2.57663234e3, -8.43896178e3, 4.65520391e1, -5.21602768e-2, 1.39479436e1, 1.41766516e1];
+
+    options = optimoptions(@fsolve, 'Jacobian', 'on'); % Note that this is different in newer matlab versions.
+    sol = fsolve(func, guess, options);
+
+    k_delta = sol(9);
+    k_phi_dot = sol(10);
+
+function sexprs = eval_sub_exprs(unknowns, knowns, sexprs)
+
+    c0 = unknowns(1);
+    c1 = unknowns(2);
+    c2 = unknowns(3);
+    c3 = unknowns(4);
+    c4 = unknowns(5);
+    c5 = unknowns(6);
+    c6 = unknowns(7);
+    c7 = unknowns(8);
+    k__delta = unknowns(9);
+    k___dot__phi__ = unknowns(10);
+    omega__delta = unknowns(11);
+    omega__dot__phi_ = unknowns(12);
+
+    omega__nm_ = knowns(1);
+    zeta__delta = knowns(2);
+    zeta__dot__phi_ = knowns(3);
+    zeta__nm_ = knowns(4);
+    a_20 = knowns(5);
+    a_21 = knowns(6);
+    a_22 = knowns(7);
+    a_23 = knowns(8);
+    a_30 = knowns(9);
+    a_31 = knowns(10);
+    a_32 = knowns(11);
+    a_33 = knowns(12);
+    b_21 = knowns(13);
+    b_31 = knowns(14);
+
+    sexprs(1) = 2*omega__delta;
+    sexprs(2) = zeta__delta.*sexprs(1);
+    sexprs(3) = -sexprs(2);
+    sexprs(4) = 2*omega__nm_.*zeta__nm_;
+    sexprs(5) = -a_22 - a_33 + sexprs(4);
+    sexprs(6) = omega__delta.^2;
+    sexprs(7) = -sexprs(6);
+    sexprs(8) = omega__nm_.^2;
+    sexprs(9) = a_22.*a_33;
+    sexprs(10) = a_23.*a_32;
+    sexprs(11) = -a_20 - a_22.*sexprs(4) - a_31 - a_33.*sexprs(4) - sexprs(10) + sexprs(8) + sexprs(9);
+    sexprs(12) = a_20.*a_33;
+    sexprs(13) = a_22.*a_31;
+    sexprs(14) = a_21.*a_32;
+    sexprs(15) = a_23.*a_30;
+    sexprs(16) = a_22.*sexprs(8);
+    sexprs(17) = -a_20.*sexprs(4) - a_31.*sexprs(4) - a_33.*sexprs(8) - sexprs(10).*sexprs(4) + sexprs(12) + sexprs(13) - sexprs(14) - sexprs(15) - sexprs(16) + sexprs(4).*sexprs(9);
+    sexprs(18) = a_20.*a_31;
+    sexprs(19) = a_21.*a_30;
+    sexprs(20) = a_20.*sexprs(8);
+    sexprs(21) = b_31.*sexprs(8);
+    sexprs(22) = k__delta.*sexprs(21);
+    sexprs(23) = -a_31.*sexprs(8) - sexprs(10).*sexprs(8) + sexprs(12).*sexprs(4) + sexprs(13).*sexprs(4) - sexprs(14).*sexprs(4) - sexprs(15).*sexprs(4) + sexprs(18) - sexprs(19) - sexprs(20) + sexprs(22) + sexprs(8).*sexprs(9);
+    sexprs(24) = b_21.*sexprs(8);
+    sexprs(25) = a_32.*sexprs(24);
+    sexprs(26) = b_31.*sexprs(16);
+    sexprs(27) = k__delta.*sexprs(25) - k__delta.*sexprs(26) + sexprs(12).*sexprs(8) + sexprs(13).*sexprs(8) - sexprs(14).*sexprs(8) - sexprs(15).*sexprs(8) + sexprs(18).*sexprs(4) - sexprs(19).*sexprs(4);
+    sexprs(28) = a_30.*sexprs(24);
+    sexprs(29) = b_31.*sexprs(20);
+    sexprs(30) = k__delta.*sexprs(28) - k__delta.*sexprs(29) + sexprs(18).*sexprs(8) - sexprs(19).*sexprs(8);
+    sexprs(31) = 2*omega__dot__phi_;
+    sexprs(32) = zeta__dot__phi_.*sexprs(31);
+    sexprs(33) = -sexprs(32);
+    sexprs(34) = omega__dot__phi_.^2;
+    sexprs(35) = -sexprs(34);
+    sexprs(36) = k__delta.*sexprs(24);
+    sexprs(37) = a_23.*sexprs(22);
+    sexprs(38) = a_33.*b_21.*sexprs(8);
+    sexprs(39) = k__delta.*sexprs(38);
+    sexprs(40) = a_21.*sexprs(22);
+    sexprs(41) = a_31.*b_21.*sexprs(8);
+    sexprs(42) = k__delta.*sexprs(41);
+    sexprs(43) = 2*zeta__delta;
+    sexprs(44) = sexprs(25) - sexprs(26);
+    sexprs(45) = sexprs(28) - sexprs(29);
+    sexprs(46) = 2*zeta__dot__phi_;
+    sexprs(47) = b_31.*k___dot__phi__.*sexprs(8);
+
+function [zero, zero_jac] = eval_func(unknowns, knowns)
+
+    c0 = unknowns(1);
+    c1 = unknowns(2);
+    c2 = unknowns(3);
+    c3 = unknowns(4);
+    c4 = unknowns(5);
+    c5 = unknowns(6);
+    c6 = unknowns(7);
+    c7 = unknowns(8);
+    k__delta = unknowns(9);
+    k___dot__phi__ = unknowns(10);
+    omega__delta = unknowns(11);
+    omega__dot__phi_ = unknowns(12);
+
+    omega__nm_ = knowns(1);
+    zeta__delta = knowns(2);
+    zeta__dot__phi_ = knowns(3);
+    zeta__nm_ = knowns(4);
+    a_20 = knowns(5);
+    a_21 = knowns(6);
+    a_22 = knowns(7);
+    a_23 = knowns(8);
+    a_30 = knowns(9);
+    a_31 = knowns(10);
+    a_32 = knowns(11);
+    a_33 = knowns(12);
+    b_21 = knowns(13);
+    b_31 = knowns(14);
+
+    sexprs = zeros(47, 1);
+    sexprs = eval_sub_exprs(unknowns, knowns, sexprs);
+
+    zero = [-c3 + sexprs(3) + sexprs(5);
+            -c2 - c3.*sexprs(2) + sexprs(11) + sexprs(7);
+            -c1 - c2.*sexprs(2) - c3.*sexprs(6) + sexprs(17);
+            -c0 - c1.*sexprs(2) - c2.*sexprs(6) + sexprs(23);
+            -c0.*sexprs(2) - c1.*sexprs(6) + sexprs(27);
+            -c0.*sexprs(6) + sexprs(30);
+            -c4 + sexprs(33) + sexprs(5);
+            -c4.*sexprs(32) - c5 + sexprs(11) + sexprs(35);
+            -c4.*sexprs(34) - c5.*sexprs(32) - c6 + k___dot__phi__.*sexprs(36) + sexprs(17);
+            -c5.*sexprs(34) - c6.*sexprs(32) - c7 + k___dot__phi__.*sexprs(37) - k___dot__phi__.*sexprs(39) + sexprs(23);
+            -c6.*sexprs(34) - c7.*sexprs(32) + k___dot__phi__.*sexprs(40) - k___dot__phi__.*sexprs(42) + sexprs(27);
+            -c7.*sexprs(34) + sexprs(30)];
+
+    if nargout > 1
+
+        zero_jac = [        0         0         0        -1          0          0          0          0                                                          0                       0                     -sexprs(43)                                0;
+                            0         0        -1 sexprs(3)          0          0          0          0                                                          0                       0     -c3.*sexprs(43) - sexprs(1)                                0;
+                            0        -1 sexprs(3) sexprs(7)          0          0          0          0                                                          0                       0 -c2.*sexprs(43) - c3.*sexprs(1)                                0;
+                           -1 sexprs(3) sexprs(7)         0          0          0          0          0                                                 sexprs(21)                       0 -c1.*sexprs(43) - c2.*sexprs(1)                                0;
+                    sexprs(3) sexprs(7)         0         0          0          0          0          0                                                 sexprs(44)                       0 -c0.*sexprs(43) - c1.*sexprs(1)                                0;
+                    sexprs(7)         0         0         0          0          0          0          0                                                 sexprs(45)                       0                  -c0.*sexprs(1)                                0;
+                            0         0         0         0         -1          0          0          0                                                          0                       0                               0                      -sexprs(46);
+                            0         0         0         0 sexprs(33)         -1          0          0                                                          0                       0                               0     -c4.*sexprs(46) - sexprs(31);
+                            0         0         0         0 sexprs(35) sexprs(33)         -1          0                                 k___dot__phi__.*sexprs(24)              sexprs(36)                               0 -c4.*sexprs(31) - c5.*sexprs(46);
+                            0         0         0         0          0 sexprs(35) sexprs(33)         -1 a_23.*sexprs(47) - k___dot__phi__.*sexprs(38) + sexprs(21) sexprs(37) - sexprs(39)                               0 -c5.*sexprs(31) - c6.*sexprs(46);
+                            0         0         0         0          0          0 sexprs(35) sexprs(33) a_21.*sexprs(47) - k___dot__phi__.*sexprs(41) + sexprs(44) sexprs(40) - sexprs(42)                               0 -c6.*sexprs(31) - c7.*sexprs(46);
+                            0         0         0         0          0          0          0 sexprs(35)                                                 sexprs(45)                       0                               0                  -c7.*sexprs(31)];
+    end
