@@ -1,56 +1,26 @@
 Description
 ===========
 
-This is a human operator control model for a person controlling a bicycle. The
-bicycle model is based on the Whipple bicycle dynamic model. The control
-portion is based on the crossover model and includes basic preview. The model
-is capable of tracking a path.
+This software implements a human operator control model for a person
+controlling a bicycle in lateral flat ground maneuvers. The bicycle model is
+based on the linear Whipple bicycle dynamic model. The controller is based on
+the principles of the crossover model and includes basic visual preview. The
+model is capable of tracking arbitrary a paths in the ground plane.
 
-This software is the companion code to the publication:
+This software serves as the companion code to several publications. A tagged
+release corresponds to each related publication.
 
-Hess, R.; Moore, J.K.; Hubbard, M., "Modeling the Manually Controlled Bicycle,"
-Systems, Man and Cybernetics, Part A: Systems and Humans, IEEE Transactions on,
-vol.42, no.3, pp.545,557, May 2012
-
-http://dx.doi.org/10.1109/TSMCA.2011.2164244
-
-File Descriptions
-===================
-
-`whipple_pull_force_abcd.m` : Generates the linearized Whipple model about the
-upright constant velocity equilibrium point for various parameter sets. It
-includes an additional lateral pull force input.
-
-`par_text_to_struct.m` : Loads in a parameter file to Matlab's structure data
-type.
-
-`WhippleModel.mdl` : The simulink model which is used to calculate the gains,
-the various transfer function for the open and closed loops, and the handling
-qualities metric for both steer torque and roll torque inputs.
-
-`generate_data.m` : Generates the data (transfer functions, simulation results,
-and handling quality metric) by simulating and perturbing the Simulink model.
-
-`create_ieee_paper_plots.m` : Generates most of the plots for our first journal
-paper on the topic.
-
-`fix_ps_linstyle.m` : [A file from the Matlab file
-exchange](http://www.mathworks.com/matlabcentral/fileexchange/17928) for
-improving plot lines.
-
-`load_bikes.m` : Loads the data from `generate_data` for multiple bicycles and
-speeds into one structure.
-
-`ieee.m` : Loads the data needed for `create_ieee_paper_plots` and runs the
-function. This is not part of `create_ieee_paper_plots` to faciltate the
-separation of the data generation and the plotting mainly for debugging
-purposes.
-
-`lane_change.m` : Generates path data for a single or double lane change
-manuever at a particular speed.
-
-`benchmark_geometry_figure.m` : Generates a postscript drawing of the bicycle
-dimenions. Requires [pshacker](http://bicycle.tudelft.nl/schwab/pshacker/).
+- [tag:ieee](https://github.com/moorepants/HumanControl/releases/tag/dissertation) Hess, R.; Moore, J.K.; Hubbard, M., "Modeling the Manually
+  Controlled Bicycle," Systems, Man and Cybernetics, Part A: Systems and
+  Humans, IEEE Transactions on, vol.42, no.3, pp.545,557, May 2012,
+  http://dx.doi.org/10.1109/TSMCA.2011.2164244.
+- [tag:dissertation](https://github.com/moorepants/HumanControl/releases/tag/dissertation) J. K. Moore, "Human Control of a Bicycle," Doctor of
+  Philosophy, University of California, Davis, CA, August 2012,
+  http://moorepants.github.io/dissertation/.
+- [tag:bmd2016](https://github.com/moorepants/HumanControl/releases/tag/bmd2016)
+  J. Moore, M. Hubbard, and R. A. Hess, "An Optimal Handling Bicycle," in
+  Proceedings of the 2016 Bicycle and Motorcycle Dynamics Conference, 2016,
+  http://moorepants.github.io/dissertation/.
 
 Requirements
 ============
@@ -60,6 +30,105 @@ Requirements
 - Simulink
 - [pshacker](http://bicycle.tudelft.nl/schwab/pshacker/) (for the bicycle
   geometry plot)
+- [cmaes.m 3.61.beta](http://cma.gforge.inria.fr/cmaes_sourcecode_page.html#matlab)
+
+Installation
+============
+
+Download the [current development
+version](https://github.com/moorepants/HumanControl/archive/master.zip),
+[desired release](https://github.com/moorepants/HumanControl/releases), or
+clone the git repository. Set the root of the repository or extracted directory
+as the working directory in MATLAB. Download `cmaes.m` and place `cmaes.m` into
+the working directory.
+
+File Descriptions
+===================
+
+`benchmark_geometry_figure.m` : Generates a postscript drawing of the bicycle
+dimensions. Requires [pshacker](http://bicycle.tudelft.nl/schwab/pshacker/).
+
+`bicycle_state_space.m` : Function that returns the state space system of the
+Whipple model linearized about the nominal configuration and the supplied
+speed.
+
+`bmd2016.m` : Script that plots the peak of the handling quality transfer
+function magnitude versus change in trail.
+
+`convert_variable.m` : Function that returns the name and order of the given
+variable in the output type.
+
+`create_ieee_paper_plots.m` : Generates most of the plots for our first journal
+paper on the topic.
+
+`fix_ps_linstyle.m` : [A file from the Matlab file
+exchange](http://www.mathworks.com/matlabcentral/fileexchange/17928) for
+improving plot lines.
+
+`generate_data.m` : Generates the data (transfer functions, simulation results,
+and handling quality metric) by simulating and perturbing the Simulink model.
+
+`handling_vs_par.m` : Generates a plot of peak HQM magnitude versus changes in
+a particular bicycle parameter.
+
+`handling_vs_speed.m` : Generates a plot of the peak HQM versus change in speed
+for all six bicycles in the IEEE paper.
+
+`handling_vs_speed_optimal.m` : Generates a plot of peak HQM versus speed for
+the optimal bicycles presented in the BMD 2016 paper (Figure 10).
+
+`heading_track_analytic.py` : Generates the closed heading loop state space
+description in symbolic form.
+
+`ieee.m` : Loads the data needed for `create_ieee_paper_plots` and runs the
+function. This is not part of `create_ieee_paper_plots` to facilitate the
+separation of the data generation and the plotting mainly for debugging
+purposes.
+
+`lane_change.m` : Generates path data for a single or double lane change
+maneuver at a particular speed.
+
+`lateral_track_analytic.py` : Generates the closed lateral deviation loop state
+space description in symbolic form.
+
+`load_bikes.m` : Loads the data from `generate_data` for multiple bicycles and
+speeds into one structure.
+
+`lookup_gains.m` : Function that returns a guess for the gains based on
+precomputed gains at various speeds using linear interpolation/extrapolation.
+
+`objective.m` : Function that computes the optimization objective value, i.e.
+the peak of the HQM.
+
+`optimal_bicycle.m` : Script that runs the CMES optimizer to discover bicycles
+with minimal peak HQM values.
+
+`par_text_to_struct.m` : Loads in a parameter file to Matlab's structure data
+type.
+
+`plot_gains.m` : Function to plot the gains stored in a gain file.
+
+`system_state_space.m` : Function that returns the closed loop system state
+space of the Hess bicycle-rider system for heading or lateral deviation
+tracking with bicycle steer torque as the controlled input.
+
+`test_system_state_space.m` : Unit tests for system_state_space.m.
+
+`varargin.m` : Function that returns a structure from a cell array of pairs.
+
+`WhippleModel.mdl` : The Simulink model which is used to calculate the gains,
+the various transfer function for the open and closed loops, and the handling
+qualities metric for both steer torque and roll torque inputs.
+
+`whipple_pull_force_abcd.m` : Generates the linearized Whipple model about the
+upright constant velocity equilibrium point for various parameter sets. It
+includes an additional lateral pull force input.
+
+`write_gains.m` : Function that adds the provided gains to a gain file.
+
+`write_hqm_data.m` : Script that saves the BMD 2016 data results to disk.
+
+`zipforieee.py` : Script that zips up all the IEEE paper figures.
 
 Example Use
 ===========
@@ -67,10 +136,10 @@ Example Use
 The core function in this package is `generate_data.m`. The simplest method of
 using it is to supply it with a bicycle name and a speed. It will then find the
 appropriate gains for a stable model, compute all of the loop transfer
-functions and simulate a double lane change manuever. The function outputs all
+functions and simulate a double lane change maneuver. The function outputs all
 of this data for easy plotting and analysis.
 
-Generate data for the Benchmark bicyle at 4.8 m/s.
+Generate data for the Benchmark bicycle at 4.8 m/s.
 
 ```matlab
 >> data = generate_data('Benchmark', 4.8);
