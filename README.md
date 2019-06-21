@@ -74,9 +74,6 @@ a particular bicycle parameter.
 `handling_vs_speed.m` : Generates a plot of the peak HQM versus change in speed
 for all six bicycles in the IEEE paper.
 
-`handling_vs_speed_optimal.m` : Generates a plot of peak HQM versus speed for
-the optimal bicycles presented in the BMD 2016 paper (Figure 10).
-
 `heading_track_analytic.py` : Generates the closed heading loop state space
 description in symbolic form.
 
@@ -125,8 +122,6 @@ upright constant velocity equilibrium point for various parameter sets. It
 includes an additional lateral pull force input.
 
 `write_gains.m` : Function that adds the provided gains to a gain file.
-
-`write_hqm_data.m` : Script that saves the BMD 2016 data results to disk.
 
 `zipforieee.py` : Script that zips up all the IEEE paper figures.
 
