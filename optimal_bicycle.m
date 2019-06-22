@@ -12,7 +12,7 @@ min_wheelbase = (par.mH * par.xH + par.mB * par.xB) / (par.mH + par.mB);
 opts.LBounds = [-inf;          % c
                 min_wheelbase; % w
                 -pi/2;         % lam
-                0.0];          % IFyy
+                3e-5];         % IFyy
 
 opts.UBounds = [inf;  % c
                 inf;  % w
