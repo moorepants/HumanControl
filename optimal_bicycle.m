@@ -1,4 +1,4 @@
-par = par_text_to_struct('parameters/BenchmarkPar.txt');
+par = par_text_to_struct('parameters/PistaPar.txt');
 
 guess = zeros(4, 1);
 guess(1) = par.c;

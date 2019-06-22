@@ -15,7 +15,7 @@ function [peak_hqm] = objective(unknowns)
 % NOTE : This value has to be manually set to be the target speed for the
 % optimal design.
 % TODO : Move setting this into "optimal_bicycle.m".
-speed = 5.0;
+speed = 4.0;
 
 display('==========================================')
 
@@ -25,7 +25,7 @@ unknowns
 freqs = linspace(0.01, 40, 200);
 
 % NOTE : This has to be manually set and match that in "optimal_bicycle.m".
-par = par_text_to_struct('parameters/BenchmarkPar.txt');
+par = par_text_to_struct('parameters/PistaPar.txt');
 
 % NOTE : Here to try for fun to see if different bicycle designs are needed
 % for riding in low gravity.
