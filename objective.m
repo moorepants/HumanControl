@@ -1,7 +1,8 @@
 function [peak_hqm] = objective(unknowns)
 % OBJECTIVE - Returns the maximum value of the HQM transfer function
-% magnitude if the system is closed loop stable or a large value based on
-% how large the closed loop poles are if the system is closed loop unstable.
+% magnitude if the system is closed loop stable or an order of magnitude
+% larger value based on the largest closed loop poles are if the system is
+% closed loop unstable.
 %
 % Syntax: peak_hqm = objective(unknowns)
 %
@@ -12,26 +13,27 @@ function [peak_hqm] = objective(unknowns)
 % Outputs:
 %   peak_hqm - Maximum scalar value of the HQM magnitude.
 
-% NOTE : This value has to be manually set to be the target speed for the
+% NOTE : These have to be manually set to be the target speed for the
 % optimal design.
 % TODO : Move setting this into "optimal_bicycle.m".
-speed = 6.0;
+speed = 3.0;
+bicycle = 'Pista';
 
 display('==========================================')
-
 display('Values passed into the objective function:')
-display(sprintf('c: %1.4f ', unknowns(1)))
-display(sprintf('w: %1.4f ', unknowns(2)))
-display(sprintf('lam: %1.4f ', unknowns(3)))
-display(sprintf('IFyy: %1.4f ', unknowns(4)))
+display(sprintf('c: %1.5f ', unknowns(1)))
+display(sprintf('w: %1.5f ', unknowns(2)))
+display(sprintf('lam: %1.5f ', unknowns(3)))
+display(sprintf('IFyy: %1.5f ', unknowns(4)))
 
 freqs = linspace(0.01, 40, 200);
 
 % NOTE : This has to be manually set and match that in "optimal_bicycle.m".
-par = par_text_to_struct('parameters/PistaPar.txt');
+par = par_text_to_struct(['parameters/' bicycle 'Par.txt']);
 
 % NOTE : Here to try for fun to see if different bicycle designs are needed
 % for riding in low gravity.
+% TODO : These should be moved to "optimal_bicycle.m".
 %par.g = 1.6;  % acceleration due to gravity on the moon
 %par.g = 3.71;  % acceleration due to gravity on mars
 
@@ -50,16 +52,19 @@ IFyy_opt = unknowns(4);
 if IFyy_opt < par.IFyy
     % keep the mass the same but reduce the wheel radius
     par.rF = sqrt(IFyy_opt ./ par.mF);
-else IFyy_opt > par.IFyy
+elseif IFyy_opt > par.IFyy
     % keep radius of the wheel the same but add mass
-    par.mF = IFyy_opt / par.rF.^2;
+    par.mF = IFyy_opt ./ par.rF.^2;
 end
+
+display(sprintf('rF: %1.5f ', par.rF))
+display(sprintf('mF: %1.5f ', par.mF))
 
 par.IFyy = IFyy_opt; % front wheel rotational inertia
 
 [A, B, C, D] = whipple_pull_force_abcd(par, speed);
 
-data = generate_data('Benchmark', speed, ...
+data = generate_data(bicycle, speed, ...
                      'simulate', false, ...
                      'forceTransfer', {}, ...
                      'fullSystem', false, ...
@@ -73,7 +78,8 @@ if ~isstable(lateral_dev_loop)
     % TODO : It may be best to return NAN here as per the CMAES statement
     % "An easy way to implement a hard non-linear constraint is to return
     % NaN. Then, this function evaluation is not counted and a newly sampled
-    % point is tried immediately."
+    % point is tried immediately." Right now it returns a large number
+    % relative to the target low HQM values.
     peak_hqm = max(10, 100 * max(real(pole(lateral_dev_loop))));
 else
     num = data.handlingMetric.num;
@@ -84,3 +90,4 @@ end
 
 display('Value of the objective function:')
 peak_hqm
+display('==========================================')

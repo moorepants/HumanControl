@@ -1,4 +1,5 @@
-par = par_text_to_struct('parameters/PistaPar.txt');
+bicycle = 'Pista';
+par = par_text_to_struct(['parameters/' bicycle 'Par.txt']);
 
 guess = zeros(4, 1);
 guess(1) = par.c;
@@ -8,6 +9,8 @@ guess(4) = par.IFyy;
 
 % wheelbase should always accomdate the mass center
 min_wheelbase = (par.mH * par.xH + par.mB * par.xB) / (par.mH + par.mB);
+
+fprintf('The minimum possible wheelbase is %1.4f\n', min_wheelbase);
 
 opts.LBounds = [-inf;          % c
                 min_wheelbase; % w
