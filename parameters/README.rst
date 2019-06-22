@@ -46,11 +46,7 @@ Optimal08
   An optimally handling bicycle for 8 m/s presented in [Moore2016]_.
 Optimal10
   An optimally handling bicycle for 10 m/s presented in [Moore2016]_.
-<<<<<<< HEAD
-Optimalmars05Par.txt
-=======
 Optimalmars05
->>>>>>> master
   An optimally handling bicycle for 5 m/s with gravity set to that of Mars.
 Pista
   A Bianchi Pista track bicycle with rider "Jason" as reported in
