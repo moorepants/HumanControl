@@ -15,12 +15,15 @@ function [peak_hqm] = objective(unknowns)
 % NOTE : This value has to be manually set to be the target speed for the
 % optimal design.
 % TODO : Move setting this into "optimal_bicycle.m".
-speed = 4.0;
+speed = 6.0;
 
 display('==========================================')
 
 display('Values passed into the objective function:')
-unknowns
+display(sprintf('c: %1.4f ', unknowns(1)))
+display(sprintf('w: %1.4f ', unknowns(2)))
+display(sprintf('lam: %1.4f ', unknowns(3)))
+display(sprintf('IFyy: %1.4f ', unknowns(4)))
 
 freqs = linspace(0.01, 40, 200);
 
