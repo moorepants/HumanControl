@@ -29,8 +29,25 @@ EtaV2
 EtaV3
   A faired recumbent bicycle with 66.2 degree head tube angle and 76 mm of
   trail as reported in [Selwa2016]_.
+Falkorheadonbenchmark
+  A very large and bulky dragon head was added to the handlebars of the
+  Benchmark bicycle. Reported on in the BMD 2016 presentation.
 Fisher
   A Gary Fisher mountain bike with rider "Jason" as reported in [Moore2012a]_.
+Optimal02
+  An optimally handling bicycle for 2 m/s presented in [Moore2016]_.
+Optimal04
+  An optimally handling bicycle for 4 m/s presented in [Moore2016]_.
+Optimal05
+  An optimally handling bicycle for 5 m/s presented in [Moore2016]_.
+Optimal06
+  An optimally handling bicycle for 6 m/s presented in [Moore2016]_.
+Optimal08
+  An optimally handling bicycle for 8 m/s presented in [Moore2016]_.
+Optimal10
+  An optimally handling bicycle for 10 m/s presented in [Moore2016]_.
+Optimalmars05Par.txt
+  An optimally handling bicycle for 5 m/s with gravity set to that of Mars.
 Pista
   A Bianchi Pista track bicycle with rider "Jason" as reported in
   [Moore2012a]_.
@@ -51,6 +68,7 @@ Yellowrev
   The same road bike as above with its fork reversed with rider "Jason" as
   reported in [Moore2012a]_.
 
+
 References
 ==========
 
@@ -65,3 +83,6 @@ References
    https://github.com/moorepants/BicycleParameters
 .. [Selwa2016] Selwa, Alexander. (2016). Stability and Control of Streamlined
    Bicycles. University of Toronto.
+.. [Moore2016] J. Moore, M. Hubbard, and R. A. Hess, "An Optimal Handling
+   Bicycle," in Proceedings of the 2016 Bicycle and Motorcycle Dynamics
+   Conference, 2016.
