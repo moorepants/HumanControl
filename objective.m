@@ -1,25 +1,22 @@
-function [peak_hqm] = objective(unknowns)
+function [peak_hqm] = objective(unknowns, bicycle, speed)
 % OBJECTIVE - Returns the maximum value of the HQM transfer function
 % magnitude if the system is closed loop stable or an order of magnitude
 % larger value based on the largest closed loop poles are if the system is
 % closed loop unstable.
 %
-% Syntax: peak_hqm = objective(unknowns)
+% Syntax: peak_hqm = objective(unknowns, bicycle, speed)
 %
 % Inputs:
 %   unknowns - Vector of the optimization parameters (c trail, w wheelbase,
 %              lam steer axis tilt, IFyy front wheel rotational inertia),
 %              size 4x1.
+%   bicycle - A char for the bicycle name, e.g. 'Benchmark', 'Pista', etc.
+%   speed - Scalar value for the design speed.
+%
 % Outputs:
 %   peak_hqm - Maximum scalar value of the HQM magnitude.
 
-% NOTE : These have to be manually set to be the target speed for the
-% optimal design.
-% TODO : Move setting this into "optimal_bicycle.m".
-speed = 3.0;
-bicycle = 'Pista';
-
-display('==========================================')
+display(sprintf(repmat('=', 1, 79)))
 display('Values passed into the objective function:')
 display(sprintf('c: %1.5f ', unknowns(1)))
 display(sprintf('w: %1.5f ', unknowns(2)))
@@ -28,7 +25,6 @@ display(sprintf('IFyy: %1.5f ', unknowns(4)))
 
 freqs = linspace(0.01, 40, 200);
 
-% NOTE : This has to be manually set and match that in "optimal_bicycle.m".
 par = par_text_to_struct(['parameters/' bicycle 'Par.txt']);
 
 % NOTE : Here to try for fun to see if different bicycle designs are needed
@@ -90,4 +86,4 @@ end
 
 display('Value of the objective function:')
 peak_hqm
-display('==========================================')
+display(sprintf(repmat('=', 1, 79)))
