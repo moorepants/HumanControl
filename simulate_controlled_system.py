@@ -3,7 +3,7 @@ import numpy as np
 from scipy.signal import lsim, lti
 import matplotlib.pyplot as plt
 
-from lateral_track_analytic import (A, B, C, systemOutputs)
+from lateral_track_analytic import (A, B, C, system_outputs)
 
 args = list(sm.ordered(list(A.free_symbols | B.free_symbols | C.free_symbols)))
 
@@ -65,12 +65,13 @@ A_cl, B_cl, C_cl = eval_sys(*vals)
 sys = lti(A_cl, B_cl, C_cl, np.zeros((C_cl.shape[0], B_cl.shape[1])))
 t = np.linspace(0.0, 5.0, num=100)
 u = np.zeros((len(t), B_cl.shape[1]))
-u[:, 1] = 0.2
+u[len(t)//2:, 0] = 20.0  # F
+u[:, 1] = 0.2  # yc
 
 t, y, x = lsim(sys, u, t)
 
 fig, axes = plt.subplots(nrows=y.shape[1])
-for yi, ax, lab in zip(y.T, axes, systemOutputs):
+for yi, ax, lab in zip(y.T, axes, system_outputs):
     ax.plot(t, yi, label=lab)
     ax.legend()
 plt.show()
