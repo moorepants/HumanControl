@@ -65,7 +65,7 @@ A_cl, B_cl, C_cl = eval_sys(*vals)
 sys = lti(A_cl, B_cl, C_cl, np.zeros((C_cl.shape[0], B_cl.shape[1])))
 t = np.linspace(0.0, 5.0, num=100)
 u = np.zeros((len(t), B_cl.shape[1]))
-u[len(t)//2:, 0] = 20.0  # F
+u[len(t)//4:len(t)//3, 0] = 20.0  # F
 u[:, 1] = 0.2  # yc
 
 t, y, x = lsim(sys, u, t)
